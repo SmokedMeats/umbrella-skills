@@ -19,6 +19,7 @@ Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimpleme
 
 Hard gates:
 
+- **Every run** — including each return to this skill — check unlabeled + `needs-triage`. If any exist, **`/triage` first**. Do not skip this check because you already triaged earlier in the session.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
 - Open grilling siblings → `/grill-me`.
 - A locked grill is **not** a build. Next is `/to-spec`.
@@ -38,13 +39,15 @@ Nothing → list open issues: unlabeled, `needs-triage`, plus anything already c
 
 Completion: you have the pile and current labels.
 
-## 2. Triage if needed
+## 2. `/triage` check — every time
 
-Any unlabeled or `needs-triage` item in the pile → read `/triage` and run it on those first. `/triage` already recommends category, state, every fitting `domain:*`, and a creatable `umbrella:*`. Wait for the maintainer before applying.
+Query unlabeled and `needs-triage` **now**. Not once per session: do this at the start of `/umbrella` and again each time you return here after a phase.
+
+Any hits → read `/triage` and run it on those first. `/triage` already recommends category, state, every fitting `domain:*`, and a creatable `umbrella:*`. Wait for the maintainer before applying.
 
 Tickets `/to-tickets` already published are agent-ready — do not re-triage them.
 
-Completion: every item in the pile has category + state + domains, and a house label when it belongs to a pack.
+Completion: the check ran; if the inbox was dirty, those items now have category + state + domains, and a house label when they belong to a pack. If the inbox was clean, say so in one line and continue.
 
 ## 3. Name the houses
 
@@ -58,10 +61,11 @@ Completion: a numbered list. Wait for which house to work. One house per session
 
 ## 4. Phase loop
 
-Detect the chosen house's phase. Say **`Next: /<skill>`**. Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
+Re-run the `/triage` check. Then detect the chosen house's phase. Say **`Next: /<skill>`**. Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
+| triage | unlabeled or `needs-triage` exists | `/triage` | maintainer confirms labels |
 | chart | no `wayfinder:map` | `/wayfinder` (chart) | — |
 | grill | open `wayfinder:grilling` siblings | `/grill-me` | user confirms the live batch is locked |
 | spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |

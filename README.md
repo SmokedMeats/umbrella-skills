@@ -61,6 +61,8 @@ Unedited skills stay in Matt’s pack. Overlays in this repo are marked.
 Hard gates (this is the point of `/umbrella`):
 
 ```
+every /umbrella run       →  /triage check (unlabeled + needs-triage)
+dirty inbox               →  /triage
 no map / map still foggy  →  /wayfinder
 open grilling siblings    →  /grill-me
 locked grill              →  /to-spec
@@ -68,7 +70,7 @@ approved spec             →  /to-tickets
 approved tickets          →  /implement   (the skill, not ad-hoc coding)
 ```
 
-Never skip. A locked grill is not a build. Do not jump over `/wayfinder`.
+Never skip. Run the `/triage` check **every time**, not once per session. A locked grill is not a build. Do not jump over `/wayfinder`.
 
 `/grill-with-docs` is still Matt’s stateful interview when you are not on a wayfinder map. `/umbrella` does not replace it.
 
