@@ -12,11 +12,7 @@ Update all three in the same change:
 
 Then copy `skills/*` into `$HOME/.grok/skills/` if you use Grok user-global.
 
-## What belongs on #856, not the README
+## What belongs where
 
-The issue is field notes for Matt. Keep there:
-
-- "What not to take" (product label words, tracker recipes, do not replace one-ticket-per-session)
-- Failure write-ups and suggested upstream shape
-
-The README is for people who install the overlay.
+- **README** — for people who install the overlay.
+- **#856** — field notes for Matt: the failures and the suggested upstream shape.
