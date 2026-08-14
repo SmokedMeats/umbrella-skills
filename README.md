@@ -56,6 +56,7 @@ Unedited skills stay in Matt’s pack. Overlays in this repo are marked.
 | Grill locked | **`/to-spec`** | **overlay** |
 | Spec approved | **`/to-tickets`** | **overlay** |
 | Tickets approved | **`/implement`** → `/tdd` → `/code-review` | implement **overlay**; tdd + code-review **Matt** |
+| Two+ unblocked implement tickets | `/implement` **wave**: draft exclusives, spawn children, then product code | same |
 | “Which skill do I type?” | `/ask-matt` | no — Matt |
 
 Three different jobs — do not collapse them:
@@ -75,6 +76,7 @@ open grilling siblings    →  /grill-me
 locked grill              →  /to-spec
 approved spec             →  /to-tickets
 approved tickets          →  /implement
+two+ unblocked tickets    →  /implement wave (spawn first)
 ```
 
 Never skip. Keep the `/triage` catch **every time**. A locked grill is not a build.
@@ -92,13 +94,13 @@ Many issues share `domain:billing`. Only some share `umbrella:refunds`. Do not t
 
 | Skill | Change |
 | --- | --- |
-| `umbrella` | New conductor. |
+| `umbrella` | New conductor. Two+ unblocked tickets → `/implement` wave (spawn before product code). |
 | `grilling` | Seamless sibling batch + `Now on` line. After lock: next is `/to-spec`, not implement. |
 | `grill-me` | Load the map’s grilling siblings; advance without asking “next grill?” |
 | `wayfinder` | Umbrella-grill exception to one-ticket-per-session. |
 | `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. |
 | `to-tickets` | Waves + exclusive paths. Stop. Next is `/implement`. |
-| `implement` | One ticket default; parallel wave uses a conductor and `/tdd`. |
+| `implement` | Count first. Two+ unblocked tickets: draft exclusives, spawn one child per extra ticket, then this session writes the conductor ticket. Sequential only when the exclusive table is empty. |
 | `triage` | Apply every fitting `domain:*` and a creatable `umbrella:*`, not only category + state. |
 
 ## What not to take

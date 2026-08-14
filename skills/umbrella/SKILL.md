@@ -37,6 +37,7 @@ Hard gates:
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
 - Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves).
+- If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child.
 - Never skip a phase. Never run two phases in one reply.
 
 Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise stop and give the ticket URLs for a fresh `/implement` session.
@@ -82,12 +83,15 @@ Re-run the `/triage` check. Then detect the chosen house's phase. Say **`Next: /
 | grill | open `wayfinder:grilling` siblings | `/grill-me` | user confirms the live batch is locked |
 | spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |
 | tickets | spec approved, no implement tickets | `/to-tickets` | user approves the breakdown |
-| build | frontier `ready-for-agent` implement tickets | `/implement` | — |
+| build | one unblocked implement ticket | `/implement` (this session) | — |
+| build | **two or more** unblocked implement tickets | `/implement` **wave** — draft exclusives if missing, spawn one child per extra ticket, then this session writes the conductor ticket | — |
 | fog | map still has research / prototype / task | `/wayfinder` (work the map) | — |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
 If they ask to implement, code, or "just build it" while the phase is grill or spec: **stop**. Name the missing skill. Do not write product code.
+
+When the user names one ticket in a wave (e.g. T5), start there as the **conductor's** ticket. Still spawn the rest of the unblocked wave. Shared files stay on this session.
 
 ## Load a skill
 

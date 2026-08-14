@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Build work from a spec or tickets"
+  short_description: "Count first: one ticket here, or a wave with spawned children"
 policy:
   allow_implicit_invocation: false
