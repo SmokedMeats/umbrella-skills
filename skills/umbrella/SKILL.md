@@ -14,12 +14,14 @@ Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimpleme
 ## Order
 
 ```
-/triage  →  /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
+inbound /triage  →  /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
 ```
+
+A **loose idea** or a house with no map starts at **`/wayfinder`**. That is how you figure out the destination. `/triage` is only for inbound issues you did not just create.
 
 Hard gates:
 
-- **Every run** — including each return to this skill — check unlabeled + `needs-triage`. If any exist, **`/triage` first**. Do not skip this check because you already triaged earlier in the session.
+- **Every run** — including each return here — check **inbound** unlabeled + `needs-triage`. Skip anything that already has `wayfinder:*`, or that `/to-tickets` published (`What to build`). If inbound hits remain, **`/triage` those**. Do not skip the check because you already ran it earlier.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
 - Open grilling siblings → `/grill-me`.
 - A locked grill is **not** a build. Next is `/to-spec`.
@@ -39,15 +41,15 @@ Nothing → list open issues: unlabeled, `needs-triage`, plus anything already c
 
 Completion: you have the pile and current labels.
 
-## 2. `/triage` check — every time
+## 2. Inbound `/triage` check — every time
 
-Query unlabeled and `needs-triage` **now**. Not once per session: do this at the start of `/umbrella` and again each time you return here after a phase.
+Query unlabeled and `needs-triage` **now**. Drop `wayfinder:*` issues and `/to-tickets` children — those are ours; they get labels at create, not a second `/triage`.
 
-Any hits → read `/triage` and run it on those first. `/triage` already recommends category, state, every fitting `domain:*`, and a creatable `umbrella:*`. Wait for the maintainer before applying.
+Any **inbound** hits left → read `/triage` and run it on those. Wait for the maintainer before applying.
 
-Tickets `/to-tickets` already published are agent-ready — do not re-triage them.
+If the only work is a loose idea or a house with no map, the check is clean: say so in one line and go to `/wayfinder`.
 
-Completion: the check ran; if the inbox was dirty, those items now have category + state + domains, and a house label when they belong to a pack. If the inbox was clean, say so in one line and continue.
+Completion: the inbound check ran. Either the inbound pile is labeled, or you said it was clean.
 
 ## 3. Name the houses
 
@@ -65,7 +67,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. Say **`Next: /
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
-| triage | unlabeled or `needs-triage` exists | `/triage` | maintainer confirms labels |
+| triage | inbound unlabeled or `needs-triage` (not `wayfinder:*`, not implement tickets) | `/triage` | maintainer confirms labels |
 | chart | no `wayfinder:map` | `/wayfinder` (chart) | — |
 | grill | open `wayfinder:grilling` siblings | `/grill-me` | user confirms the live batch is locked |
 | spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |
