@@ -31,6 +31,7 @@ A **loose idea** or a house with no map still goes to **`/wayfinder`** after the
 
 Hard gates:
 
+- **Every run** — start with the **prerequisite**. If Matt's pack or the repo mapping is missing, install / run setup **before** the `/triage` catch.
 - **Every run** — including each return here — run the **`/triage` catch**. Query unlabeled + `needs-triage`. Skip `wayfinder:*` and `/to-tickets` children (`What to build`). If inbound hits remain, **read `/triage` and run it**. Do not skip the catch because you already ran it earlier. Do not invent labels here.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
 - Open grilling siblings → `/grill-me`.
@@ -42,9 +43,30 @@ Hard gates:
 
 Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise stop and give the ticket URLs for a fresh `/implement` session.
 
+## 0. Prerequisite
+
+Two probes. Both must pass before Gather.
+
+**Matt's pack.** In the same parent directory as this file, look for `setup-matt-pocock-skills/SKILL.md`. This overlay does not ship that skill. Missing → Matt's pack is not installed here.
+
+Install Matt, then re-apply **this** overlay (Matt first, or Matt overwrites the overlay):
+
+```bash
+npx skills@latest add mattpocock/skills
+npx skills@latest add SmokedMeats/umbrella-skills
+```
+
+If this file lives under `$HOME/.grok/skills`, copy both packs into that same parent after `npx` so this session still reads these files.
+
+**Repo mapping.** In the current repo, look for `docs/agents/issue-tracker.md`. Missing → read `/setup-matt-pocock-skills` and follow it until that skill says it is done. Then return here. Do not invent tracker files.
+
+If both probes already pass, say so in one line.
+
+Completion: `setup-matt-pocock-skills/SKILL.md` exists next to this skill, and `docs/agents/issue-tracker.md` exists in the repo (or setup is waiting on the user).
+
 ## 1. Gather
 
-Read `docs/agents/triage-labels.md` and `docs/agents/issue-tracker.md` (run `/setup-matt-pocock-skills` if missing).
+Read `docs/agents/triage-labels.md` and `docs/agents/issue-tracker.md`.
 
 Inputs: numbered issues, an `umbrella:*` slug, a `wayfinder:map`, or nothing.
 
@@ -95,7 +117,7 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 
 ## Load a skill
 
-Read `SKILL.md` from the same parent skills directory as this file (`triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`). Follow it until *that* skill says it is done. Then return here and name the next phase.
+Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`). Follow it until *that* skill says it is done. Then return here and name the next phase.
 
 ## Done
 

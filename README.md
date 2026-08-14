@@ -34,6 +34,8 @@ On a cluster of related grilling tickets, three things failed:
 
 ## Install
 
+Preferred order (you can skip this if you go straight to `/umbrella` — it runs the same check):
+
 1. Install [mattpocock/skills](https://github.com/mattpocock/skills). Then run `/setup-matt-pocock-skills` once in each repo.
 2. Add this overlay. It overwrites the skills in the table below and adds `/umbrella`:
 
@@ -49,6 +51,8 @@ Copy-Item -Recurse .\umbrella-skills\skills\* $HOME\.grok\skills\
 ```
 
 3. In **your** repo, keep `docs/agents/triage-labels.md`. That file lists **your** label names. This pack does not ship product words.
+
+`/umbrella` probes both of those on every run. If `setup-matt-pocock-skills` is missing next to it, it installs Matt's pack and then re-applies this overlay (Matt first, or Matt overwrites the overlay). If `docs/agents/issue-tracker.md` is missing, it runs `/setup-matt-pocock-skills` and waits — it does not invent tracker files.
 
 ## Two labels: domain and umbrella
 
@@ -80,6 +84,7 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 
 | When | Skill | This pack? |
 | --- | --- | --- |
+| Matt's pack or repo mapping missing | `/umbrella` prerequisite (install Matt, then setup) | **new** |
 | Once per repo | `/setup-matt-pocock-skills` | no — Matt |
 | Inbox is dirty | `/triage` | **overlay** |
 | Which house / which phase | **`/umbrella`** | **new** |
@@ -106,7 +111,7 @@ Three jobs. Do not merge them.
 ### Order (do not skip)
 
 ```
-every /umbrella run       →  /triage catch (then /triage if inbound is dirty)
+every /umbrella run       →  prerequisite (Matt pack + repo mapping), then /triage catch
 loose idea / no map       →  /wayfinder
 open grilling siblings    →  /grill-me
 locked grill              →  /to-spec
@@ -123,7 +128,7 @@ A locked grill is not a build. Keep the `/triage` catch every time.
 
 | Skill | Change |
 | --- | --- |
-| `umbrella` | New conductor. Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. |
+| `umbrella` | New conductor. Every run: if Matt's pack or the repo mapping is missing, install / run setup first. Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. |
 | `grilling` | Sibling batch + `Now on` line. After lock: next is `/to-spec`, not implement. |
 | `grill-me` | Load the map's grilling siblings. Advance without asking "next grill?" |
 | `wayfinder` | Umbrella-grill exception to one-ticket-per-session. |
