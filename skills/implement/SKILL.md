@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Build work from a spec or tickets. Count unblocked tickets first: one ticket in this session; two or more is a wave — spawn children, then this session writes the conductor ticket."
+description: "Build work from a spec or tickets. Count the frontier: one ticket here; two or more spawn children. After each close, recount and crawl newly unblocked tickets."
 disable-model-invocation: true
 ---
 
@@ -18,20 +18,32 @@ Commit your work to the current branch.
 
 ## Count first
 
-Count open implement tickets whose blockers are all done.
+Count open implement tickets whose blockers are all done and that are not already in-flight.
 
 | Count | This session |
 | --- | --- |
 | **1** | Build that ticket here. |
 | **2+** | This session is the **conductor**. Draft exclusives, spawn one child per extra ticket, then write only the conductor ticket. |
 
-A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive. The rest of the wave still gets children.
+A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive **for that wave**. The rest of that wave still gets children.
 
 Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the leftover tickets. That split is the draft.
 
 Product-code edits start after every extra ticket has a **live child**.
 
 Write one-by-one only when the posted exclusive table leaves every extra ticket with an empty exclusive list. Say that in one line.
+
+## Crawl
+
+The house is a tree, not one wave. After each ticket **closes**, recount.
+
+- Unblocked and not in-flight → join the live wave. Draft exclusives if missing. Spawn a child for each extra (and for every new ticket if the conductor is already writing one).
+- Open blocker remains → **hold**. Name the blocker.
+- Exclusive glob still owned by an in-flight child → hold until that commit.
+
+Example: T1 closes and unlocks T2/T3/T4; T3 later closes and unlocks T5/T6. Spawn T5 and T6 as soon as T3 is closed, even if T2 and T4 are still running.
+
+This session stays conductor across waves. Completion: no unblocked implement tickets remain, or the user stops, or the window is full (then hand the next frontier URLs).
 
 ## Parallel wave
 
@@ -47,6 +59,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
 6. **Review.** `/code-review` on the wave commits. Close tickets only when their acceptance criteria hold.
+7. **Recount.** Return to **Count first** for this house. Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)
 

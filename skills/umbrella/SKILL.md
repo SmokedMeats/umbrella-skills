@@ -37,7 +37,7 @@ Hard gates:
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
 - Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves).
-- If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child.
+- If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Never skip a phase. Never run two phases in one reply.
 
 Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise stop and give the ticket URLs for a fresh `/implement` session.
@@ -84,7 +84,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. Say **`Next: /
 | spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |
 | tickets | spec approved, no implement tickets | `/to-tickets` | user approves the breakdown |
 | build | one unblocked implement ticket | `/implement` (this session) | — |
-| build | **two or more** unblocked implement tickets | `/implement` **wave** — draft exclusives if missing, spawn one child per extra ticket, then this session writes the conductor ticket | — |
+| build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | fog | map still has research / prototype / task | `/wayfinder` (work the map) | — |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.

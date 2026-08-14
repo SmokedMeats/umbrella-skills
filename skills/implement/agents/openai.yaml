@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Count first: one ticket here, or a wave with spawned children"
+  short_description: "Count the frontier, spawn extras, crawl later waves as they unlock"
 policy:
   allow_implicit_invocation: false
