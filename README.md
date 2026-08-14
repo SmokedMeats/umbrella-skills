@@ -61,18 +61,19 @@ Copy-Item -Recurse .\umbrella-skills\skills\* $HOME\.grok\skills\
 | Label | What it means | How many on one issue |
 | --- | --- | --- |
 | `domain:…` | The **area** of the product | One or more |
-| `umbrella:…` | The **named pack** of related issues | Zero or one |
+| `umbrella:…` | The **live** named pack | Zero or one |
+| `parked:…` | Same slug, **not live** — Later / Leftover | Zero or one; never with `umbrella:…` |
 
 **Example.** Many tickets sit in billing. Only some of them are the refunds pack.
 
-| Issue | `domain:` | `umbrella:` |
+| Issue | `domain:` | Live / parked |
 | --- | --- | --- |
 | Invoice PDF is blank | `billing` | none — one-off bug |
-| Refunds: restock window | `billing` | `refunds` |
-| Refunds: partial capture | `billing` | `refunds` |
-| Dunning: day-3 email | `billing` | `dunning` |
+| Refunds: restock window | `billing` | `umbrella:refunds` |
+| Later: refunds web board | `billing` | `parked:refunds` — not live |
+| Dunning: day-3 email | `billing` | `umbrella:dunning` |
 
-`domain:billing` is the neighborhood. `umbrella:refunds` is the house `/grill-me` loads. Do not treat every billing ticket as one pack.
+`domain:billing` is the neighborhood. `umbrella:refunds` is the **live** house `/grill-me` loads. `parked:refunds` is the same pack, shelved — listed under the house, never pulled, never assigned, never a second picker row.
 
 If the pack is real and the `umbrella:…` label does not exist yet, create the label. Then apply it. That only creates a tracker label. It does **not** create a wayfinder map. The map is a separate issue with the `wayfinder:map` label.
 
@@ -104,9 +105,9 @@ Three jobs. Do not merge them.
 
 | Who | Job |
 | --- | --- |
-| **`/triage`** | Labels **inbound** issues that already exist (category, state, every fitting `domain:…`, and a creatable `umbrella:…`). |
+| **`/triage`** | Labels **inbound** (category, state, every fitting `domain:…`). **Names the house:** a `wayfinder:map`, or two or more like issues in the same pack, get a creatable `umbrella:…`. Same `domain:…` is not a pack. |
 | **`/wayfinder`** (and `/to-tickets`) | Labels **on create** when this session files a map or a child. No `needs-triage`. Does not call `/triage`. |
-| **`/umbrella`** | **Catch.** Every run, if inbound unlabeled / `needs-triage` issues remain, **run `/triage`**. Does not stamp those labels itself. |
+| **`/umbrella`** | **Catch.** Every run, feed unlabeled, `needs-triage`, **and unhoused maps/children** to **`/triage`**. Does not invent `umbrella:…` itself. |
 
 ### Order (do not skip)
 
@@ -128,14 +129,14 @@ A locked grill is not a build. Keep the `/triage` catch every time.
 
 | Skill | Change |
 | --- | --- |
-| `umbrella` | New conductor. Every run: if Matt's pack or the repo mapping is missing, install / run setup first. Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. |
-| `grilling` | Sibling batch + `Now on` line. After lock: next is `/to-spec`, not implement. |
+| `umbrella` | New conductor. Every run: if Matt's pack or the repo mapping is missing, install / run setup first. Catch includes unhoused maps/children (no `umbrella:*`) and hands them to `/triage`. After any create, `Later:` / `Leftover:` tickets must carry **When to do this** ([PARKED-TICKETS.md](skills/umbrella/PARKED-TICKETS.md)). Pulling a ticket assigns `@me` on GitHub first. Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. |
+| `grilling` | Sibling batch + `Now on` line. After lock: next is `/to-spec`, not implement. A “not this pack” branch files `Later:` with **When to do this**. |
 | `grill-me` | Load the map's grilling siblings. Advance without asking "next grill?" |
-| `wayfinder` | Umbrella-grill exception to one-ticket-per-session. |
-| `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. |
-| `to-tickets` | Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. |
-| `implement` | Count first. Spawn extras, then **crawl**. Before product code, backfill parent + map + house labels if create missed them. On close: drop `ready-for-agent`, append the map. |
-| `triage` | Apply every fitting `domain:…` and a creatable `umbrella:…`, not only category + state. |
+| `wayfinder` | Umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**; forever-out stays map Out of scope. |
+| `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. |
+| `to-tickets` | Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. |
+| `implement` | Count first. Spawn extras, then **crawl**. Before product code, backfill parent + map + house labels if create missed them. On close: drop `ready-for-agent`, append the map. `/code-review` leftovers file `Leftover:` with **When to do this**. |
+| `triage` | Apply every fitting `domain:…`. Create `umbrella:…` for a map or for two or more like issues in the same pack. House-name pass does not flip state. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.
 

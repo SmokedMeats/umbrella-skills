@@ -18,7 +18,7 @@ Commit your work to the current branch.
 
 ## Count first
 
-Count open implement tickets whose blockers are all done and that are not already in-flight.
+Count open implement tickets whose blockers are all done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
 | Count | This session |
 | --- | --- |
@@ -46,9 +46,13 @@ On each wave ticket (and the spec, if it is missing this too):
 2. Apply the house `domain:*` and `umbrella:*` with `--add-label`. Create `umbrella:*` if the pack is real and the label is missing.
 3. Link the ticket as a **child of the map** (tracker sub-issue). If the tracker has no sub-issues, put `Part of #<map>` at the top of the body.
 
-Completion: every wave ticket names spec + map, wears the house labels, and is a child of the map.
+4. **Claim** — `gh issue edit <n> --add-assignee "@me"` on every ticket this session will write (quote `"@me"` on PowerShell). Same for a one-ticket build. A comment is not a claim.
+
+Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, and is assigned to `@me`.
 
 On close: remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open.
+
+After `/code-review`, do **not** reopen the closed ticket to flip leftover checkboxes. File `Leftover: …` as a child of the same map: `parked:<slug>` + `domain:*`, **no** `umbrella:<slug>`, **no** `ready-for-agent`, **no** assignee. Body **When to do this** per `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) — which review parked it, what this PR **did** ship, why the leftover was not in that ship, and the unpark gate (next real edit, or a fourth token, or a real bug). Judgement “do next time” is a `Leftover:`, not a silent comment.
 
 ## Crawl
 
@@ -71,7 +75,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 ### Conductor steps
 
 1. **Draft.** Load exclusive globs and frozen shared from the ticket bodies or the parent spec's conductor comment. If those lists are missing, draft them and post them. Wait for a one-line confirm **only** when two tickets still claim the same path after the draft.
-2. **House.** Wire parent + map on every wave ticket (see **House**). Then **claim** — assign each wave ticket (or comment "in progress") so a second terminal does not grab it.
+2. **House.** Wire parent + map on every wave ticket (see **House**). Then **claim** — `gh issue edit <n> --add-assignee "@me"` on each wave ticket (quote `"@me"` on PowerShell) so a second terminal does not grab it. Do not use a comment instead.
 3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: every extra ticket has a live child. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.

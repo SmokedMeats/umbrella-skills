@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `grill-me`.
 
-Load the umbrella (parent `wayfinder:map`, or the map they named). Collect sibling `wayfinder:grilling` tickets. Show the batch once, by name. Then run `/grilling` — that skill owns the rounds, the **Now on** line, recording, and advancing.
+Load the umbrella (parent `wayfinder:map`, or the map they named). Collect sibling `wayfinder:grilling` tickets that wear **`umbrella:<slug>`**. Skip `parked:<slug>` and `Later:` / `Leftover:` titles. **Claim the live batch first** — `gh issue edit <n> --add-assignee "@me"` on those live siblings only (quote `"@me"` on PowerShell). Show the batch once, by name. Then run `/grilling` — that skill owns the rounds, the **Now on** line, recording, and advancing.
 
 You pick the next ticket. The user never has to remember which issue is open or say "next grill."
 

@@ -8,7 +8,7 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `to-spec`.
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
 
-If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfinder tickets), the spec is the **whole batch**: every grilling sibling that locked in this session plus already-closed siblings on that map. Name them in Further Notes. Do not spec only the last ticket you talked about. Parked / later tickets stay out of scope unless the user pulled them in.
+If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfinder tickets), the spec is the **whole batch**: every grilling sibling that locked in this session plus already-closed siblings on that map. Name them in Further Notes. Do not spec only the last ticket you talked about. Parked / later tickets stay out of this spec unless the user pulled them in. After publish, every `Later:` that belongs to that park must already exist as a map child with **When to do this** ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). If **Out of Scope** is actually later work and there is no ticket, file `Later:` now — do not leave it as a spec-only bullet.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 

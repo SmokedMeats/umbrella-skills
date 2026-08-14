@@ -11,30 +11,42 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. On
 
 Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase.
 
+After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase.
+
+## Claim (first write)
+
+When this session **pulls** a ticket — house picked, grill starts, fog ticket chosen, implement wave starts — **assign it on GitHub to the driving user** before any other write. That assignee *is* the claim. Do not leave it unassigned. Do not substitute a comment for the assignee.
+
+```text
+gh issue edit <n> --add-assignee "@me"
+```
+
+Quote `"@me"` on PowerShell. Assign every **live** ticket this session will work (`umbrella:<slug>` grilling siblings or implement wave). Tickets that wear `parked:<slug>` stay unassigned. Unpark first ([PARKED-TICKETS.md](PARKED-TICKETS.md)) if the user asked to pull one.
+
 ## Order
 
 ```
 /umbrella  →  /triage (inbox catch)  →  /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
 ```
 
-Keep the **`/triage` pass**. `/umbrella` does not label inbound issues itself. It **catches** them and **runs `/triage`**.
+Keep the **`/triage` pass**. `/umbrella` does not invent house names. It **catches** the inbox and **runs `/triage`**. `/triage` names the house.
 
 Three different jobs — do not collapse them:
 
 | Who | What | When |
 | --- | --- | --- |
-| **`/triage`** | Labels **inbound** (category, state, every `domain:*`, creatable `umbrella:*`) | An issue already exists and is unlabeled or `needs-triage` |
+| **`/triage`** | Labels **inbound** (category, state, every `domain:*`, creatable `umbrella:*`). House-name pass: a `wayfinder:map`, or **two or more like issues** in the same pack, get an `umbrella:<slug>` | Unlabeled, `needs-triage`, or already-labeled but **unhoused** (no `umbrella:*`) |
 | **`/wayfinder`** (and `/to-tickets`) | Labels **on create** (`wayfinder:*` or `ready-for-agent`, plus the house `domain:*` / `umbrella:*`) | This session is filing the map or a child. No `needs-triage`. Do not invoke `/triage` |
-| **`/umbrella`** | **Catch.** Every run, if inbound unlabeled / `needs-triage` remains, load **`/triage`** and let it label | Router. Does not stamp labels itself |
+| **`/umbrella`** | **Catch.** Every run, feed the inbox to **`/triage`** and let it label | Router. Does not stamp `umbrella:*` itself |
 
 A **loose idea** or a house with no map still goes to **`/wayfinder`** after the inbox catch. That is how you figure out the destination.
 
 Hard gates:
 
 - **Every run** — start with the **prerequisite**. If Matt's pack or the repo mapping is missing, install / run setup **before** the `/triage` catch.
-- **Every run** — including each return here — run the **`/triage` catch**. Query unlabeled + `needs-triage`. Skip `wayfinder:*` and `/to-tickets` children (`What to build`). If inbound hits remain, **read `/triage` and run it**. Do not skip the catch because you already ran it earlier. Do not invent labels here.
+- **Every run** — including each return here — run the **`/triage` catch**. Query unlabeled + `needs-triage` + **unhoused maps and their children** (`wayfinder:map` / children with no `umbrella:*`). Skip housed `wayfinder:*` and `/to-tickets` children that already wear `umbrella:*`. If hits remain, **read `/triage` and run it** (house-name pass for unhoused maps). Do not skip the catch because you already ran it earlier. Do not invent `umbrella:*` here.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
-- Open grilling siblings → `/grill-me`.
+- Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
 - Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves).
@@ -76,38 +88,47 @@ Completion: you have the pile and current labels.
 
 ## 2. `/triage` catch — every time
 
-This is `/umbrella`’s inbox pass. Query unlabeled and `needs-triage` **now**. Drop `wayfinder:*` and `/to-tickets` children — `/wayfinder` already labeled those on create.
+This is `/umbrella`’s inbox pass. Query **now**:
 
-Any **inbound** hits left → **run `/triage`** (read its SKILL.md). `/triage` owns the labels. Wait for the maintainer before it applies.
+1. Unlabeled.
+2. `needs-triage`.
+3. Open `wayfinder:map` with **no** `umbrella:*`.
+4. Open **live** children of those maps (sub-issue, `Part of #<map>`, or `wayfinder:grilling` / `research` / `prototype` / `task` that names the map) with **no** `umbrella:*` and **no** `parked:*`.
+5. Open live children of an **already-housed** map that are themselves missing `umbrella:*` (skip `Later:` / `Leftover:` / `parked:*`).
+
+Do **not** drop `wayfinder:*` just because the type label exists. Drop a wayfinder issue or a `/to-tickets` child when it **already** has `umbrella:*` **or** `parked:*`. One-off `domain:qa` and parked tickets are not catch hits. Two `parked:*` issues do not create a live umbrella.
+
+Any hits left → **run `/triage`** (read its SKILL.md). For buckets 3–5 that is the **house-name pass** — `/triage` creates/applies `umbrella:<slug>` only; it does not flip category or state on already-labeled wayfinder issues. `/triage` owns the names. Wait for the maintainer only when `/triage` says the cluster is ambiguous.
 
 If the catch is clean, say so in one line. A loose idea or a house with no map then goes to `/wayfinder`.
 
-Completion: the catch ran. Either `/triage` finished the inbound pile, or you said the inbox was clean.
+Completion: the catch ran. Either `/triage` finished the inbound pile (including house names), or you said the inbox was clean.
 
 ## 3. Name the houses
 
-Group by `umbrella:*`. Domain is the neighborhood, not the house — do not treat a coarse `domain:*` as one umbrella.
+Group **live** work by `umbrella:*`. Group parked work by `parked:<same-slug>` and show it **under that house**, not as its own house. Domain is the neighborhood, not the house.
 
-Unhoused issues that share a named pack → propose a new `umbrella:<slug>` (create the label if they pick it). One-off bugs stay domain-only.
+Do not propose slugs in this list. If a **live** pack is still unhoused, the catch in §2 is not done — go back to `/triage`. One-off bugs stay domain-only. `parked:*` never becomes a picker row of its own.
 
-For each house show: slug, domains, issue names (not bare numbers), whether a `wayfinder:map` exists, **current phase**, **next skill**.
+For each house show: slug, domains, live issue names, parked issue names (if any), whether a `wayfinder:map` exists, **current phase** (from **live** tickets only), **next skill**. If the only open children are `parked:*`, phase is **parked** — do not load `/grill-me` or `/implement`.
 
-Completion: a numbered list. Wait for which house to work. One house per session.
+Completion: a numbered list. Wait for which house to work. One house per session. Picking a house does **not** pull its parked tickets.
 
 ## 4. Phase loop
 
-Re-run the `/triage` check. Then detect the chosen house's phase. Say **`Next: /<skill>`**. Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
+Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
-| triage | inbound unlabeled or `needs-triage` (not `wayfinder:*`, not implement tickets) | `/triage` | maintainer confirms labels |
+| triage | inbound unlabeled, `needs-triage`, or unhoused map/children (no `umbrella:*`) | `/triage` | maintainer confirms only when `/triage` flags an ambiguous cluster |
 | chart | no `wayfinder:map` | `/wayfinder` (chart) | — |
-| grill | open `wayfinder:grilling` siblings | `/grill-me` | user confirms the live batch is locked |
+| parked | open children are only `parked:<slug>` / `Later:` / `Leftover:` | stay — do not pull | user explicitly unparks (see [PARKED-TICKETS.md](PARKED-TICKETS.md)) |
+| grill | open **live** `wayfinder:grilling` siblings (have `umbrella:*`, not `parked:*`) | `/grill-me` | user confirms the live batch is locked |
 | spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |
 | tickets | spec approved, no implement tickets | `/to-tickets` | user approves the breakdown |
 | build | one unblocked implement ticket | `/implement` (this session) | — |
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
-| fog | map still has research / prototype / task | `/wayfinder` (work the map) | — |
+| fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
@@ -117,7 +138,11 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 
 ## Load a skill
 
-Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`). Follow it until *that* skill says it is done. Then return here and name the next phase.
+Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`). Follow it until *that* skill says it is done.
+
+Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, and has **When to do this**. If any of that is wrong, fix the issue now.
+
+Then return here and name the next phase.
 
 ## Done
 

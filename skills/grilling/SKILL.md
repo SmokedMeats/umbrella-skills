@@ -25,7 +25,7 @@ The session is done when the frontier is empty: every branch of the design tree 
 
 ## Umbrella — seamless
 
-If this grill is a wayfinder **ticket**, a **map**, or a named concept on a map, load the parent `wayfinder:map` and every sibling `wayfinder:grilling` ticket **before the first question**. Closed siblings are settled context. Open siblings are the live batch. Parked / later stay out.
+If this grill is a wayfinder **ticket**, a **map**, or a named concept on a map, load the parent `wayfinder:map` and every sibling `wayfinder:grilling` ticket that wears **`umbrella:<slug>`** **before the first question**. Closed siblings are settled context. Open live siblings are the live batch. `parked:<slug>` / `Later:` / `Leftover:` stay out — do not assign them, do not ask them.
 
 This is **one conversation**. The user answers questions. You own which ticket those answers belong to.
 
@@ -38,5 +38,7 @@ Every round starts with one orientation line, then the questions:
 Prefer questions for the **now-on** ticket until its frontier is empty, then move **now on** to the next live sibling and ask that round in the same message. The user never picks the next ticket and is never asked whether to continue.
 
 When the now-on ticket's branches are empty: record the resolution, close it, update the map's Decisions-so-far, then immediately ask the next ticket's frontier. No "ready for the next grill?" beat.
+
+When a branch is **not this pack** (v1 shipped without it, still wanted): file `Later: …` on the map **before** you close the grill. Label `parked:<slug>` — **not** live `umbrella:<slug>`. No `ready-for-agent`. Do not assign. Body **When to do this** per `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) — name the grill that locked v1, what that v1 shipped, why this branch was not in it, and the unpark gate. Do not leave “we’ll do avatars later” as a comment on the closed grill.
 
 The session ends only when the **whole live batch** is empty and the user confirms. Then say: the umbrella is locked; **next is `/to-spec`**. Do not implement. Do not start `/to-tickets` or `/implement`. Do not run `/to-spec` until they ask — unless `/umbrella` is driving this session, in which case continue into `/to-spec` after that confirm.

@@ -40,7 +40,18 @@ Five **state** roles:
 
 For a PR, the same states read against the attached code: `ready-for-agent` means a brief is attached and an agent should take the next step on the diff; `ready-for-human` means it's ready for a human to merge.
 
-Every triaged issue should carry exactly one category role and one state role. **Domain labels are extra and not limited to one** — they are the neighborhood. Apply every `domain:*` that fits. A named pack inside those domains gets its own `umbrella:<slug>` (the house). Many issues share a coarse domain; only some share an umbrella. Create `umbrella:<slug>` if the pack is real and the label does not exist yet. Do not treat the coarse domain as the pack, and do not invent an umbrella for a one-off. If state roles conflict, flag it and ask the maintainer before doing anything else.
+Every triaged issue should carry exactly one category role and one state role. **Domain labels are extra and not limited to one** — they are the neighborhood. Apply every `domain:*` that fits. A named pack inside those domains gets its own `umbrella:<slug>` (the house). Many issues share a coarse domain; only some share an umbrella.
+
+**When to create a house** (like types, not like domains):
+
+| Count | Do |
+| --- | --- |
+| A `wayfinder:map` (the pack index) | Always create/apply `umbrella:<slug>` on the map **and** every **live** child. Skip `Later:` / `Leftover:` / `parked:*` |
+| **Two or more live** issues of the **same pack** (same map, or the same product slice). Ignore `parked:*` | Create/apply one `umbrella:<slug>` to those live issues only |
+| One issue, no map, no existing house | Domain only — do not invent an umbrella |
+| Same `domain:*` only | Not a pack. Elevation and compare can share `domain:performance` and still be two houses |
+
+Reuse an existing `umbrella:*` rather than creating a near-duplicate. Creating the label is not creating a map. If state roles conflict, flag it and ask the maintainer before doing anything else.
 
 These are canonical role names — the actual label strings used in the issue tracker may differ. The mapping should have been provided to you — run `/setup-matt-pocock-skills` if not. **Domain and umbrella rules live in that same mapping file** (`docs/agents/triage-labels.md` after `/setup-matt-pocock-skills`). Read it before recommending labels. Coarse `domain:*` is one or more; `umbrella:*` is the creatable house.
 
@@ -57,11 +68,12 @@ The maintainer invokes `/triage` and describes what they want in natural languag
 
 ## Show what needs attention
 
-Query the issue tracker and present three buckets, oldest first:
+Query the issue tracker and present four buckets, oldest first:
 
 1. **Unlabeled** — never triaged.
 2. **`needs-triage`** — evaluation in progress.
 3. **`needs-info` with reporter activity since the last triage notes** — needs re-evaluation.
+4. **Unhoused pack** — live `wayfinder:map` or its live children with no `umbrella:*`, or two or more **live** like issues with no house. Skip `parked:*` / `Later:` / `Leftover:`. Same `domain:*` alone does not put issues here.
 
 When PRs are in scope, include external PRs in these buckets and tag each line `[PR]` or `[issue]`. Discovery surfaces only *external* PRs (the tracker config defines who counts as external) — a collaborator's in-flight PR is not triage work. This filter is discovery-only; an explicitly named PR is always triaged regardless of author.
 
@@ -71,7 +83,7 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 
 1. **Gather context.** Read the full issue or PR (body, comments, labels, author, dates; for a PR, the diff too). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Run two checks against the codebase: (a) **redundancy** — search for an existing implementation of the requested behavior by domain concept (not just the request's wording), and report where you looked. If found, it's an already-implemented `wontfix` (step 5). (b) **prior rejection** — read `.out-of-scope/*.md` and surface any that resembles this request.
 
-2. **Recommend.** Tell the maintainer **category**, **state**, every fitting **domain**, and — if this is a named pack — an **`umbrella:<slug>`** (create the label if missing). Creating the umbrella label is not creating a map. Plus a brief codebase summary, including whether it's already implemented. If a `wayfinder:map` already owns that slug, name it and recommend `Part of #<map>`. Decision tickets also get one `wayfinder:<type>`. Wait for direction.
+2. **Recommend.** Tell the maintainer **category**, **state**, every fitting **domain**, and an **`umbrella:<slug>`** when the house-name table says so (create the label if missing). Creating the umbrella label is not creating a map. Plus a brief codebase summary, including whether it's already implemented. If a `wayfinder:map` already owns that slug, name it and recommend `Part of #<map>`. Decision tickets also get one `wayfinder:<type>`. Wait for direction on category/state and on **ambiguous** clusters (could be two houses). Do not wait to name a map or a clear 2+ pack.
 
 3. **Verify the claim.** Before any grilling, check that the claim holds up. For a bug, reproduce it from the reporter's steps. For a PR, confirm the diff does what it claims — check it out, run the relevant tests or commands. Report what happened: confirmed (with code path), failed, or insufficient detail (a strong `needs-info` signal). A confirmed verification makes a much stronger agent brief.
 
@@ -87,6 +99,20 @@ Show counts and a one-line summary per item. Let the maintainer pick.
      - **Rejected (bug)** — polite explanation, then close.
      - **Rejected (enhancement)** — write to `.out-of-scope/`, link to it from a comment, then close ([OUT-OF-SCOPE.md](OUT-OF-SCOPE.md)).
    - `needs-triage` — apply the role. Optional comment if there's partial progress.
+
+## House-name pass (from `/umbrella`)
+
+`/umbrella` may hand over already-labeled maps and children that have no `umbrella:*`. This is not a full inbound triage.
+
+1. Group by map (`Part of #<map>`, sub-issue, or title that names the map). Issues with no map group by the same product pack — not by `domain:*`.
+2. Each `wayfinder:map` → kebab slug from the pack name (`Ghost racing engine` → `ghost-racing`). Create `umbrella:<slug>` if missing. Apply it to the map and every **live** child. `Later:` / `Leftover:` get `parked:<slug>` instead — never live `umbrella:*`.
+3. Two or more **live** like issues, no map, no existing house → same: create and apply `umbrella:<slug>`. Two parked tickets do not create a live house.
+4. One issue, no map, no existing house → leave domain-only.
+5. Do **not** add `needs-triage`. Do **not** change category or state. Do **not** post a brief.
+
+Completion: every map and every 2+ pack in the handoff wears `umbrella:*`. Ambiguous leftovers are listed for the maintainer — not stamped.
+
+Then return to `/umbrella` so it can name houses from **applied** labels.
 
 ## Quick state override
 
