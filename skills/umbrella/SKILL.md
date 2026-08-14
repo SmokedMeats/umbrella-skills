@@ -19,6 +19,8 @@ Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimpleme
 
 Hard gates:
 
+- No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
+- Open grilling siblings → `/grill-me`.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
 - Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves).
