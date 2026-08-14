@@ -58,22 +58,26 @@ Unedited skills stay in Matt’s pack. Overlays in this repo are marked.
 | Tickets approved | **`/implement`** → `/tdd` → `/code-review` | implement **overlay**; tdd + code-review **Matt** |
 | “Which skill do I type?” | `/ask-matt` | no — Matt |
 
-Hard gates (this is the point of `/umbrella`):
+Three different jobs — do not collapse them:
+
+| Who | Job |
+| --- | --- |
+| **`/triage`** | Labels **inbound** issues that already exist (category, state, `domain:*`, creatable `umbrella:*`). |
+| **`/wayfinder`** (and `/to-tickets`) | Labels **on create** when this session files a map or child. No `needs-triage`. Does not call `/triage`. |
+| **`/umbrella`** | **Catch.** Every run, if inbound unlabeled / `needs-triage` remains, **run `/triage`**. Does not stamp those labels itself. |
+
+Hard gates:
 
 ```
-every /umbrella run       →  inbound /triage check only
-                              (skip wayfinder:* and to-tickets children)
-inbound unlabeled         →  /triage
-loose idea / no map       →  /wayfinder   (this is how you figure out the work)
+every /umbrella run       →  /triage catch (then /triage if inbound is dirty)
+loose idea / no map       →  /wayfinder
 open grilling siblings    →  /grill-me
 locked grill              →  /to-spec
 approved spec             →  /to-tickets
-approved tickets          →  /implement   (the skill, not ad-hoc coding)
+approved tickets          →  /implement
 ```
 
-`/wayfinder` and `/to-tickets` **label on submit** (`domain:*`, `umbrella:*`, type/state). They do **not** run `/triage` on issues they just created. Full `/triage` is inbound only.
-
-Never skip. Run the inbound `/triage` check **every time**. A locked grill is not a build. Do not jump over `/wayfinder`.
+Never skip. Keep the `/triage` catch **every time**. A locked grill is not a build.
 
 `/grill-with-docs` is still Matt’s stateful interview when you are not on a wayfinder map. `/umbrella` does not replace it.
 

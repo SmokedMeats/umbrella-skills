@@ -14,14 +14,24 @@ Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimpleme
 ## Order
 
 ```
-inbound /triage  →  /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
+/umbrella  →  /triage (inbox catch)  →  /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
 ```
 
-A **loose idea** or a house with no map starts at **`/wayfinder`**. That is how you figure out the destination. `/triage` is only for inbound issues you did not just create.
+Keep the **`/triage` pass**. `/umbrella` does not label inbound issues itself. It **catches** them and **runs `/triage`**.
+
+Three different jobs — do not collapse them:
+
+| Who | What | When |
+| --- | --- | --- |
+| **`/triage`** | Labels **inbound** (category, state, every `domain:*`, creatable `umbrella:*`) | An issue already exists and is unlabeled or `needs-triage` |
+| **`/wayfinder`** (and `/to-tickets`) | Labels **on create** (`wayfinder:*` or `ready-for-agent`, plus the house `domain:*` / `umbrella:*`) | This session is filing the map or a child. No `needs-triage`. Do not invoke `/triage` |
+| **`/umbrella`** | **Catch.** Every run, if inbound unlabeled / `needs-triage` remains, load **`/triage`** and let it label | Router. Does not stamp labels itself |
+
+A **loose idea** or a house with no map still goes to **`/wayfinder`** after the inbox catch. That is how you figure out the destination.
 
 Hard gates:
 
-- **Every run** — including each return here — check **inbound** unlabeled + `needs-triage`. Skip anything that already has `wayfinder:*`, or that `/to-tickets` published (`What to build`). If inbound hits remain, **`/triage` those**. Do not skip the check because you already ran it earlier.
+- **Every run** — including each return here — run the **`/triage` catch**. Query unlabeled + `needs-triage`. Skip `wayfinder:*` and `/to-tickets` children (`What to build`). If inbound hits remain, **read `/triage` and run it**. Do not skip the catch because you already ran it earlier. Do not invent labels here.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
 - Open grilling siblings → `/grill-me`.
 - A locked grill is **not** a build. Next is `/to-spec`.
@@ -41,15 +51,15 @@ Nothing → list open issues: unlabeled, `needs-triage`, plus anything already c
 
 Completion: you have the pile and current labels.
 
-## 2. Inbound `/triage` check — every time
+## 2. `/triage` catch — every time
 
-Query unlabeled and `needs-triage` **now**. Drop `wayfinder:*` issues and `/to-tickets` children — those are ours; they get labels at create, not a second `/triage`.
+This is `/umbrella`’s inbox pass. Query unlabeled and `needs-triage` **now**. Drop `wayfinder:*` and `/to-tickets` children — `/wayfinder` already labeled those on create.
 
-Any **inbound** hits left → read `/triage` and run it on those. Wait for the maintainer before applying.
+Any **inbound** hits left → **run `/triage`** (read its SKILL.md). `/triage` owns the labels. Wait for the maintainer before it applies.
 
-If the only work is a loose idea or a house with no map, the check is clean: say so in one line and go to `/wayfinder`.
+If the catch is clean, say so in one line. A loose idea or a house with no map then goes to `/wayfinder`.
 
-Completion: the inbound check ran. Either the inbound pile is labeled, or you said it was clean.
+Completion: the catch ran. Either `/triage` finished the inbound pile, or you said the inbox was clean.
 
 ## 3. Name the houses
 
