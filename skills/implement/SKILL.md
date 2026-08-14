@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Build work from a spec or tickets. Count the frontier: one ticket here; two or more spawn children. After each close, recount and crawl newly unblocked tickets."
+description: "Build work from a spec or tickets. Count the frontier, house each ticket on its spec and map, spawn extras, crawl newly unblocked tickets."
 disable-model-invocation: true
 ---
 
@@ -33,6 +33,23 @@ Product-code edits start after every extra ticket has a **live child**.
 
 Write one-by-one only when the posted exclusive table leaves every extra ticket with an empty exclusive list. Say that in one line.
 
+## House
+
+Before product code, every ticket in this wave is on the house. `/to-tickets` should have done this. If it did not, **you** do it now.
+
+- **Map** — the `wayfinder:map` for this pack.
+- **Parent** — the spec `/to-spec` published. If there is no spec, the map is the parent.
+
+On each wave ticket (and the spec, if it is missing this too):
+
+1. Body `## Parent` names the spec **and** the map (title + link, not a bare number).
+2. Apply the house `domain:*` and `umbrella:*` with `--add-label`. Create `umbrella:*` if the pack is real and the label is missing.
+3. Link the ticket as a **child of the map** (tracker sub-issue). If the tracker has no sub-issues, put `Part of #<map>` at the top of the body.
+
+Completion: every wave ticket names spec + map, wears the house labels, and is a child of the map.
+
+On close: remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open.
+
 ## Crawl
 
 The house is a tree, not one wave. After each ticket **closes**, recount.
@@ -54,11 +71,11 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 ### Conductor steps
 
 1. **Draft.** Load exclusive globs and frozen shared from the ticket bodies or the parent spec's conductor comment. If those lists are missing, draft them and post them. Wait for a one-line confirm **only** when two tickets still claim the same path after the draft.
-2. **Claim.** Assign each wave ticket (or comment "in progress") so a second terminal does not grab it.
+2. **House.** Wire parent + map on every wave ticket (see **House**). Then **claim** — assign each wave ticket (or comment "in progress") so a second terminal does not grab it.
 3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: every extra ticket has a live child. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review.** `/code-review` on the wave commits. Close tickets only when their acceptance criteria hold.
+6. **Review.** `/code-review` on the wave commits. Close tickets only when their acceptance criteria hold. Remove `ready-for-agent` only. Append a named line to the map.
 7. **Recount.** Return to **Count first** for this house. Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)

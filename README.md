@@ -133,8 +133,8 @@ A locked grill is not a build. Keep the `/triage` catch every time.
 | `grill-me` | Load the map's grilling siblings. Advance without asking "next grill?" |
 | `wayfinder` | Umbrella-grill exception to one-ticket-per-session. |
 | `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. |
-| `to-tickets` | Waves + exclusive paths. `/implement` crawls later waves as blockers close. |
-| `implement` | Count first. Spawn extras, then **crawl**: after each close, recount and spawn newly unblocked tickets. Hold anything with an open blocker. |
+| `to-tickets` | Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. |
+| `implement` | Count first. Spawn extras, then **crawl**. Before product code, backfill parent + map + house labels if create missed them. On close: drop `ready-for-agent`, append the map. |
 | `triage` | Apply every fitting `domain:…` and a creatable `umbrella:…`, not only category + state. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.

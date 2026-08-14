@@ -65,7 +65,7 @@ Iterate until the user approves the breakdown.
 Publish the approved tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured — the tickets are the same either way, only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-ticket file template below — one ticket per file, never a single combined file.
-- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking / sub-issue relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. **Label on create** — this is not `/triage`. Apply `ready-for-agent` plus the parent house's `domain:*` and `umbrella:*`. Do **not** apply `needs-triage` and do **not** run `/triage` on tickets you just published. Inbound leftovers stay on `/umbrella`’s `/triage` catch.
+- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking / sub-issue relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. **Label on create** — this is not `/triage`. Apply `ready-for-agent` plus the parent house's `domain:*` and `umbrella:*` (create `umbrella:*` if the pack is real and the label is missing). Do **not** apply `needs-triage` and do **not** run `/triage` on tickets you just published. Inbound leftovers stay on `/umbrella`’s `/triage` catch. **Parent + map on create** — `## Parent` names the spec **and** the `wayfinder:map` (title + link). Link each ticket as a **child of the map** (sub-issue, or `Part of #<map>` at the top). The spec itself is a child of the map if it is not already. You may add house labels and child links on the map/spec; do not close them.
 
 Work the **frontier**: any ticket whose blockers are all done. For a purely linear chain that means top to bottom. For a parallel wave, write exclusive + frozen shared onto each ticket body and post one **conductor** comment on the parent spec listing the wave, exclusive globs, and frozen files. `/implement` reads that comment and **crawls** later waves as blockers close — it does not stop after the first wave.
 
@@ -98,7 +98,10 @@ Stop after publishing. **Next is `/implement`** — the skill, not ad-hoc coding
 
 ## Parent
 
-A reference to the parent issue on the tracker (if the source was an existing issue, otherwise omit this section).
+- Spec: [spec title](url)
+- Map: [map title](url)
+
+`Part of #<map>` at the top if the tracker has no sub-issues.
 
 ## What to build
 
