@@ -1,0 +1,5 @@
+interface:
+  display_name: "Umbrella"
+  short_description: "Triage, pick a house, then spec → tickets → implement in order"
+policy:
+  allow_implicit_invocation: false
