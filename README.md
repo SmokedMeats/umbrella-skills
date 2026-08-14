@@ -113,7 +113,7 @@ Many issues share `domain:billing`. Only some share `umbrella:refunds`. Do not t
 
 Inspired by, and built to sit on, [Matt Pocock’s skills](https://github.com/mattpocock/skills). Overlay files start from those skills. `/umbrella` is original to this repo.
 
-Field notes that led here: [mattpocock/skills#856](https://github.com/mattpocock/skills/issues/856).
+Field notes that led here: [mattpocock/skills#856](https://github.com/mattpocock/skills/issues/856). When an overlay rule changes, update this README **and** that issue in the same change (replace the **full** issue body — a partial PATCH can wipe it).
 
 ## License
 
