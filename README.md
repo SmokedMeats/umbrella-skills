@@ -95,7 +95,7 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Need a cheap artifact | `/prototype` | no — Matt |
 | Grill locked | **`/to-spec`** | **overlay** |
 | Spec approved | **`/to-tickets`** | **overlay** |
-| Tickets approved | **`/implement`** → `/tdd` → `/code-review` | implement **overlay**; tdd + code-review **Matt** |
+| Tickets approved | **`/implement`** → `/tdd` → gap-check ACs vs current code → `/code-review` | implement **overlay**; tdd + code-review **Matt** |
 | Two or more unblocked implement tickets | `/implement` **wave**: spawn children, then crawl later waves as they unlock | same overlay |
 | "Which skill do I type?" | `/ask-matt` | no — Matt |
 
@@ -135,7 +135,7 @@ A locked grill is not a build. Keep the `/triage` catch every time.
 | `wayfinder` | Umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**; forever-out stays map Out of scope. |
 | `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. |
 | `to-tickets` | Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. |
-| `implement` | Count first. Spawn extras, then **crawl**. Before product code, backfill parent + map + house labels if create missed them. On close: drop `ready-for-agent`, append the map. `/code-review` leftovers file `Leftover:` with **When to do this**. |
+| `implement` | Count first. Spawn extras, then **crawl**. Before product code, backfill parent + map + house labels if create missed them. **Gap-check remaining ACs vs current code** before close. On close: drop `ready-for-agent`, append the map. `/code-review` leftovers file `Leftover:` with **When to do this**. |
 | `triage` | Apply every fitting `domain:…`. Create `umbrella:…` for a map or for two or more like issues in the same pack. House-name pass does not flip state. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.

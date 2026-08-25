@@ -49,7 +49,7 @@ Hard gates:
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves).
+- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until it **gap-checks remaining ACs against current code**.
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Never skip a phase. Never run two phases in one reply.
 
@@ -146,4 +146,4 @@ Then return here and name the next phase.
 
 ## Done
 
-The frontier for this house shipped under `/implement`, or the user stops, or the window is too full — then hand them `Next: /<skill>` plus the issue names and URLs.
+The frontier for this house shipped under `/implement` **after its gap check**, or the user stops, or the window is too full — then hand them `Next: /<skill>` plus the issue names and URLs. Do not call a ticket shipped from chat memory.

@@ -14,6 +14,17 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Once done, use /code-review to review the work.
 
+## Gap check
+
+After product code is in the tree, **before** you close a ticket or say ACs hold:
+
+1. Load remaining ACs from the **ticket body** (and any Done vs remaining comment). Chat memory is not the list.
+2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path.
+3. FAIL, or PARTIAL the ticket still requires → **do not close**. Post Done vs remaining on the ticket. Keep building, or file `Leftover:` if this ship should not include it.
+4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
+
+Completion: every wave ticket has a current-code verdict in this session. No close on chat memory.
+
 Commit your work to the current branch.
 
 ## Count first
@@ -79,7 +90,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: every extra ticket has a live child. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review.** `/code-review` on the wave commits. Close tickets only when their acceptance criteria hold. Remove `ready-for-agent` only. Append a named line to the map.
+6. **Review.** Gap-check remaining ACs vs current code (see **Gap check**). Then `/code-review` on the wave commits. Close tickets only when that verdict is PASS. Remove `ready-for-agent` only. Append a named line to the map.
 7. **Recount.** Return to **Count first** for this house. Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)
