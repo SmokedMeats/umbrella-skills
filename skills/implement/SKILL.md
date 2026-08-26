@@ -83,7 +83,19 @@ On each wave ticket (and the spec, if it is missing this too):
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, and is assigned to `@me`.
 
-On close: remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open.
+On close: **Living docs**, then remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open.
+
+## Living docs
+
+After gap check PASS, before the GitHub close, bring every **living doc** that still treats this ticket as open work in line with what shipped.
+
+Find them: grep `docs/` (including `docs/trackers/` when that folder exists) for the ticket number, the spec number, and the house `umbrella:<slug>`. Typical hits: a daily now-list, a house encyclopedia, a plans file, a go-live checklist. If this repo's agent rules require an architecture-map update for node-worthy wiring, do that in the same change.
+
+For each hit: mark this ticket done (strikethrough, closed, or shipped SHA), and point the frontier at the next open child when the doc is a now-list.
+
+The conductor writes these files (and commits them with the ticket). Children leave them alone.
+
+Completion: every grep hit in `docs/` either already reads as done/historical, or you updated it in this change. Do not create a new tracker file.
 
 After `/code-review`, do **not** reopen the closed ticket to flip leftover checkboxes. File `Leftover: …` as a child of the same map: `parked:<slug>` + `domain:*`, **no** `umbrella:<slug>`, **no** `ready-for-agent`, **no** assignee. Body **When to do this** per `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) — which review parked it, what this PR **did** ship, why the leftover was not in that ship, and the unpark gate (next real edit, or a fourth token, or a real bug). Judgement “do next time” is a `Leftover:`, not a silent comment.
 
@@ -112,13 +124,14 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review.** Gap-check remaining ACs vs current code (see **Gap check**). Then `/code-review` on the wave commits. Close tickets only when that verdict is PASS. Remove `ready-for-agent` only. Append a named line to the map.
+6. **Review.** Gap-check remaining ACs vs current code (see **Gap check**). Then `/code-review` on the wave commits. Close tickets only when that verdict is PASS. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
 7. **Recount.** Return to **Count first** for this house. Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)
 
 - Edit only your exclusive globs. Leave every other untracked file on disk.
 - Frozen shared files are consume-only. Ask the conductor if you need an append.
+- Leave living docs (`docs/`, trackers, architecture map) to the conductor. If a grep hit still lists this ticket as open, name the path in your report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean`. Report a file list + test output when done.
 - Same branch, same worktree. No extra checkout.
 
