@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Count the frontier, spawn extras, crawl later waves as they unlock"
+  short_description: "Count table first, spawn extras before product code, crawl, window-full on the spec"
 policy:
   allow_implicit_invocation: false

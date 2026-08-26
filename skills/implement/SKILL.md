@@ -31,6 +31,14 @@ Commit your work to the current branch.
 
 Count open implement tickets whose blockers are all done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
+**First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
+
+| Unblocked | Role | Ticket |
+| --- | --- | --- |
+| *N* | conductor / child / this session | #n · title |
+
+Then pick the session shape:
+
 | Count | This session |
 | --- | --- |
 | **1** | Build that ticket here. |
@@ -40,9 +48,23 @@ A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive 
 
 Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the leftover tickets. That split is the draft.
 
-Product-code edits start after every extra ticket has a **live child**.
+**Spawn gate.** Product-code edits start after one of:
 
-Write one-by-one only when the posted exclusive table leaves every extra ticket with an empty exclusive list. Say that in one line.
+- Count **1** — the table is posted.
+- Count **2+** — every extra ticket has a **live child**.
+- The posted exclusive table left every extra ticket with an empty exclusive list — then write one-by-one, and say that in one line.
+
+Completion: the first reply contains the count table, and the spawn gate is met.
+
+## Window full
+
+When this session cannot take the next wave (window full, or `/umbrella` stops before loading implement):
+
+1. Post or update the **conductor comment on the spec** with remaining frontier (ticket numbers, unblocked vs held, exclusive globs if a parallel wave, frozen shared).
+2. Print `Next: /implement #<n>` for the unblocked frontier. If that frontier is **2+** tickets, add: this next session is **conductor** and must spawn extras before product code.
+3. Stop. Tickets plus that comment are the resume.
+
+Completion: the spec comment matches the remaining tree, and the user-visible last line is `Next: /implement #<n>`.
 
 ## House
 
@@ -75,7 +97,7 @@ The house is a tree, not one wave. After each ticket **closes**, recount.
 
 Example: T1 closes and unlocks T2/T3/T4; T3 later closes and unlocks T5/T6. Spawn T5 and T6 as soon as T3 is closed, even if T2 and T4 are still running.
 
-This session stays conductor across waves. Completion: no unblocked implement tickets remain, or the user stops, or the window is full (then hand the next frontier URLs).
+This session stays conductor across waves. Completion: no unblocked implement tickets remain, the user stops, or **Window full**.
 
 ## Parallel wave
 
@@ -87,7 +109,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 
 1. **Draft.** Load exclusive globs and frozen shared from the ticket bodies or the parent spec's conductor comment. If those lists are missing, draft them and post them. Wait for a one-line confirm **only** when two tickets still claim the same path after the draft.
 2. **House.** Wire parent + map on every wave ticket (see **House**). Then **claim** — `gh issue edit <n> --add-assignee "@me"` on each wave ticket (quote `"@me"` on PowerShell) so a second terminal does not grab it. Do not use a comment instead.
-3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: every extra ticket has a live child. Then this session may edit the conductor exclusive.
+3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
 6. **Review.** Gap-check remaining ACs vs current code (see **Gap check**). Then `/code-review` on the wave commits. Close tickets only when that verdict is PASS. Remove `ready-for-agent` only. Append a named line to the map.

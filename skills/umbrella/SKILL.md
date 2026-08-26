@@ -53,7 +53,7 @@ Hard gates:
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Never skip a phase. Never run two phases in one reply.
 
-Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise stop and give the ticket URLs for a fresh `/implement` session.
+Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
 
 ## 0. Prerequisite
 
@@ -146,4 +146,4 @@ Then return here and name the next phase.
 
 ## Done
 
-The frontier for this house shipped under `/implement` **after its gap check**, or the user stops, or the window is too full — then hand them `Next: /<skill>` plus the issue names and URLs. Do not call a ticket shipped from chat memory.
+The frontier for this house shipped under `/implement` **after its gap check**, or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory.
