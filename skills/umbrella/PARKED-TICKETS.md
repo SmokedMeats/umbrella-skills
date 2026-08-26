@@ -75,7 +75,8 @@ Do not unpark because `/umbrella` listed the house or because two parked tickets
 | `/grilling` | “Not this pack” branch → `Later:` + `parked:<slug>`, then close the grill with the v1 answer |
 | `/to-spec` | Out of Scope that is later work → `Later:` + `parked:<slug>`, not a spec-only bullet |
 | `/to-tickets` | Parked slice → `Later:` + `parked:<slug>`, no `ready-for-agent` |
-| `/implement` | Review “not this PR” → `Leftover:` + `parked:<slug>` |
+| `/code-review` | Standards hard violations + Spec missing/partial/wrong → `Leftover:` (hygiene) or `Later:` (product not in this ship) + `parked:<slug>`. Living docs name the new tickets. |
+| `/implement` | Gap-check AC PARTIAL you will not finish this wave → `Leftover:` + `parked:<slug>`. Review leftovers are `/code-review`, not this skill. |
 
 `/triage` house-name and “2+ like types” **ignore** `parked:*` and `Later:` / `Leftover:` titles. Two parked tickets do not create a live umbrella.
 
