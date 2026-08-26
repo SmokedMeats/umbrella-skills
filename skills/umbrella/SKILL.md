@@ -49,7 +49,7 @@ Hard gates:
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until it **gap-checks remaining ACs against current code**.
+- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until it **gap-checks remaining ACs against current code** and runs `/code-review` **to completion** (two-axis report **and** leftover tickets on the house map).
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Never skip a phase. Never run two phases in one reply.
 
@@ -138,12 +138,12 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 
 ## Load a skill
 
-Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`). Follow it until *that* skill says it is done.
+Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`, `code-review`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **files leftovers**.
 
-Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, and has **When to do this**. If any of that is wrong, fix the issue now.
+Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved — including leftovers `/code-review` just filed). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, and has **When to do this**. If any of that is wrong, fix the issue now.
 
 Then return here and name the next phase.
 
 ## Done
 
-The frontier for this house shipped under `/implement` **after its gap check**, or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory.
+The frontier for this house shipped under `/implement` **after its gap check and `/code-review` leftover tickets**, or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory. Parked leftovers stay listed **under** the house; they do not start a new `/implement` wave.
