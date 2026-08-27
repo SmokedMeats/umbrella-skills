@@ -31,6 +31,8 @@ Completion: every wave ticket is PASS in current code, or **Window full** with t
 
 Commit your work to the current branch.
 
+**Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `cd backend ; npm run db:migrate:all` in the same session after the file is on disk. A migrate run before that file exists will not include it.
+
 ## Build loop
 
 Gap check and `/code-review` feed the **same** tickets until they are empty.
