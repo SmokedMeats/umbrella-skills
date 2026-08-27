@@ -16,7 +16,7 @@ This is not an `/audit` crawl. Do not inventory the neighborhood. Do not grind l
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-Once done, run `/code-review` **to completion** (two-axis report **and** leftover tickets). That skill owns review leftovers.
+Once done, run `/code-review` **to completion** (two-axis report **and** the **build loop**). In-scope review findings return here on the same tickets.
 
 ## Gap check
 
@@ -24,12 +24,25 @@ After product code is in the tree, **before** you close a ticket or say ACs hold
 
 1. Load remaining ACs from the **ticket body** (and any Done vs remaining comment). Chat memory is not the list.
 2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path.
-3. FAIL, or PARTIAL the ticket still requires → **do not close**. Post Done vs remaining on the ticket. Keep building, or file `Leftover:` if this ship should not include it.
+3. FAIL, or PARTIAL the ticket still requires → **do not close**. Post Done vs remaining on the ticket. Stay on these tickets and keep building. Then run this gap check again.
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
 
-Completion: every wave ticket has a current-code verdict in this session. No close on chat memory.
+Completion: every wave ticket is PASS in current code, or **Window full** with the remaining ACs written on the spec. No close on chat memory.
 
 Commit your work to the current branch.
+
+## Build loop
+
+Gap check and `/code-review` feed the **same** tickets until they are empty.
+
+1. Gap check. PARTIAL or FAIL → keep building on those tickets → gap check again.
+2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report.
+3. In-scope review findings (standards **hard** violations, spec missing / partial / wrong) become the new remaining-AC list on those tickets. Return to step 1 in this session.
+4. Stop when that list is empty, **Window full**, or the user stops.
+
+`Later:` is grill / spec **not this pack** only ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). Remainder that still belongs to this ship stays on the live tickets.
+
+Completion: no in-scope remainder on the wave tickets, or Window full with that remainder on the spec.
 
 ## Count first
 
@@ -50,7 +63,7 @@ Then pick the session shape:
 
 A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive **for that wave**. The rest of that wave still gets children.
 
-Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the leftover tickets. That split is the draft.
+Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the other wave tickets. That split is the draft.
 
 **Spawn gate.** Product-code edits start after one of:
 
@@ -101,7 +114,7 @@ The conductor writes these files (and commits them with the ticket). Children le
 
 Completion: every grep hit in `docs/` either already reads as done/historical, or you updated it in this change. Do not create a new tracker file.
 
-Review leftovers are `/code-review` step **File leftovers**. Do not skip that skill. Do not reopen a closed ticket to flip checkboxes. Gap-check AC PARTIAL you will not finish **this wave** still files `Leftover:` here before close — [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
+`/code-review` is required. In-scope findings return to **Build loop** on the same tickets. Do not reopen a closed ticket to flip checkboxes — keep it open, or post remaining ACs on it, and keep building.
 
 ## Crawl
 
@@ -128,7 +141,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review.** Gap-check remaining ACs vs current code (see **Gap check**). Then `/code-review` on the wave commits **to completion** (report + leftover tickets on the map). Close tickets only when gap check is PASS. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
+6. **Review.** Run the **Build loop** (gap check → `/code-review` → remainder back here). Close tickets only when the loop is empty. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
 7. **Recount.** Return to **Count first** for this house. Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)

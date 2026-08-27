@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Count table first, spawn extras, crawl, living docs on close, window-full on the spec"
+  short_description: "Count table first, spawn extras, crawl, build-loop remainder, living docs on close"
 policy:
   allow_implicit_invocation: false

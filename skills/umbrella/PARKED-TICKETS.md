@@ -27,7 +27,7 @@ A **reject forever** is `.out-of-scope/` + close (`wontfix`). A parked ticket st
 | Title | When |
 | --- | --- |
 | `Later: …` | Product we **chose not to ship** with the rest of this pack (grill or spec). Still wanted someday. |
-| `Leftover: …` | Review / hygiene that was **not worth the same PR** as the rest. Not a user-facing bug. |
+| `Leftover: …` | Already-open parked hygiene titles. Remainder that still belongs to this ship stays on the live tickets and the `/implement` **Build loop**. |
 
 Keep `enhancement` + `domain:*` + **`parked:<slug>`**. Child of the same `wayfinder:map`. **Remove** `umbrella:<slug>` if it was copied from the house. Do not reopen a closed implement ticket to flip checkboxes.
 
@@ -75,8 +75,8 @@ Do not unpark because `/umbrella` listed the house or because two parked tickets
 | `/grilling` | “Not this pack” branch → `Later:` + `parked:<slug>`, then close the grill with the v1 answer |
 | `/to-spec` | Out of Scope that is later work → `Later:` + `parked:<slug>`, not a spec-only bullet |
 | `/to-tickets` | Parked slice → `Later:` + `parked:<slug>`, no `ready-for-agent` |
-| `/code-review` | Standards hard violations + Spec missing/partial/wrong → `Leftover:` (hygiene) or `Later:` (product not in this ship) + `parked:<slug>`. Living docs name the new tickets. |
-| `/implement` | Gap-check AC PARTIAL you will not finish this wave → `Leftover:` + `parked:<slug>`. Review leftovers are `/code-review`, not this skill. |
+| `/code-review` | In-scope findings stay on the live tickets and re-enter `/implement` **Build loop**. `Later:` only when the finding is already a grill / spec not-this-pack lock. |
+| `/implement` | Remaining ACs stay on the same ticket. Next pass of the **Build loop**. Window full writes them on the spec conductor comment. |
 
 `/triage` house-name and “2+ like types” **ignore** `parked:*` and `Later:` / `Leftover:` titles. Two parked tickets do not create a live umbrella.
 

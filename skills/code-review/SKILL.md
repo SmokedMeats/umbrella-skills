@@ -1,16 +1,16 @@
 ---
 name: code-review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents, reports them side by side, then files leftover tickets on the house map and updates living docs. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
+description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents, reports them side by side, then returns in-scope findings to the implement build loop on the same tickets. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
 ---
 
-Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `code-review`. Adds **File leftovers** after the two-axis report.
+Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `code-review`. Adds **Close the loop** after the two-axis report.
 
 Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 - **Standards** — does the code conform to this repo's documented coding standards?
 - **Spec** — does the code faithfully implement the originating issue / spec?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. The review is **not done** at the report — **File leftovers** still runs.
+Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. The review is **not done** at the report — **Close the loop** still runs.
 
 The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if `docs/agents/issue-tracker.md` is missing.
 
@@ -79,13 +79,13 @@ Present the two reports under `## Standards` and `## Spec` headings, verbatim or
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
 
-Then **File leftovers**. A report without tickets is an unfinished review.
+Then **Close the loop**. A report without a remaining-AC verdict is an unfinished review.
 
-### 6. File leftovers
+### 6. Close the loop
 
-Every finding that is still true in **current code** becomes a ticket. One seam per ticket. Do not reopen a closed implement ticket to flip checkboxes.
+Findings that are still true in **current code** and still belong to **this ship** go back through `/implement` **Build loop** on the **same** tickets. One seam at a time. Keep those tickets open (or post remaining ACs on them) and keep building.
 
-**File**
+**Build now** (post as remaining ACs, then load `/implement` in this session)
 
 - Standards **hard violations** (documented-standard breaches, not judgement-only smells)
 - Spec **missing / partial / wrong**
@@ -94,15 +94,13 @@ Every finding that is still true in **current code** becomes a ticket. One seam 
 
 - Founder locks and approved grill answers
 - Judgement-only smells
-- Findings that already have an open ticket (link that URL instead)
+- Findings that already have an open ticket (link that URL; if it is live `umbrella:*`, include it in the loop)
 
-**Title.** Hygiene / not this PR → `Leftover: …`. Product the pack chose not to ship → `Later: …`.
+**Park** only a grill / spec **not this pack** lock — `Later:` per [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
 
-**House.** Child of the pack `wayfinder:map` (spec + map in `## Parent`). Labels: `parked:<slug>` + `domain:*` (+ `cluster:*` when that cluster is real). No `umbrella:<slug>`, no `ready-for-agent`, no assignee. Body **When to do this** — load `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md). No map in the commits → still file; `domain:*` only.
+After the implement pass: gap-check, then this skill again on the new commits.
 
-**Living docs.** Grep `docs/` (and `docs/trackers/` when it exists) for the reviewed ticket numbers, the spec number, and `umbrella:<slug>` / `parked:<slug>`. List each new leftover next to the house's parked children. Comment the map. Commit those docs on the current branch.
-
-Completion: every filing-worthy finding has a ticket URL in the review reply, is parented on the map when a map exists, and living docs name it.
+Completion: every in-scope finding is PASS in current code, or **Window full** with remaining ACs on the same tickets.
 
 ## Why two axes
 

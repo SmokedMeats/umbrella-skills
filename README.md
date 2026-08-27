@@ -95,8 +95,9 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Need a cheap artifact | `/prototype` | no — Matt |
 | Grill locked | **`/to-spec`** | **overlay** |
 | Spec approved | **`/to-tickets`** | **overlay** |
-| Tickets approved | **`/implement`** → `/tdd` → gap-check ACs vs current code → living docs → `/code-review` **to completion** (report + leftover tickets) | implement + code-review **overlay**; tdd **Matt** |
+| Tickets approved | **`/implement`** → `/tdd` → **Build loop** (gap-check → living docs → `/code-review` → remainder back on the same tickets) | implement + code-review **overlay**; tdd **Matt** |
 | Two or more unblocked implement tickets | `/implement` **wave**: count table first, spawn children (spawn gate), then crawl later waves as they unlock | same overlay |
+| Gap-check remainder or in-scope review findings | `/implement` **Build loop** in this session, then `/code-review` again | same overlay |
 | "Which skill do I type?" | `/ask-matt` | no — Matt |
 
 ### Who applies labels
@@ -119,6 +120,7 @@ locked grill              →  /to-spec
 approved spec             →  /to-tickets
 approved tickets          →  /implement
 two+ unblocked tickets    →  /implement wave (count table, spawn gate, crawl)
+gap-check / review remainder →  /implement Build loop (same tickets), then /code-review again
 window full during build  →  /implement Window full (spec comment + Next: /implement #<n>)
 ```
 
@@ -136,8 +138,8 @@ A locked grill is not a build. Keep the `/triage` catch every time.
 | `wayfinder` | Umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**; forever-out stays map Out of scope. |
 | `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. |
 | `to-tickets` | Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. |
-| `implement` | Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**. Window full → conductor comment on the spec + `Next: /implement #<n>` (2+ frontier = next session is conductor). Before product code, backfill parent + map + house labels if create missed them. **Gap-check remaining ACs vs current code** before close. **Living docs**: grep `docs/` for the ticket/spec/umbrella slug and update now-lists, encyclopedias, plans, checklists (architecture map if node-worthy). On close: drop `ready-for-agent`, append the map. Review leftovers are `/code-review` **File leftovers**, not this skill. |
-| `code-review` | After the two-axis report, **File leftovers**: each Standards hard violation and Spec missing/partial/wrong becomes a `Leftover:` / `Later:` child of the house map (`parked:<slug>`, **When to do this**). Update living docs. A report without those tickets is unfinished. |
+| `implement` | Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**. Window full → conductor comment on the spec + `Next: /implement #<n>` (2+ frontier = next session is conductor). Before product code, backfill parent + map + house labels if create missed them. **Build loop**: gap-check remaining ACs vs current code; PARTIAL/FAIL stays on the same tickets and keeps building; living docs when PASS; `/code-review` in-scope findings return here. On close: drop `ready-for-agent`, append the map. |
+| `code-review` | After the two-axis report, **Close the loop**: each Standards hard violation and Spec missing/partial/wrong becomes remaining ACs on the **same** tickets, then `/implement` again. `Later:` only for grill/spec not-this-pack. A report without that remaining-AC verdict is unfinished. |
 | `triage` | Apply every fitting `domain:…`. Create `umbrella:…` for a map or for two or more like issues in the same pack. House-name pass does not flip state. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.

@@ -1,3 +1,3 @@
 interface:
   display_name: "Code Review"
-  short_description: "Two-axis review, then leftover tickets on the house map"
+  short_description: "Two-axis review, then build-loop remainder on the same tickets"
