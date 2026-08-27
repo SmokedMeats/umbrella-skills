@@ -49,7 +49,7 @@ Hard gates:
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, and every in-scope finding built on the **same** tickets.
+- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, and **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible). `/device-qa-agent` crawls later.
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Grill / spec / tickets still wait for approval. Name one skill, finish it, then the next.
 - Never skip a phase.
@@ -148,4 +148,4 @@ Then return here and name the next phase.
 
 ## Done
 
-The frontier for this house shipped under `/implement` **after the Build loop is empty**, or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The frontier for this house shipped under `/implement` **after the Build loop is empty** and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.

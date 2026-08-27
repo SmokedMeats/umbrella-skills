@@ -108,6 +108,8 @@ After gap check PASS, before the GitHub close, bring every **living doc** that s
 
 Find them: grep `docs/` (including `docs/trackers/` when that folder exists) for the ticket number, the spec number, and the house `umbrella:<slug>`. Typical hits: a daily now-list, a house encyclopedia, a plans file, a go-live checklist. If this repo's agent rules require an architecture-map update for node-worthy wiring, do that in the same change.
 
+**Device QA leaf.** When this repo has `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` and the ship is **phone-visible**, append a **P\*** leaf in the same change — Process **When a feature ships** in that file. Conductor writes it. Children name phone-visible tickets in their report.
+
 For each hit: mark this ticket done (strikethrough, closed, or shipped SHA), and point the frontier at the next open child when the doc is a now-list.
 
 The conductor writes these files (and commits them with the ticket). Children leave them alone.
@@ -149,7 +151,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 - Edit only your exclusive globs. Leave every other untracked file on disk.
 - Frozen shared files are consume-only. Ask the conductor if you need an append.
 - If you changed behavior and the seam has no colocated behavior test, add one. Report that test path.
-- Leave living docs (`docs/`, trackers, architecture map) to the conductor. If a grep hit still lists this ticket as open, name the path in your report.
+- Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean`. Report a file list + test output when done.
 - Same branch, same worktree. No extra checkout.
 
