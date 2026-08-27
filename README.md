@@ -24,7 +24,7 @@ Matt's flow:
 /wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
 ```
 
-On a cluster of related grilling tickets, three things failed:
+On a cluster of related grilling tickets, three gaps showed up for our pack:
 
 1. Each grill ended the session. The human had to remember which child was next. `/to-spec` then wrote a spec for the last ticket, not the whole pack.
 2. A locked grill felt like "we decided, now code." Agents started a build and skipped `/to-spec` and `/to-tickets`.

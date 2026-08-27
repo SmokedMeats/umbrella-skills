@@ -15,4 +15,4 @@ Then copy `skills/*` into `$HOME/.grok/skills/` if you use Grok user-global.
 ## What belongs where
 
 - **README** — for people who install the overlay.
-- **#856** — field notes for Matt: the failures and the suggested upstream shape.
+- **#856** — field notes for Matt: the gaps this overlay covers, and a suggested opt-in shape if any of it belongs upstream.
