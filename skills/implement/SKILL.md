@@ -110,7 +110,7 @@ After gap check PASS, before the GitHub close, bring every **living doc** that s
 
 Find them: grep `docs/` (including `docs/trackers/` when that folder exists) for the ticket number, the spec number, and the house `umbrella:<slug>`. Typical hits: a daily now-list, a house encyclopedia, a plans file, a go-live checklist. If this repo's agent rules require an architecture-map update for node-worthy wiring, do that in the same change.
 
-**Device QA leaf.** When this repo has `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` and the ship is **phone-visible**, append a **P\*** leaf in the same change — Process **When a feature ships** in that file. Conductor writes it. Children name phone-visible tickets in their report.
+**Device QA leaf.** When this repo has `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` and the ship is **phone-visible**, append a **P\*** leaf in the same change — Process **When a feature ships** in that file. Conductor writes it. Children name phone-visible tickets in their report. If a later `/device-qa-agent` run finds a missed ship, **Leaves** (before Probe) appends it — catch-up, not a replacement for writing it here.
 
 For each hit: mark this ticket done (strikethrough, closed, or shipped SHA), and point the frontier at the next open child when the doc is a now-list.
 
