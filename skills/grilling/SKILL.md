@@ -29,6 +29,8 @@ If this grill is a wayfinder **ticket**, a **map**, or a named concept on a map,
 
 This is **one conversation**. The user answers questions. You own which ticket those answers belong to.
 
+After each round (before you wait), rewrite `docs/agents/UMBRELLA_CURSOR.md` with **Now on**, Q numbers, and settled ([CURSOR.md](../umbrella/CURSOR.md)).
+
 Every round starts with one orientation line, then the questions:
 
 ```

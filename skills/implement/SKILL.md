@@ -75,6 +75,8 @@ Shared overlap (one View, one controller, one board) goes on the **conductor exc
 
 Completion: the first reply contains the count table, and the spawn gate is met.
 
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` after the count table / claim, after each close, and on Window full ([CURSOR.md](../umbrella/CURSOR.md)). Do not rely on the spec comment alone as the step cursor.
+
 ## Window full
 
 When this session cannot take the next wave (window full, or `/umbrella` stops before loading implement):

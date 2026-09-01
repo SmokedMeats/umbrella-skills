@@ -12,6 +12,8 @@ If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfi
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` when you start and after the spec is published ([CURSOR.md](../umbrella/CURSOR.md)).
+
 ## Process
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the spec, and respect any ADRs in the area you're touching.

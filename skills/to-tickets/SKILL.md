@@ -10,6 +10,8 @@ Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet 
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` when you start and after tickets are published ([CURSOR.md](../umbrella/CURSOR.md)).
+
 ## Process
 
 ### 1. Gather context

@@ -13,6 +13,8 @@ Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimpleme
 
 After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to the XyberRun Project** (see [PROJECTS.md](PROJECTS.md)).
 
+**Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. GitHub labels win when the file’s phase is stale.
+
 ## Claim (first write)
 
 When this session **pulls** a ticket — house picked, grill starts, fog ticket chosen, implement wave starts — **assign it on GitHub to the driving user** before any other write. That assignee *is* the claim. Do not leave it unassigned. Do not substitute a comment for the assignee. Set Project Status to **In Progress** ([PROJECTS.md](PROJECTS.md)).
@@ -79,7 +81,7 @@ Completion: `setup-matt-pocock-skills/SKILL.md` exists next to this skill, and `
 
 ## 1. Gather
 
-Read `docs/agents/triage-labels.md` and `docs/agents/issue-tracker.md`.
+Read `docs/agents/UMBRELLA_CURSOR.md` if it exists ([CURSOR.md](CURSOR.md)). Then `docs/agents/triage-labels.md` and `docs/agents/issue-tracker.md`.
 
 Inputs: numbered issues, an `umbrella:*` slug, a `wayfinder:map`, or nothing.
 
@@ -119,7 +121,7 @@ Completion: a numbered list. Wait for which house to work. One house per session
 
 ## 4. Phase loop
 
-Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
+Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)). Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
@@ -159,7 +161,7 @@ Every open issue wears a **GitHub milestone**. Always. Labels (`umbrella:*` / `p
 3. `gh issue edit <n> --milestone "<title>"` in the same create as labels. That flag only finds **open** milestones. A **closed** (hit) house uses `gh api repos/:owner/:repo/issues/<n> -X PATCH -F milestone=<number>` — see [PROJECTS.md](PROJECTS.md).
 4. A **named slice** inside a house may keep its own milestone when the founder already named it (e.g. Live catalog under Surfaces). Do not dump the whole map onto that slice.
 5. Unhoused on purpose (no `umbrella:*`, not a 2+ pack) → one milestone named after the ticket, not a sibling house.
-6. `locked` with no house → **Locked v1**.
+6. `locked` stays on the **same house milestone** as the pack that locked it. Do not create a Locked dump. A house with only locked leftovers stays **open** — do not Hit it.
 7. Parked tickets use the **same** house milestone as the live pack. Do not create `Parked: <slug>`.
 8. **Closed tickets stay on the milestone.** When you close a ticket, do not clear the milestone. That is how the bar shows partial completion.
 9. **When the pack hits.** If the house has **no open issues left** (live or parked), close the milestone and set `due_on` to the day the last ticket closed. Description gets a `Hit YYYY-MM-DD` line. A house that still has parked `Later:` stays **open** — the bar is partial on purpose. A house whose map and children are already all closed gets a **new** milestone just so that hit date exists.

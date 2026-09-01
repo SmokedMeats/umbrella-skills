@@ -15,3 +15,5 @@ You pick the next ticket. The user never has to remember which issue is open or 
 No umbrella → `/grilling` as a single tree.
 
 When the live batch is locked, **next is `/to-spec`** (or `/umbrella` if you need the house picker). Not `/implement`.
+
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` after claim and after each grill round ([CURSOR.md](../umbrella/CURSOR.md)).
