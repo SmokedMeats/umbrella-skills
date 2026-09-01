@@ -16,13 +16,15 @@ SSOT for the GitHub Project that sits **on top of** issues + milestones. Labels 
 
 `gh` needs `project` + `read:project`. If `gh project list` 403s: `gh auth refresh --hostname github.com -s project -s read:project`.
 
+**Do not** create another Project. **Do not** recreate these views — they already exist on #1.
+
 ## Views (do not invent more)
 
 | View | Layout | Filter / group | Job |
 | --- | --- | --- | --- |
 | **Kanban** | board | Status columns. Hide parked + locked: `-label:parked:* -label:locked` | Live work left-to-right |
 | **Roadmap** | roadmap | Same live filter. Uses Start / Target date | Calendar only when a date is set — do not invent dates |
-| **Houses** | table | Group by **Milestone** (UI: Group → Milestone — GraphQL has no group-by write) | Pack timeline without fake due dates |
+| **Houses** | table | Group by **Milestone** | Pack timeline without fake due dates. GraphQL cannot set group-by — founder one-click: **Group → Milestone** |
 | **Now** | table | `assignee:@me OR label:ready-for-agent -label:parked:* -label:locked` | What this session can pull |
 | **Grill** | table | `label:wayfinder:grilling -label:parked:*` | HITL queue |
 | **Parked** | table | `label:parked:*` | Shelf. Not a Kanban column |
@@ -48,6 +50,14 @@ gh project item-add 1 --owner SmokedMeats --url https://github.com/SmokedMeats/X
 ```
 
 If the repo **auto-add workflow** is on, skip the add when the item already exists (`gh project item-list`). Still set Status when claiming.
+
+`item-add` **open** issues. Do not bulk-add the closed archive to the board. Closed tickets stay on the **milestone** so the pack bar is real.
+
+`gh issue edit --milestone "<title>"` only finds **open** milestones. To put a ticket on a **closed** (hit) milestone:
+
+```text
+gh api repos/:owner/:repo/issues/<n> -X PATCH -F milestone=<milestone-number>
+```
 
 ## Catch (`/umbrella` every run)
 

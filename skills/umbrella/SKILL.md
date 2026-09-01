@@ -156,7 +156,7 @@ Every open issue wears a **GitHub milestone**. Always. Labels (`umbrella:*` / `p
 
 1. Resolve the house slug (`umbrella:<slug>` or `parked:<same-slug>`).
 2. Find or create one open milestone for that house. Title is the human pack name (`Ghost racing`, `Play quality`) — not `umbrella:ghost-racing`. Description is one line: what the pack is.
-3. `gh issue edit <n> --milestone "<title>"` in the same create as labels.
+3. `gh issue edit <n> --milestone "<title>"` in the same create as labels. That flag only finds **open** milestones. A **closed** (hit) house uses `gh api repos/:owner/:repo/issues/<n> -X PATCH -F milestone=<number>` — see [PROJECTS.md](PROJECTS.md).
 4. A **named slice** inside a house may keep its own milestone when the founder already named it (e.g. Live catalog under Surfaces). Do not dump the whole map onto that slice.
 5. Unhoused on purpose (no `umbrella:*`, not a 2+ pack) → one milestone named after the ticket, not a sibling house.
 6. `locked` with no house → **Locked v1**.
