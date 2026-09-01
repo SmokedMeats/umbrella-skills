@@ -39,7 +39,7 @@ If the new issue is `Later:` or `Leftover:` (or the body says shelved / parked /
 2. `--remove-label "umbrella:<slug>"` if present.
 3. Do not `--add-assignee`.
 4. Assign the **same house milestone** as the live pack (`gh issue edit <n> --milestone "<Pack name>"`). Create the milestone if the house has none. Do not invent a `Parked:` milestone.
-5. `item-add` to the XyberRun Project. Leave Status **Todo** — the **Parked** view filters on `label:parked:*`. See [PROJECTS.md](PROJECTS.md).
+5. `item-add` to the XyberRun Project. Status **Parked** if code/grill is still needed. If the leftover is already console / desk / a run, use **Operator** / **Desk device** / **Field** and keep `parked:*`. See [PROJECTS.md](PROJECTS.md).
 6. Body **must** include **When to do this** with all four lines.
 
 ```markdown
@@ -68,6 +68,19 @@ Do not unpark because `/umbrella` listed the house or because two parked tickets
 3. `--add-label "umbrella:<slug>"`
 4. Add `ready-for-agent` only if this is now a build ticket.
 5. Then claim: `gh issue edit <n> --add-assignee "@me"`
+
+## Close (drop the shelf label)
+
+`parked:*` means **open leftover, do not pull**. A closed ticket must not wear it — the Parked view is `label:parked:*` and would keep showing finished cards.
+
+On close (same moment as Status **Done**):
+
+1. `--remove-label "parked:<slug>"` if present.
+2. `--remove-label ready-for-agent` if present.
+3. Keep the milestone. Do **not** add `umbrella:<slug>` just because it shipped.
+4. Project Status **Done**.
+
+Closing is not unpark. Unpark is only for an **open** ticket the user asked to pull.
 
 ## Create sites
 

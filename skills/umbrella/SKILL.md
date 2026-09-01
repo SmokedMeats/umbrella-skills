@@ -163,6 +163,7 @@ Every open issue wears a **GitHub milestone**. Always. Labels (`umbrella:*` / `p
 7. Parked tickets use the **same** house milestone as the live pack. Do not create `Parked: <slug>`.
 8. **Closed tickets stay on the milestone.** When you close a ticket, do not clear the milestone. That is how the bar shows partial completion.
 9. **When the pack hits.** If the house has **no open issues left** (live or parked), close the milestone and set `due_on` to the day the last ticket closed. Description gets a `Hit YYYY-MM-DD` line. A house that still has parked `Later:` stays **open** — the bar is partial on purpose. A house whose map and children are already all closed gets a **new** milestone just so that hit date exists.
+10. **Continuous** (milestone title exact). Living hygiene after a pack hits — Schema-when-edit, inventory gates. Close the house map, move it here, then Hit the house. **Do not pull** Continuous tickets. **Do not Hit** the Continuous milestone. Not a product house. Do not invent `umbrella:continuous`.
 
 ```text
 gh api repos/:owner/:repo/milestones/<n> -X PATCH -f state=closed -f due_on="<ISO last-closed>"
@@ -181,7 +182,7 @@ Completion: `gh issue list --state open --json number,milestone` has no `milesto
 
 One user-owned GitHub Project (**XyberRun**) is the Kanban + Roadmap over the same issues. It is not a house and not a substitute for milestones. Full rules, views, Status, and `gh` commands: [PROJECTS.md](PROJECTS.md).
 
-On create: `item-add` after the milestone. On claim: Status **In Progress**. On close: Status **Done**. Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
+On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**). Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
 
 ## Done
 
