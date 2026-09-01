@@ -99,16 +99,29 @@ On each wave ticket (and the spec, if it is missing this too):
 3. Link the ticket as a **child of the map** (tracker sub-issue). If the tracker has no sub-issues, put `Part of #<map>` at the top of the body.
 
 4. **Claim** — `gh issue edit <n> --add-assignee "@me"` on every ticket this session will write (quote `"@me"` on PowerShell). Same for a one-ticket build. A comment is not a claim.
+5. **Milestone** — every wave ticket (and the spec/map if missing) wears the house GitHub milestone. Create it if the pack has none. See `/umbrella` **Milestones**.
+6. **Project** — each wave ticket is on the XyberRun Project. `item-add` if missing. Set Status **In Progress** on claim, **Done** on close. See `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
-Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, and is assigned to `@me`.
+Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
-On close: **Living docs**, then remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open.
+On close: **Living docs**, then remove `ready-for-agent` only. Append one named line to the map's Decisions-so-far. Leave the map open. **Keep the milestone** on the closed ticket. If this was the last open issue in that house (no parked leftovers), close the milestone and set `due_on` to today — `/umbrella` **Milestones** §9.
 
 ## Living docs
 
 After gap check PASS, before the GitHub close, bring every **living doc** that still treats this ticket as open work in line with what shipped.
 
 Find them: grep `docs/` (including `docs/trackers/` when that folder exists) for the ticket number, the spec number, and the house `umbrella:<slug>`. Typical hits: a daily now-list, a house encyclopedia, a plans file, a go-live checklist. If this repo's agent rules require an architecture-map update for node-worthy wiring, do that in the same change.
+
+**Effect-TS check (XyberRun).** Distinct from the census listing below. **Skip unless this change is the same shape as an existing Effect seam.** After product code, ask whether a sibling already uses `Schema`/`Either` or `Effect`+`Schedule` for this shape. If no — UI, tRPC Zod, Wear, a service with no untrusted bag — do nothing. Do not invent a third style. Do not wrap a service in `Effect.gen` because `effect` is a dependency.
+
+| Already in the repo | Use it only when the new code is that shape |
+| --- | --- |
+| `Schema` + `Either` decode/encode | Untrusted `JSON.parse`, webhook `data`, native dict, untyped `res.json`, cache/file JSON. Do **not** dual-schema tRPC Zod inputs. |
+| `Effect` + `Schedule` retry | Flaky outbound HTTP like `walkingWayOverpassClient.ts` / `walkingWayGeofabrikClient.ts`. Do not write a one-off retry loop next to those clients. |
+
+**Do not** pull Effect into Wear OS / watch Kotlin. A UI ticket with no JSON bag and no Overpass-style client skips this check. If a sibling already uses Schema/Either or Effect+Schedule for this shape and this change did not, fix it in the same change or comment on the ticket why not.
+
+**Effect Schema inventory (XyberRun).** If this change adds or edits a production `JSON.parse`, webhook `data` bag, native dict, or untyped `res.json`, add or update a row in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` in the **same change** (P0/P1/P2). Then run `npm run check:effect-schema-inventory`. Listing is required even if Schema is later. The **Effect-TS check** still runs: a listed bag that is still hand-parsed is a remaining AC. Auth-adjacent bags still need the auth checklist before code.
 
 **Device QA leaf.** When this repo has `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` and the ship is **phone-visible**, append a **P\*** leaf in the same change — Process **When a feature ships** in that file. Conductor writes it. Children name phone-visible tickets in their report. If a later `/device-qa-agent` run finds a missed ship, **Leaves** (before Probe) appends it — catch-up, not a replacement for writing it here.
 

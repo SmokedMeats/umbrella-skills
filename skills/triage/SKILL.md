@@ -90,7 +90,7 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 4. **Grill (if needed).** If the request needs fleshing out, run the `/grilling` and `/domain-modeling` skills together — grill it into shape a round of questions at a time, sharpening domain terms and updating `CONTEXT.md`/ADRs inline as decisions land.
 
 5. **Apply the outcome:**
-   - Always add the confirmed **category**, **state**, all confirmed **domain** labels, and `umbrella:<slug>` when confirmed (`gh label create` first if the umbrella is new; then `gh issue edit --add-label`, never replace the full set). Add `wayfinder:<type>` and the parent-map link when those were confirmed.
+   - Always add the confirmed **category**, **state**, all confirmed **domain** labels, and `umbrella:<slug>` when confirmed (`gh label create` first if the umbrella is new; then `gh issue edit --add-label`, never replace the full set). Add `wayfinder:<type>` and the parent-map link when those were confirmed. **Milestone** — find or create the house GitHub milestone and assign the issue. A domain-only one-off still gets a milestone (ticket title). See `/umbrella` **Milestones**. **Project** — `item-add` per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
    - `ready-for-agent` — post an agent brief comment ([AGENT-BRIEF.md](AGENT-BRIEF.md)).
    - `ready-for-human` — same structure as an agent brief, but note why it can't be delegated (judgment calls, external access, design decisions, manual testing).
    - `needs-info` — post triage notes (template below).
@@ -105,8 +105,8 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 `/umbrella` may hand over already-labeled maps and children that have no `umbrella:*`. This is not a full inbound triage.
 
 1. Group by map (`Part of #<map>`, sub-issue, or title that names the map). Issues with no map group by the same product pack — not by `domain:*`.
-2. Each `wayfinder:map` → kebab slug from the pack name (`Ghost racing engine` → `ghost-racing`). Create `umbrella:<slug>` if missing. Apply it to the map and every **live** child. `Later:` / `Leftover:` get `parked:<slug>` instead — never live `umbrella:*`.
-3. Two or more **live** like issues, no map, no existing house → same: create and apply `umbrella:<slug>`. Two parked tickets do not create a live house.
+2. Each `wayfinder:map` → kebab slug from the pack name (`Ghost racing engine` → `ghost-racing`). Create `umbrella:<slug>` if missing. Apply it to the map and every **live** child. `Later:` / `Leftover:` get `parked:<slug>` instead — never live `umbrella:*`. Find or create the house **milestone** and assign the map + children (parked too). `item-add` each to the XyberRun Project.
+3. Two or more **live** like issues, no map, no existing house → same: create and apply `umbrella:<slug>` plus the house milestone. Two parked tickets do not create a live house.
 4. One issue, no map, no existing house → leave domain-only.
 5. Do **not** add `needs-triage`. Do **not** change category or state. Do **not** post a brief.
 

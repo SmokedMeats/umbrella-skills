@@ -18,9 +18,11 @@ The issue tracker and triage label vocabulary should have been provided to you �
 
 2. Sketch out the seams at which you're going to test the feature. Existing seams should be preferred to new ones. Use the highest seam possible. If new seams are needed, propose them at the highest point you can. The fewer seams across the codebase, the better - the ideal number is one.
 
+If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native dict, untyped `res.json`), name it in Implementation Decisions and say it must be listed in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` (Effect Schema #655) and decoded with `Schema`/`Either` the way sibling bags already are. Do not leave a new bag off the census. If the seam is flaky outbound HTTP next to walking-way clients, name `Effect`+`Schedule` retry. Do not dual-schema tRPC Zod. Do not pull Effect onto Wear. Skip this paragraph when the spec has no such seam.
+
 Check with the user that these seams match their expectations.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
 4. Stop. Show the published spec and wait for approval. **Next is `/to-tickets`.** Do not implement. If `/umbrella` is driving this session, continue into `/to-tickets` only after they approve.
 

@@ -38,7 +38,9 @@ If the new issue is `Later:` or `Leftover:` (or the body says shelved / parked /
 1. `--add-label "parked:<slug>"` — create the label if missing.
 2. `--remove-label "umbrella:<slug>"` if present.
 3. Do not `--add-assignee`.
-4. Body **must** include **When to do this** with all four lines.
+4. Assign the **same house milestone** as the live pack (`gh issue edit <n> --milestone "<Pack name>"`). Create the milestone if the house has none. Do not invent a `Parked:` milestone.
+5. `item-add` to the XyberRun Project. Leave Status **Todo** — the **Parked** view filters on `label:parked:*`. See [PROJECTS.md](PROJECTS.md).
+6. Body **must** include **When to do this** with all four lines.
 
 ```markdown
 ## When to do this

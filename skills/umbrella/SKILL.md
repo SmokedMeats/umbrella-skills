@@ -11,11 +11,11 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. On
 
 Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase.
 
-After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase.
+After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to the XyberRun Project** (see [PROJECTS.md](PROJECTS.md)).
 
 ## Claim (first write)
 
-When this session **pulls** a ticket — house picked, grill starts, fog ticket chosen, implement wave starts — **assign it on GitHub to the driving user** before any other write. That assignee *is* the claim. Do not leave it unassigned. Do not substitute a comment for the assignee.
+When this session **pulls** a ticket — house picked, grill starts, fog ticket chosen, implement wave starts — **assign it on GitHub to the driving user** before any other write. That assignee *is* the claim. Do not leave it unassigned. Do not substitute a comment for the assignee. Set Project Status to **In Progress** ([PROJECTS.md](PROJECTS.md)).
 
 ```text
 gh issue edit <n> --add-assignee "@me"
@@ -49,7 +49,7 @@ Hard gates:
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. `/device-qa-agent` **Leaves** (desk catch-up) then crawls later.
+- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. `/device-qa-agent` **Leaves** (desk catch-up) then crawls later.
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Grill / spec / tickets still wait for approval. Name one skill, finish it, then the next.
 - Never skip a phase.
@@ -96,6 +96,8 @@ This is `/umbrella`’s inbox pass. Query **now**:
 3. Open `wayfinder:map` with **no** `umbrella:*`.
 4. Open **live** children of those maps (sub-issue, `Part of #<map>`, or `wayfinder:grilling` / `research` / `prototype` / `task` that names the map) with **no** `umbrella:*` and **no** `parked:*`.
 5. Open live children of an **already-housed** map that are themselves missing `umbrella:*` (skip `Later:` / `Leftover:` / `parked:*`).
+6. Open issues with **no milestone** — assign the house milestone (create it if missing). Do not invent a house to fill this; use `umbrella:*` / `parked:<same-slug>` / existing named pack. Unhoused one-offs get their own milestone (ticket title), not a dump into another house.
+7. Open issues **missing from the XyberRun Project** — `gh project item-add` ([PROJECTS.md](PROJECTS.md)). Do not invent a house to fill the board.
 
 Do **not** drop `wayfinder:*` just because the type label exists. Drop a wayfinder issue or a `/to-tickets` child when it **already** has `umbrella:*` **or** `parked:*`. One-off `domain:qa` and parked tickets are not catch hits. Two `parked:*` issues do not create a live umbrella.
 
@@ -142,9 +144,44 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 
 Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`, `code-review`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**).
 
-Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
+Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 
 Then return here and name the next phase.
+
+## Milestones
+
+Every open issue wears a **GitHub milestone**. Always. Labels (`umbrella:*` / `parked:*`) name the house; the milestone is the same pack in the Issues sidebar. This is not a GitHub Project and not a saved view.
+
+**On create** (`/wayfinder`, `/to-spec`, `/to-tickets`, `/triage` when it files, any `Later:`):
+
+1. Resolve the house slug (`umbrella:<slug>` or `parked:<same-slug>`).
+2. Find or create one open milestone for that house. Title is the human pack name (`Ghost racing`, `Play quality`) — not `umbrella:ghost-racing`. Description is one line: what the pack is.
+3. `gh issue edit <n> --milestone "<title>"` in the same create as labels.
+4. A **named slice** inside a house may keep its own milestone when the founder already named it (e.g. Live catalog under Surfaces). Do not dump the whole map onto that slice.
+5. Unhoused on purpose (no `umbrella:*`, not a 2+ pack) → one milestone named after the ticket, not a sibling house.
+6. `locked` with no house → **Locked v1**.
+7. Parked tickets use the **same** house milestone as the live pack. Do not create `Parked: <slug>`.
+8. **Closed tickets stay on the milestone.** When you close a ticket, do not clear the milestone. That is how the bar shows partial completion.
+9. **When the pack hits.** If the house has **no open issues left** (live or parked), close the milestone and set `due_on` to the day the last ticket closed. Description gets a `Hit YYYY-MM-DD` line. A house that still has parked `Later:` stays **open** — the bar is partial on purpose. A house whose map and children are already all closed gets a **new** milestone just so that hit date exists.
+
+```text
+gh api repos/:owner/:repo/milestones/<n> -X PATCH -f state=closed -f due_on="<ISO last-closed>"
+```
+
+**Catch (every `/umbrella` run):** open issues with no milestone are inbox hits. Create/assign; do not invent `umbrella:*` here — `/triage` still owns house names. Closed issues that belong to a house and have no milestone → assign them too (progress).
+
+```text
+gh api repos/:owner/:repo/milestones -f title="<Pack name>" -f description="<one line>"
+gh issue edit <n> --milestone "<Pack name>"
+```
+
+Completion: `gh issue list --state open --json number,milestone` has no `milestone: null`.
+
+## Project board
+
+One user-owned GitHub Project (**XyberRun**) is the Kanban + Roadmap over the same issues. It is not a house and not a substitute for milestones. Full rules, views, Status, and `gh` commands: [PROJECTS.md](PROJECTS.md).
+
+On create: `item-add` after the milestone. On claim: Status **In Progress**. On close: Status **Done**. Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
 
 ## Done
 
