@@ -4,15 +4,16 @@ For people who edit this repo. Installers can ignore this file.
 
 ## When an overlay rule changes
 
-Update all three in the same change:
+Update both in the same change:
 
 1. The skill file under `skills/`
 2. The "What this pack changes" table in `README.md`
-3. [mattpocock/skills#856](https://github.com/mattpocock/skills/issues/856) — replace the **full** issue body. A partial PATCH can wipe the issue.
 
 Then copy `skills/*` into `$HOME/.grok/skills/` if you use Grok user-global.
+
+Do **not** update or reopen a field-notes issue on `mattpocock/skills`. This repo is the SSOT.
 
 ## What belongs where
 
 - **README** — for people who install the overlay.
-- **#856** — field notes for Matt: the gaps this overlay covers, and a suggested opt-in shape if any of it belongs upstream.
+- **This file** — how maintainers edit the pack.

@@ -146,11 +146,9 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ## Credit
 
-Built to sit on [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files start from those skills. `/umbrella` is original to this repo.
+Built to sit on [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files start from those skills. `/umbrella` is original to this repo. This pack is the SSOT — we do not keep a field-notes issue on Matt's repo.
 
-Field notes: [mattpocock/skills#856](https://github.com/mattpocock/skills/issues/856).
-
-Maintainer notes (how to keep #856 in sync): [MAINTAINING.md](./MAINTAINING.md).
+Maintainer notes: [MAINTAINING.md](./MAINTAINING.md).
 
 ## License
 
