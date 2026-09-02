@@ -2,23 +2,28 @@
 
 SSOT for the GitHub Project that sits **on top of** issues + milestones. Labels still name the house. Milestones still pack the Issues sidebar. The Project is the Kanban and the date roadmap — not a second house system.
 
-**Do not** create a Project per house. One board for the monorepo.
-
-## The board
-
-| | |
-| --- | --- |
-| Owner | `SmokedMeats` (user, not an org) |
-| Title | XyberRun |
-| Number | **1** |
-| URL | `https://github.com/users/SmokedMeats/projects/1` |
-| Linked repo | `SmokedMeats/XyberRun` |
+**Do not** create a Project per house. **One board per repo.** Infer the board from `git remote` (this clone). Never `item-add` a watch or website issue to the phone board.
 
 `gh` needs `project` + `read:project`. If `gh project list` 403s: `gh auth refresh --hostname github.com -s project -s read:project`.
 
-**Do not** create another Project. **Do not** recreate these views — they already exist on #1.
+## Which board
+
+| Repo | Title | Number | URL | Project node | Status field |
+| --- | --- | --- | --- | --- | --- |
+| `XyberRun` | XyberRun | **1** | https://github.com/users/SmokedMeats/projects/1 | `PVT_kwHOBLIJbs4BiIha` | `PVTSSF_lAHOBLIJbs4BiIhazhhBpjc` |
+| `XyberRun.IO` | XyberRun.IO | **2** | https://github.com/users/SmokedMeats/projects/2 | `PVT_kwHOBLIJbs4BiNIZ` | `PVTSSF_lAHOBLIJbs4BiNIZzhhGBGE` |
+| `XyberRun-AppleWatch` | XyberRun-AppleWatch | **3** | https://github.com/users/SmokedMeats/projects/3 | `PVT_kwHOBLIJbs4BiNIc` | `PVTSSF_lAHOBLIJbs4BiNIczhhGBJI` |
+| `XyberRun-AndroidWatch` | XyberRun-AndroidWatch | **4** | https://github.com/users/SmokedMeats/projects/4 | `PVT_kwHOBLIJbs4BiNId` | `PVTSSF_lAHOBLIJbs4BiNIdzhhGBKA` |
+
+Owner is always `SmokedMeats`. Commands below use **N** = that row’s Number.
+
+## Audit filing
+
+`/audit` and `/umbrella` file on **this clone’s repo**. Watch findings → AppleWatch or AndroidWatch. Website findings → XyberRun.IO. Phone-side smells → XyberRun. A CROSS_REPO sync-contract smell that lives in the monorepo stays on XyberRun; the watch half is a ticket on the watch repo. Do not add satellite findings as XyberRun #499 / #550 children.
 
 ## Views (do not invent more)
+
+Phone board **1** already has these. Satellites **2–4** have the same Status columns; add the extra views only if missing (do not invent a seventh).
 
 | View | Layout | Filter / group | Job |
 | --- | --- | --- | --- |
@@ -67,7 +72,7 @@ Do **not** set Start / Target date unless the founder named a real window. **Hou
 After labels + milestone:
 
 ```text
-gh project item-add 1 --owner SmokedMeats --url https://github.com/SmokedMeats/XyberRun/issues/<n>
+gh project item-add N --owner SmokedMeats --url https://github.com/SmokedMeats/<this-repo>/issues/<n>
 ```
 
 `item-add` is safe to re-run. Do **not** dump the whole board to see if the item exists. Still set Status when claiming.
@@ -88,7 +93,7 @@ Compare **open issues** to **open project items**. Never treat the first 200 `it
 
 ```text
 gh issue list --state open --limit 500 --json number,url
-gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "is:open"
+gh project item-list N --owner SmokedMeats --format json -L 500 --query "is:open"
 ```
 
 `--query "is:open"` is the live board (~100 today). Bare `item-list` without a query is 400+ (mostly Done) and a `-L 200` dump is a **truncated** list — that is the cap agents hit, not a Project limit.
@@ -98,10 +103,10 @@ gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "is:open
 `gh project item-list` default is **30**. `-L 200` is still a page, not “all items.” The board already has **400+** cards. To set Status, load the issue’s own project items:
 
 ```text
-gh api graphql -f query='query($n:Int!){repository(owner:"SmokedMeats",name:"XyberRun"){issue(number:$n){projectItems(first:10){nodes{id project{number} fieldValues(first:20){nodes{... on ProjectV2ItemFieldSingleSelectValue { name optionId field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}' -F n=ISSUE_NUMBER
+gh api graphql -f query='query($repo:String!,$n:Int!){repository(owner:"SmokedMeats",name:$repo){issue(number:$n){projectItems(first:10){nodes{id project{number} fieldValues(first:20){nodes{... on ProjectV2ItemFieldSingleSelectValue { name optionId field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}' -F repo=THIS_REPO -F n=ISSUE_NUMBER
 ```
 
-Use the node `id` whose `project.number` is **1**. Empty `projectItems` → `item-add`, then query again.
+Use the node `id` whose `project.number` is **N**. Empty `projectItems` → `item-add`, then query again.
 
 ## Claim / close
 
@@ -109,19 +114,16 @@ Use the node `id` whose `project.number` is **1**. Empty `projectItems` → `ite
 gh project item-edit --project-id <PVID> --id <ITEM_ID> --field-id <STATUS_FIELD_ID> --single-select-option-id <OPTION_ID>
 ```
 
-IDs for this board:
+Shared option ids (all four boards): **Unclaimed** `f75ad846` · **In Progress** `47fc9ee4` · **Done** `98236657`.
 
-| | |
-| --- | --- |
-| Project node | `PVT_kwHOBLIJbs4BiIha` |
-| Status field | `PVTSSF_lAHOBLIJbs4BiIhazhhBpjc` |
-| Parked | `dfb96017` |
-| Unclaimed | `f75ad846` |
-| In Progress | `47fc9ee4` |
-| Operator | `34f20d42` |
-| Desk device | `fcd6cab4` |
-| Field | `f2f739b6` |
-| Done | `98236657` |
+Leftover option ids (per board):
+
+| Board | Parked | Operator | Desk device | Field |
+| --- | --- | --- | --- | --- |
+| 1 XyberRun | `dfb96017` | `34f20d42` | `fcd6cab4` | `f2f739b6` |
+| 2 XyberRun.IO | `2e5dc7e7` | `53b8e365` | `3fc9033f` | `794948c0` |
+| 3 AppleWatch | `27636d9c` | `4a393d47` | `1a257a6e` | `8774b88f` |
+| 4 AndroidWatch | `96704317` | `e4ec3235` | `f0dc6328` | `9ab8004d` |
 
 ## Archive Done (not on every close)
 
@@ -143,8 +145,8 @@ Run this **trim** after a close (including [CLOSE-PARENTS.md](CLOSE-PARENTS.md))
 Count first. Do not archive if both caps are fine.
 
 ```text
-gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "status:Done"
-gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "-status:Done"
+gh project item-list N --owner SmokedMeats --format json -L 500 --query "status:Done"
+gh project item-list N --owner SmokedMeats --format json -L 500 --query "-status:Done"
 ```
 
 Use each payload’s `totalCount` (`done`, `other`). `total = done + other`.
@@ -161,16 +163,16 @@ If neither cap is exceeded, do nothing. Say **Done lane under 200; no archive.**
 `item-list` rows often have no date. Load `updatedAt` on Done items, sort **ascending**, archive the surplus:
 
 ```text
-gh api graphql -f query='query($after:String){user(login:"SmokedMeats"){projectV2(number:1){items(first:100,after:$after){pageInfo{hasNextPage endCursor}nodes{id updatedAt fieldValues(first:15){nodes{... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}'
+gh api graphql -f query='query($n:Int!,$after:String){user(login:"SmokedMeats"){projectV2(number:$n){items(first:100,after:$after){pageInfo{hasNextPage endCursor}nodes{id updatedAt fieldValues(first:15){nodes{... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}' -F n=N
 ```
 
 Keep nodes whose Status field is **Done**. Paginate until you have them. Then:
 
 ```text
-gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID>
+gh project item-archive N --owner SmokedMeats --id <ITEM_ID>
 ```
 
-Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Undo: `gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID> --undo`.
+Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Undo: `gh project item-archive N --owner SmokedMeats --id <ITEM_ID> --undo`.
 
 ## Which skill writes what
 

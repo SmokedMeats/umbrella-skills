@@ -114,7 +114,7 @@ On each wave ticket (and the spec, if it is missing this too):
 
 4. **Claim** — `gh issue edit <n> --add-assignee "@me"` on every ticket this session will write (quote `"@me"` on PowerShell). Same for a one-ticket build. A comment is not a claim.
 5. **Milestone** — every wave ticket (and the spec/map if missing) wears the house GitHub milestone. Create it if the pack has none. See `/umbrella` **Milestones**.
-6. **Project** — each wave ticket is on the XyberRun Project. `item-add` if missing. Set Status **In Progress** on claim. If product is done and something outside the repo remains, move to a **leftover lane** and do not close. **Done** only when the issue closes. See `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+6. **Project** — each wave ticket is on **this repo’s** Project ([PROJECTS.md](../umbrella/PROJECTS.md)). `item-add` if missing. Set Status **In Progress** on claim. If product is done and something outside the repo remains, move to a **leftover lane** and do not close. **Done** only when the issue closes.
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
