@@ -100,6 +100,7 @@ This is `/umbrella`’s inbox pass. Query **now**:
 5. Open live children of an **already-housed** map that are themselves missing `umbrella:*` (skip `Later:` / `Leftover:` / `parked:*`).
 6. Open issues with **no milestone** — assign the house milestone (create it if missing). Do not invent a house to fill this; use `umbrella:*` / `parked:<same-slug>` / existing named pack. Unhoused one-offs get their own milestone (ticket title), not a dump into another house.
 7. Open issues **missing from the XyberRun Project** — `gh project item-add` ([PROJECTS.md](PROJECTS.md)). Do not invent a house to fill the board.
+8. **Done-lane trim** ([PROJECTS.md](PROJECTS.md) **Archive Done**). Count unarchived Done and other lanes. Archive the **oldest** Done only if Done **> 200** or (Done + other) **> 200**. Not a `/triage` hit. Do not archive a card you just closed unless this trim says a cap is over.
 
 Do **not** drop `wayfinder:*` just because the type label exists. Drop a wayfinder issue or a `/to-tickets` child when it **already** has `umbrella:*` **or** `parked:*`. One-off `domain:qa` and parked tickets are not catch hits. Two `parked:*` issues do not create a live umbrella.
 
@@ -149,7 +150,7 @@ Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 
-If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md). If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close).
+If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close).
 
 Then return here and name the next phase.
 
@@ -187,7 +188,7 @@ Completion: `gh issue list --state open --json number,milestone` has no `milesto
 
 One user-owned GitHub Project (**XyberRun**) is the Kanban + Roadmap over the same issues. It is not a house and not a substitute for milestones. Full rules, views, Status, and `gh` commands: [PROJECTS.md](PROJECTS.md).
 
-On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**), then [CLOSE-PARENTS.md](CLOSE-PARENTS.md). Device QA wait (no phone, last leftover) is **Desk device**, not Done — [DEVICE-QA.md](DEVICE-QA.md). Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
+On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**), then [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (child first). Do **not** archive that card unless [PROJECTS.md](PROJECTS.md) **Archive Done** says a cap is over. Device QA wait (no phone, last leftover) is **Desk device**, not Done — [DEVICE-QA.md](DEVICE-QA.md). Catch missing items (bucket 7) and the Done-lane trim (bucket 8) every `/umbrella` run. Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
 
 ## Done
 

@@ -106,7 +106,7 @@ On each wave ticket (and the spec, if it is missing this too):
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
-On close: **Living docs**, then [DEVICE-QA.md](../umbrella/DEVICE-QA.md) if the ship is phone-visible (probe `adb`; no phone + crawl is last leftover → **Desk device**, do not close). If you do close: remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md) — close the parent when it has zero open children. **Keep the milestone** on the closed ticket. If this was the last open issue in that house (no parked leftovers), close the milestone and set `due_on` to today — `/umbrella` **Milestones** §9.
+On close: **Living docs**, then [DEVICE-QA.md](../umbrella/DEVICE-QA.md) if the ship is phone-visible (probe `adb`; no phone + crawl is last leftover → **Desk device**, do not close). If you do close: remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Close **this child** (Status **Done**, keep the milestone). Do **not** archive that card yet. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md) — parent only after every child is already closed. Then [PROJECTS.md](../umbrella/PROJECTS.md) **Archive Done** (oldest Done only if Done > 200 or other lanes need the 200-item page). If this was the last open issue in that house (no parked leftovers), close the milestone and set `due_on` to today — `/umbrella` **Milestones** §9.
 
 ## Living docs
 

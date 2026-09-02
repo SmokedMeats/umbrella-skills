@@ -44,7 +44,7 @@ Status columns (do not add more): **Parked** → **Unclaimed** → **In Progress
 | Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close |
 | Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
 | Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close |
-| Close after Build loop empty **and** no Operator / Desk / Field leftover | **Done** — drop `parked:*` and `ready-for-agent` |
+| Close after Build loop empty **and** no Operator / Desk / Field leftover | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 
@@ -68,7 +68,7 @@ gh api repos/:owner/:repo/issues/<n> -X PATCH -F milestone=<milestone-number>
 
 ## Catch (`/umbrella` every run)
 
-Open issues missing from the project → `item-add`. Same as the no-milestone catch. Do not invent `umbrella:*` to fill the board.
+Open issues missing from the project → `item-add`. Same as the no-milestone catch. Do not invent `umbrella:*` to fill the board. Then **Archive Done** (bucket 8) — count first; do not archive unless a cap is over.
 
 Compare **open issues** to **open project items**. Never treat the first 200 `item-list` rows as the whole board.
 
@@ -109,25 +109,66 @@ IDs for this board:
 | Field | `f2f739b6` |
 | Done | `98236657` |
 
-After **Done**, archive so the live list stays small (milestone still holds the ticket):
+## Archive Done (not on every close)
+
+**Do not** archive the card you just moved to **Done**. Leave it in the Done lane so recent closes stay visible.
+
+Archive is **not** a column. It hides a card from the live board. The milestone still holds the ticket.
+
+Run this **trim** after a close (including [CLOSE-PARENTS.md](CLOSE-PARENTS.md)) and on every `/umbrella` catch (bucket 8). Also run it **before** `item-add` / claim if the add would push the working page over 200.
+
+### Caps
+
+| Cap | Value | Why |
+| --- | --- | --- |
+| Done recency | **200** unarchived **Done** cards | Keep the newest 200 for reference. `item-list` `-L 200` is a page, not a Project limit. |
+| Working page | **200** unarchived cards **across all lanes** | Other lanes (Parked … Field) stay visible. Done yields first when additions collide with that page. |
+
+### When to archive
+
+Count first. Do not archive if both caps are fine.
+
+```text
+gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "status:Done"
+gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "-status:Done"
+```
+
+Use each payload’s `totalCount` (`done`, `other`). `total = done + other`.
+
+1. **Collision / additions.** If `total > 200` and `other > 0`, archive the **oldest** Done cards until `total ≤ 200` or Done is empty. A new `item-add` or claim that would push `total` over 200 does the same **first**. Never archive a non-Done card to make room.
+2. **Done overflow.** If `done > 200`, archive the **oldest** Done cards until `done == 200`.
+
+If `other` is already over 200, archive every Done card you can, then stop. Do not archive live lanes.
+
+If neither cap is exceeded, do nothing. Say **Done lane under 200; no archive.**
+
+### Which cards (oldest first)
+
+`item-list` rows often have no date. Load `updatedAt` on Done items, sort **ascending**, archive the surplus:
+
+```text
+gh api graphql -f query='query($after:String){user(login:"SmokedMeats"){projectV2(number:1){items(first:100,after:$after){pageInfo{hasNextPage endCursor}nodes{id updatedAt fieldValues(first:15){nodes{... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}'
+```
+
+Keep nodes whose Status field is **Done**. Paginate until you have them. Then:
 
 ```text
 gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID>
 ```
 
-Do not bulk-archive from a truncated `item-list`. Undo: `gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID> --undo`.
+Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Undo: `gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID> --undo`.
 
 ## Which skill writes what
 
 | Skill | Project write |
 | --- | --- |
-| `/umbrella` | Catch: missing items. Claim → In Progress |
+| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress |
 | `/triage` | `item-add` when it files or houses |
 | `/wayfinder` | `item-add` on map + children + `Later:` |
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; close → Done; last leftover Device QA / no phone → Desk device |
+| `/implement` | Backfill item; claim → In Progress; close → Done (no immediate archive); last leftover Device QA / no phone → Desk device |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.

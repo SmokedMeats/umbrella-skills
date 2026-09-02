@@ -78,8 +78,8 @@ On close (same moment as Status **Done**):
 1. `--remove-label "parked:<slug>"` if present.
 2. `--remove-label ready-for-agent` if present.
 3. Keep the milestone. Do **not** add `umbrella:<slug>` just because it shipped.
-4. Project Status **Done**.
-5. Then [CLOSE-PARENTS.md](CLOSE-PARENTS.md).
+4. Project Status **Done**. Do **not** archive that card yet.
+5. Then [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (child first). Then [PROJECTS.md](PROJECTS.md) **Archive Done**.
 
 Closing is not unpark. Unpark is only for an **open** ticket the user asked to pull. Device QA wait is **Desk device**, not this Close — [DEVICE-QA.md](DEVICE-QA.md).
 

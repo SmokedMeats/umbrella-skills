@@ -2,17 +2,21 @@
 
 SSOT for any skill that **closes** an issue under `/umbrella`.
 
-After `gh issue close <n>` (and the usual hygiene: comment, drop `ready-for-agent` / `parked:*`, Project **Done**, keep the milestone), close each **open parent** that now has **zero open children**. Recurse. Then the existing **Hit milestone** rule (`/umbrella` **Milestones** §9).
+**Child first.** Close the child (comment, drop `ready-for-agent` / `parked:*`, Project **Done**, keep the milestone). Then look at the parent. Never close a parent while any child is still `OPEN`. The parent closes only after its last child is already closed.
 
 Parked / `Later:` / `locked` children still count as open. That is the leftover shelf. Do not close a parent that still has one.
 
+After the child is closed, close each **open parent** that now has **zero open children**. Recurse. Then the **Hit milestone** rule (`/umbrella` **Milestones** §9). Then the Done-lane **trim** in [PROJECTS.md](PROJECTS.md) — do not archive the card you just closed unless that trim says a cap is over.
+
 ## After every close
 
-1. Find **parent(s)** of the issue you just closed.
-2. For each **open** parent: list its children. If any child is still `OPEN` → stop on that parent.
-3. If open children = 0: close the parent with the same hygiene. Comment: `Closed because last child #<n> closed.`
-4. Run this protocol on that parent (it may be the last child of another parent).
-5. If the house now has **no open issues** (live or parked), Hit the milestone.
+1. Confirm the issue you just closed is the **child** (or a parent whose children are already all closed).
+2. Find **parent(s)** of that issue.
+3. For each **open** parent: list its children. If any child is still `OPEN` → stop on that parent.
+4. If open children = 0: close the parent with the same hygiene. Comment: `Closed because last child #<n> closed.`
+5. Run this protocol on that parent (it may be the last child of another parent).
+6. If the house now has **no open issues** (live or parked), Hit the milestone.
+7. Run [PROJECTS.md](PROJECTS.md) **Archive Done** (count first; archive oldest Done only if over cap).
 
 Completion: no open parent remains whose GitHub children are all closed.
 
