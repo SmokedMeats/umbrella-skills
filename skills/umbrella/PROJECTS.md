@@ -41,10 +41,12 @@ Status columns (do not add more): **Parked** → **Unclaimed** → **In Progress
 | Park (`parked:*`) while code/grill still needed | **Parked** — left of Unclaimed. Do not pull |
 | Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
-| Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close |
+| Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
-| Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close |
+| Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Close after Build loop empty **and** no Operator / Desk / Field leftover | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
+
+**Operator / Desk device / Field are the same leftover class.** Product ACs PASS, card stays **open**, not Done. Do not pull that card. Dependents unblock. `/implement` **Crawl** the next wave in this session. Living docs must already be on the ticket. None of these three is Window full.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 

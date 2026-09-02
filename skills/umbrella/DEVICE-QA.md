@@ -45,10 +45,14 @@ If the only remaining work on the ticket is the Device QA crawl (Leaves done or 
 
 **Unpark / pull when:** one Preview phone is plugged in, then `/device-qa-agent` (or `/umbrella` — it probes again).
 
-**Do not:** close this ticket, treat it as implement frontier, or skip this leftover in chat.
+**Do not:** close this ticket, or pull **this** card as implement frontier. Dependents that were waiting on its **product** ACs are unblocked — `/implement` **Crawl** them now. Do not skip this leftover in chat.
 ```
 
-5. Rewrite `docs/agents/UMBRELLA_CURSOR.md`: Skill `/device-qa-agent` · Step waiting on phone · Next plug in Preview.
+5. Rewrite `docs/agents/UMBRELLA_CURSOR.md`: this ticket is Desk leftover · **Next** is the next unblocked implement wave (not “stop for phone”). List the leftover numbers so a later `/device-qa-agent` can walk them.
+
+6. **Crawl immediately.** Desk device is leftover, not Window full. Return to `/implement` **Count first** in this session. A GitHub `blocked_by` that is already Desk device does **not** hold the next wave.
+
+Living docs must already be on the ticket (including the **P\*** leaf). No Living docs comment → do not park.
 
 If Device QA is **not** the last leftover (product ACs still open): stay **In Progress**, note “no phone — crawl later,” keep building. Do not move the ticket.
 
@@ -58,7 +62,7 @@ Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS
 
 | Skill | When |
 | --- | --- |
-| `/umbrella` | After `/implement` is product-done on a phone-visible ticket, **before** naming the house Hit or the next implement wave |
-| `/implement` | Before `gh issue close` on a phone-visible ticket — probe first |
+| `/implement` | Before `gh issue close` on a phone-visible ticket — probe first. After Desk device, keep `/implement` (next wave) |
+| `/umbrella` | Same probe. After Desk device, **do not** wait on the picker — stay on `/implement` crawl if any product ticket is still unblocked |
 
-`/implement` **Count first** skips tickets already on **Desk device** / **Operator** / **Field**.
+`/implement` **Count first** does not **pull** tickets already on **Desk device** / **Operator** / **Field**. It **does** treat those leftovers as satisfied blockers. **Operator** (console / Xcode) and **Field** (outdoor run) use the same crawl rule — [PROJECTS.md](PROJECTS.md) leftover class. This file is only the phone probe.

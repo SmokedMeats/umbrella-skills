@@ -136,7 +136,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
 | fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
-| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — 1 `adb` device → `/device-qa-agent`; else **Desk device** + notes if that is the last leftover | — |
+| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — 1 `adb` device → `/device-qa-agent`; else **Desk device** + notes, then **stay on `/implement`** if another product ticket is unblocked | — |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
@@ -150,9 +150,9 @@ Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 
-If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close).
+If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close, then `/implement` **Crawl** — do not stop).
 
-Then return here and name the next phase.
+If `/implement` still has unblocked product tickets, **do not** return here to wait on a picker. Stay on `/implement`. Operator / Desk device / Field leftover on a finished card does not end the session. Return here only when that skill’s Crawl says the session is done.
 
 ## Milestones
 

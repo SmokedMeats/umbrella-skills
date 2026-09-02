@@ -18,7 +18,11 @@ The issue tracker should have been provided to you — run `/setup-matt-pocock-s
 
 ### 1. Pin the fixed point
 
-Whatever the user said is the fixed point — a commit SHA, branch name, tag, `main`, `HEAD~5`, etc. If they didn't specify one, ask for it.
+Whatever the user said is the fixed point — a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.
+
+**Loaded from `/implement`:** do not ask. Fixed point is **this ticket’s first ship SHA** (parent of that commit), or `HEAD~n` covering only this ticket’s commits. Post `## Standards` and `## Spec` **on that ticket**. Then Close the loop on **that** ticket before the next ticket.
+
+If the user invoked `/code-review` alone and did not name a point, ask for it.
 
 Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
 
