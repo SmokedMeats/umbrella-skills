@@ -56,7 +56,7 @@ After labels + milestone:
 gh project item-add 1 --owner SmokedMeats --url https://github.com/SmokedMeats/XyberRun/issues/<n>
 ```
 
-If the repo **auto-add workflow** is on, skip the add when the item already exists (`gh project item-list`). Still set Status when claiming.
+`item-add` is safe to re-run. Do **not** dump the whole board to see if the item exists. Still set Status when claiming.
 
 `item-add` **open** issues. Do not bulk-add the closed archive to the board. Closed tickets stay on the **milestone** so the pack bar is real.
 
@@ -69,6 +69,25 @@ gh api repos/:owner/:repo/issues/<n> -X PATCH -F milestone=<milestone-number>
 ## Catch (`/umbrella` every run)
 
 Open issues missing from the project → `item-add`. Same as the no-milestone catch. Do not invent `umbrella:*` to fill the board.
+
+Compare **open issues** to **open project items**. Never treat the first 200 `item-list` rows as the whole board.
+
+```text
+gh issue list --state open --limit 500 --json number,url
+gh project item-list 1 --owner SmokedMeats --format json -L 500 --query "is:open"
+```
+
+`--query "is:open"` is the live board (~100 today). Bare `item-list` without a query is 400+ (mostly Done) and a `-L 200` dump is a **truncated** list — that is the cap agents hit, not a Project limit.
+
+## Resolve one item (never list the board)
+
+`gh project item-list` default is **30**. `-L 200` is still a page, not “all items.” The board already has **400+** cards. To set Status, load the issue’s own project items:
+
+```text
+gh api graphql -f query='query($n:Int!){repository(owner:"SmokedMeats",name:"XyberRun"){issue(number:$n){projectItems(first:10){nodes{id project{number} fieldValues(first:20){nodes{... on ProjectV2ItemFieldSingleSelectValue { name optionId field { ... on ProjectV2SingleSelectField { name }}}}}}}}}}' -F n=ISSUE_NUMBER
+```
+
+Use the node `id` whose `project.number` is **1**. Empty `projectItems` → `item-add`, then query again.
 
 ## Claim / close
 
@@ -90,7 +109,13 @@ IDs for this board:
 | Field | `f2f739b6` |
 | Done | `98236657` |
 
-Resolve item IDs from `gh project item-list 1 --owner SmokedMeats --format json`.
+After **Done**, archive so the live list stays small (milestone still holds the ticket):
+
+```text
+gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID>
+```
+
+Do not bulk-archive from a truncated `item-list`. Undo: `gh project item-archive 1 --owner SmokedMeats --id <ITEM_ID> --undo`.
 
 ## Which skill writes what
 
