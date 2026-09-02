@@ -58,7 +58,7 @@ Count open implement tickets whose **product** blockers are done, that are not a
 
 **Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / In Progress / Done) — that card is leftover, not frontier.
 
-**Do treat leftover-lane cards as done blockers.** An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
+Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
 
 **First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
 
