@@ -61,13 +61,31 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-### 4. Spawn both sub-agents in parallel
+### 4. Cycles probe (XyberRun)
+
+Development `verify` does **not** run circular-import checks. `preflight:master` / `preflight:governance:cycles` do (`backend` and `mobile/xyberrun-mobile` `check-cycles`, madge). Run the matching package check **before** Standards when the diff touches that tree:
+
+| Diff touches | Command |
+| --- | --- |
+| `backend/src` | `cd backend && npm run check-cycles` |
+| `mobile/xyberrun-mobile/src` | `cd mobile/xyberrun-mobile && npm run check-cycles` |
+
+Paste the stdout/stderr into the Standards prompt. Skip this step if neither tree is in the diff, or this is not the XyberRun monorepo. Do not invent a cycle from the import list when the check is green. Madge already skips type-only imports.
+
+Also note for Standards (do not invent; just state facts):
+
+- **Map:** whether the diff adds/renames a node-worthy path (`trpc/routers`, `app/api|webhooks|cron`, `screens`, `features/*/presentation|screens`, new write-path schema) **and** whether `XyberRun.IO/map-build/` is in the same diff.
+- **Auth glob:** list any touched `LoginScreen`, `OnboardingScreen`, `features/auth/**`, `clerk*OAuth*`, `clerkSession*`, `Clerk*Bridge`, `ClerkTwitterOAuth*`, `OTAUpdateProgressBar`, `trpc.ts`.
+
+### 5. Spawn both sub-agents in parallel
 
 **Standards sub-agent prompt** — include:
 
 - The full diff command and commit list.
 - The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it.
-- The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. **Effect-TS (XyberRun):** flag new `JSON.parse` / webhook / native dict / untyped `res.json` that is still hand-narrowed when sibling bags use `Schema`+`Either`, and new flaky outbound HTTP retry that is not `Effect`+`Schedule` next to walking-way clients. Do not flag tRPC Zod, Wear Kotlin, or wrapping a service in `Effect.gen` for its own sake. Listing a bag in EFFECT_SCHEMA_TRUST_BOUNDARIES.md is not enough if the decode should have been Schema. Under 400 words."
+- The `check-cycles` output from step 4 (or “not run — no backend/mobile src in this diff”).
+- The map / auth-glob notes from step 4.
+- The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip lint/tsc/`verify` noise. **XyberRun hard pins** (cite the rule; skip the row if the note says not in this diff): (1) **Cycles** — non-empty `check-cycles` is hard; do not invent a cycle if the check is green or was not run. (2) **Map** — new/renamed router, screen, service, write path, webhook, cron, or integration with no `map-build` fragment in this change is hard (`architecture-map-maintenance`). Typo/rename of an existing node is label-only, not a new node. (3) **Thin router** — `backend/src/trpc/routers/*` that queries DB or orchestrates instead of Zod + procedure + feature-service call is hard (`trpc-router-auth`). (4) **Auth glob** — those files in the diff on a ticket that is not auth/session/OTA is hard; do not 'fix for consistency'. (5) **Low-value tests** — *new* `*.smoke.test`, `toMatchSnapshot`, `toBeDefined`/module-exists, or `jest.mock` of the module under test / `use*Controller` is hard (`TEST_DELETE_ON_SIGHT`). Skip edits to an existing allowed test. (6) **Tier** — new `subscriptionTier === 'pro'|'plus'` (Founders-blind) in product UI/service is hard; use `hasPlusEntitlement` / `hasProEntitlement` / effective-tier helpers. Skip `subscriptionEntitlements.ts` and tests that assert stored raw. (7) **OTA modal** — new `import { Modal } from 'react-native'` for a product overlay without `OtaAwareModal` / `useOtaUiBusy` is hard. Skip the OTA Restart prompt. **Effect-TS:** flag new hand-narrowed `JSON.parse` / webhook / native dict / untyped `res.json` when a sibling uses `Schema`+`Either`, and new one-off HTTP retry next to walking-way `Effect`+`Schedule`. Do not flag tRPC Zod, Wear Kotlin, or `Effect.gen` for its own sake. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
@@ -77,7 +95,7 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
-### 5. Aggregate
+### 6. Aggregate
 
 Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
 
@@ -85,7 +103,7 @@ End with a one-line summary: total findings per axis, and the worst issue _withi
 
 Then **Close the loop**. A report without a remaining-AC verdict is an unfinished review.
 
-### 6. Close the loop
+### 7. Close the loop
 
 Findings that are still true in **current code** and still belong to **this ship** go back through `/implement` **Build loop** on the **same** tickets. One seam at a time. Keep those tickets open (or post remaining ACs on them) and keep building.
 

@@ -143,6 +143,10 @@ Typical misses: `docs/trackers/WAYFINDER_NOW.md`, `docs/trackers/WAYFINDER_MAPS.
 
 **Effect Schema inventory (XyberRun).** If this change adds or edits a production `JSON.parse`, webhook `data` bag, native dict, or untyped `res.json`, add or update a row in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` in the **same change** (P0/P1/P2). Then run `npm run check:effect-schema-inventory`. Listing is required even if Schema is later. The **Effect-TS check** still runs: a listed bag that is still hand-parsed is a remaining AC. Auth-adjacent bags still need the auth checklist before code.
 
+**Cycles (XyberRun).** Package `verify` does not run `check-cycles`. That check is master-bar (`preflight:governance:cycles`). `/code-review` runs it when the ticket touched `backend/src` or mobile `src`. A new cycle is a Standards hard violation and a remaining AC.
+
+`/code-review` Standards also pins (hard, same-ticket remaining ACs): node-worthy map fragment missing; fat tRPC router; auth-glob drive-by; new low-value test; raw `subscriptionTier ===` in product code; raw RN `Modal` without OTA ui-busy.
+
 **Device QA leaf.** When this repo has `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` and the ship is **phone-visible**, append a **P\*** leaf in the same change — Process **When a feature ships** in that file. Conductor writes it. Children name phone-visible tickets in their report. If a later `/device-qa-agent` run finds a missed ship, **Leaves** (before Probe) appends it — catch-up, not a replacement for writing it here.
 
 The conductor writes these files (and commits them with the ticket). Children leave them alone.
