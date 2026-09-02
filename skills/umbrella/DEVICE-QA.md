@@ -65,4 +65,4 @@ Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS
 | `/implement` | Before `gh issue close` on a phone-visible ticket — probe first. After Desk device, keep `/implement` (next wave) |
 | `/umbrella` | Same probe. After Desk device, **do not** wait on the picker — stay on `/implement` crawl if any product ticket is still unblocked |
 
-`/implement` **Count first** does not **pull** tickets already on **Desk device** / **Operator** / **Field**. It **does** treat those leftovers as satisfied blockers. **Operator** (console / Xcode) and **Field** (outdoor run) use the same crawl rule — [PROJECTS.md](PROJECTS.md) leftover class. This file is only the phone probe.
+`/implement` **Count first** does not **pull** leftover-lane cards. It **does** treat them as satisfied blockers. Desk device is one leftover lane; any other leftover lane uses the same crawl rule — [PROJECTS.md](PROJECTS.md). This file is only the phone probe.

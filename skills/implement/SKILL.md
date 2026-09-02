@@ -16,11 +16,11 @@ This is not an `/audit` crawl. Do not inventory the neighborhood. Do not grind l
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-**Per ticket, before close or Desk device:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket.
+**Per ticket, before close or leftover-lane:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket.
 
 ## Gap check
 
-After product code is in the tree, **before** you close a ticket, move it to Desk device / Operator / Field, or say ACs hold. Run this **on each ticket**, not once for the wave.
+After product code is in the tree, **before** you close a ticket, move it to a leftover lane, or say ACs hold. Run this **on each ticket**, not once for the wave.
 
 1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment). Chat memory is not the list.
 2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path.
@@ -28,7 +28,7 @@ After product code is in the tree, **before** you close a ticket, move it to Des
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
 5. Post the PASS / PARTIAL / FAIL table on **that** ticket.
 
-Completion: that ticket is PASS in current code, or **Window full** with the remaining ACs written on the spec. No close or Desk device on chat memory.
+Completion: that ticket is PASS in current code, or **Window full** with the remaining ACs written on the spec. No close or leftover-lane on chat memory.
 
 Commit your work to the current branch.
 
@@ -43,10 +43,10 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty: close **or** leftover (**Operator** / **Desk device** / **Field**). Then **Crawl** — do not stop the session.
+4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / In Progress / Done). Then **Crawl** — do not stop the session.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
 
-Desk device / Operator / Field is **not** Window full. It is leftover on that card. Keep crawling.
+A leftover lane is **not** Window full. Keep crawling.
 
 `Later:` is grill / spec **not this pack** only ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). Remainder that still belongs to this ship stays on the live tickets.
 
@@ -56,9 +56,9 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 
 Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
-**Do not pull** a ticket already on Kanban **Desk device** / **Operator** / **Field** — that card is leftover, not frontier.
+**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / In Progress / Done) — that card is leftover, not frontier.
 
-**Do treat those leftovers as done blockers.** An open GitHub `blocked_by` that is already **Operator** / **Desk device** / **Field** (product ACs PASS, waiting on console / phone / a run) does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
+**Do treat leftover-lane cards as done blockers.** An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
 
 **First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
 
@@ -85,13 +85,13 @@ Shared overlap (one View, one controller, one board) goes on the **conductor exc
 
 Completion: the first reply contains the count table, and the spawn gate is met.
 
-Rewrite `docs/agents/UMBRELLA_CURSOR.md` after the count table / claim, after each close, after each Desk device / Operator / Field park, and on Window full ([CURSOR.md](../umbrella/CURSOR.md)). Do not rely on the spec comment alone as the step cursor.
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` after the count table / claim, after each close, after each leftover-lane move, and on Window full ([CURSOR.md](../umbrella/CURSOR.md)). Do not rely on the spec comment alone as the step cursor.
 
-After any leftover park (**Operator** / **Desk device** / **Field**): **post the count table again in the same session** and start the next wave. Do not wait for the user.
+After any leftover-lane move: **post the count table again in the same session** and start the next wave. Do not wait for the user.
 
 ## Window full
 
-When this session **cannot** take the next wave (context/window actually full, or `/umbrella` stops before loading implement). Moving a ticket to Desk device / Operator / Field is **not** this. That is leftover; crawl the next unblocked tickets.
+When this session **cannot** take the next wave (context/window actually full, or `/umbrella` stops before loading implement). Moving a ticket to a leftover lane is **not** this. Crawl the next unblocked tickets.
 
 1. Post or update the **conductor comment on the spec** with remaining frontier (ticket numbers, unblocked vs held, exclusive globs if a parallel wave, frozen shared).
 2. Print `Next: /implement #<n>` for the unblocked frontier. If that frontier is **2+** tickets, add: this next session is **conductor** and must spawn extras before product code.
@@ -114,21 +114,21 @@ On each wave ticket (and the spec, if it is missing this too):
 
 4. **Claim** — `gh issue edit <n> --add-assignee "@me"` on every ticket this session will write (quote `"@me"` on PowerShell). Same for a one-ticket build. A comment is not a claim.
 5. **Milestone** — every wave ticket (and the spec/map if missing) wears the house GitHub milestone. Create it if the pack has none. See `/umbrella` **Milestones**.
-6. **Project** — each wave ticket is on the XyberRun Project. `item-add` if missing. Set Status **In Progress** on claim. If the leftover is console/Xcode, Maestro, or a physical run, move to **Operator** / **Desk device** / **Field** and do not close. **Done** only when the issue closes. See `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+6. **Project** — each wave ticket is on the XyberRun Project. `item-add` if missing. Set Status **In Progress** on claim. If product is done and something outside the repo remains, move to a **leftover lane** and do not close. **Done** only when the issue closes. See `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
-On close **or** leftover (**Operator** / **Desk device** / **Field**): **Living docs** comment must already be on the ticket (grep hits updated). Phone leftover → [DEVICE-QA.md](../umbrella/DEVICE-QA.md). Console / signing leftover → **Operator**. Outdoor run / goldens leftover → **Field**. Do not close. Then **Crawl** the next wave. If you do close (no leftover): remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Close **this child** (Status **Done**, keep the milestone). Do **not** archive that card yet. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md) — parent only after every child is already closed. Then [PROJECTS.md](../umbrella/PROJECTS.md) **Archive Done**. Then **Crawl**. Leftover cards still open → do not Hit the milestone.
+On close **or** leftover-lane: **Living docs** comment must already be on the ticket. Pick the leftover Status that matches the wait (phone → Desk device via [DEVICE-QA.md](../umbrella/DEVICE-QA.md); console → Operator; outdoor → Field; or a later leftover column). Do not close. Then **Crawl**. If you do close (no leftover): remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Close **this child** (Status **Done**, keep the milestone). Do **not** archive that card yet. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md). Then [PROJECTS.md](../umbrella/PROJECTS.md) **Archive Done**. Then **Crawl**. Leftover cards still open → do not Hit the milestone.
 
 ## Living docs
 
-Hard gate. After gap check PASS, **before** GitHub close **or** Desk device / Operator / Field. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`.
+Hard gate. After gap check PASS, **before** GitHub close **or** a leftover-lane move. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`.
 
 1. Grep `docs/` (including `docs/trackers/`) for **this ticket number**, the spec number, and `umbrella:<slug>`. Also grep house encyclopedias the ticket names (`ADVENTURE_CONTRACTS_BOARD`, admin guides, `WAYFINDER_NOW`, `WAYFINDER_MAPS`, module-intent).
-2. For each hit that still reads as open / **Do now** / unchecked work: mark it shipped (strikethrough, SHA, or leftover Desk device). Point a now-list at the next **open product** child, not this leftover card.
+2. For each hit that still reads as open / **Do now** / unchecked work: mark it shipped (strikethrough, SHA, or leftover-lane). Point a now-list at the next **open product** child, not this leftover card.
 3. Architecture-map fragment if the ship is node-worthy — same change.
 4. Post a **Living docs** comment on **this ticket**: one row per hit (`path` · updated / already historical). Zero rows is only valid if grep returned none — say that.
-5. A hit still saying **Do now** / open work → **do not** close and **do not** leftover-park (Operator / Desk device / Field). That is remaining AC.
+5. A hit still saying **Do now** / open work → **do not** close and **do not** move to a leftover lane. That is remaining AC.
 
 Typical misses: `docs/trackers/WAYFINDER_NOW.md`, `docs/trackers/WAYFINDER_MAPS.md`, the house board, admin guide, Device QA **P\*** leaf.
 
@@ -149,20 +149,20 @@ The conductor writes these files (and commits them with the ticket). Children le
 
 Completion: the Living docs comment is on the ticket, and every grep hit is done/historical or leftover-labeled. Do not create a new tracker file. Missing comment → Build loop not empty.
 
-`/code-review` is required **on this ticket** before close or Desk device. In-scope findings return to **Build loop** on the same ticket. Do not reopen a closed ticket to flip checkboxes — keep it open, or post remaining ACs on it, and keep building.
+`/code-review` is required **on this ticket** before close or leftover-lane. In-scope findings return to **Build loop** on the same ticket. Do not reopen a closed ticket to flip checkboxes — keep it open, or post remaining ACs on it, and keep building.
 
 ## Crawl
 
-The house is a tree, not one wave. After each ticket **closes** **or** moves to **Desk device** / **Operator** / **Field** (product ACs PASS), recount **in this session**. Post the count table. Spawn the next wave. Do not stop because the last card stayed open on the leftover column.
+The house is a tree, not one wave. After each ticket **closes** **or** moves to a **leftover lane** (product ACs PASS), recount **in this session**. Post the count table. Spawn the next wave. Do not stop because the last card stayed open on a leftover column.
 
 - Unblocked and not in-flight → join the live wave. Draft exclusives if missing. Spawn a child for each extra (and for every new ticket if the conductor is already writing one).
 - Open **product** blocker remains (still In Progress / Unclaimed, ACs not PASS) → **hold**. Name the blocker.
-- Blocker is already Desk device / Operator / Field → **not a hold**. Unlock dependents now.
+- Blocker is already on a leftover lane → **not a hold**. Unlock dependents now.
 - Exclusive glob still owned by an in-flight child → hold until that commit.
 
-Example: T1 product-done → Desk device unlocks T2/T3/T4 even though T1 is still open. T3 later Desk-devices and unlocks T5/T6. Spawn T5 and T6 in this session.
+Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is still open. T3 later leftover-lanes and unlocks T5/T6. Spawn T5 and T6 in this session.
 
-This session stays conductor across waves. Completion: no unblocked implement tickets remain (Desk leftovers do not count), the user stops, or **Window full**.
+This session stays conductor across waves. Completion: no unblocked implement tickets remain (leftover-lane cards do not count), the user stops, or **Window full**.
 
 ## Parallel wave
 
@@ -178,7 +178,7 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
 6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). Close or leftover-park that ticket only when **its** loop is empty. Do not batch one review for the whole wave. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
-7. **Recount.** Return to **Count first** **immediately** (close **or** Operator / Desk device / Field). Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
+7. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)
 

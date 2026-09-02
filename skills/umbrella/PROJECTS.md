@@ -29,7 +29,7 @@ SSOT for the GitHub Project that sits **on top of** issues + milestones. Labels 
 | **Grill** | table | `label:wayfinder:grilling -label:parked:*` | HITL queue |
 | **Parked** | table | `label:parked:* is:open` | Open shelf only. Status may be Parked or a leftover column |
 
-Status columns (do not add more): **Parked** → **Unclaimed** → **In Progress** → **Operator** → **Desk device** → **Field** → **Done**. Locked stays a label (Kanban hides `locked`).
+Status columns today: **Parked** → **Unclaimed** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before Done, it is a **leftover lane** (below).
 
 **Now** is a **view** (assignee / ready-for-agent). Working-now on the Kanban is **In Progress**.
 
@@ -44,9 +44,21 @@ Status columns (do not add more): **Parked** → **Unclaimed** → **In Progress
 | Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
 | Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device) |
-| Close after Build loop empty **and** no Operator / Desk / Field leftover | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
+| Close after Build loop empty **and** no leftover-lane wait | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
 
-**Operator / Desk device / Field are the same leftover class.** Product ACs PASS, card stays **open**, not Done. Do not pull that card. Dependents unblock. `/implement` **Crawl** the next wave in this session. Living docs must already be on the ticket. None of these three is Window full.
+## Leftover lanes (code complete, not Done)
+
+A **leftover lane** is any Status that is **not** Parked, Unclaimed, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and Done.
+
+| | |
+| --- | --- |
+| Pull this card? | **No** — not implement frontier |
+| Hold dependents? | **No** — GitHub `blocked_by` on a leftover-lane card does not hold the next wave |
+| Window full? | **No** |
+| Close? | **No** until the leftover is walked |
+| After the move | Living docs already on the ticket. `/implement` **Crawl** the next wave **in this session** |
+
+Do not write “still blocked until this ticket closes.”
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 

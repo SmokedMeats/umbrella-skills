@@ -152,7 +152,7 @@ Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any
 
 If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close, then `/implement` **Crawl** — do not stop).
 
-If `/implement` still has unblocked product tickets, **do not** return here to wait on a picker. Stay on `/implement`. Operator / Desk device / Field leftover on a finished card does not end the session. Return here only when that skill’s Crawl says the session is done.
+If `/implement` still has unblocked product tickets, **do not** return here to wait on a picker. Stay on `/implement`. A leftover-lane card does not end the session. Return here only when that skill’s Crawl says the session is done.
 
 ## Milestones
 
