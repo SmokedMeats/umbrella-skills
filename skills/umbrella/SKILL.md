@@ -11,7 +11,7 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. On
 
 Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase.
 
-After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to the XyberRun Project** (see [PROJECTS.md](PROJECTS.md)).
+After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to the XyberRun Project** (see [PROJECTS.md](PROJECTS.md)). After any of those skills **closes** an issue, [CLOSE-PARENTS.md](CLOSE-PARENTS.md). After product-done Device QA, [DEVICE-QA.md](DEVICE-QA.md).
 
 **Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. GitHub labels win when the file’s phase is stale.
 
@@ -51,7 +51,7 @@ Hard gates:
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
 - A locked grill is **not** a build. Next is `/to-spec`.
 - A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. `/device-qa-agent` **Leaves** (desk catch-up) then crawls later.
+- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. Then [DEVICE-QA.md](DEVICE-QA.md): `adb devices` — exactly one phone → `/device-qa-agent`; else if the crawl is the last leftover → Kanban **Desk device** + Waiting comment (do not close, do not silent-skip).
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Grill / spec / tickets still wait for approval. Name one skill, finish it, then the next.
 - Never skip a phase.
@@ -135,6 +135,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
 | fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
+| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — 1 `adb` device → `/device-qa-agent`; else **Desk device** + notes if that is the last leftover | — |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
@@ -147,6 +148,8 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`, `code-review`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**).
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
+
+If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md). If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close).
 
 Then return here and name the next phase.
 
@@ -184,7 +187,7 @@ Completion: `gh issue list --state open --json number,milestone` has no `milesto
 
 One user-owned GitHub Project (**XyberRun**) is the Kanban + Roadmap over the same issues. It is not a house and not a substitute for milestones. Full rules, views, Status, and `gh` commands: [PROJECTS.md](PROJECTS.md).
 
-On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**). Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
+On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**), then [CLOSE-PARENTS.md](CLOSE-PARENTS.md). Device QA wait (no phone, last leftover) is **Desk device**, not Done — [DEVICE-QA.md](DEVICE-QA.md). Catch missing items every `/umbrella` run (bucket 7). Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
 
 ## Done
 

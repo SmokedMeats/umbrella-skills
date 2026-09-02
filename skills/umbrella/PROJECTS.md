@@ -42,7 +42,7 @@ Status columns (do not add more): **Parked** → **Unclaimed** → **In Progress
 | Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
 | Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close |
-| Leftover is Maestro, Preview APK, sideload, desk companion | **Desk device** — do not close |
+| Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
 | Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close |
 | Close after Build loop empty **and** no Operator / Desk / Field leftover | **Done** — drop `parked:*` and `ready-for-agent` |
 
@@ -102,7 +102,7 @@ Resolve item IDs from `gh project item-list 1 --owner SmokedMeats --format json`
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; close → Done |
+| `/implement` | Backfill item; claim → In Progress; close → Done; last leftover Device QA / no phone → Desk device |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.

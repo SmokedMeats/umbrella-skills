@@ -48,7 +48,7 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 
 ## Count first
 
-Count open implement tickets whose blockers are all done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
+Count open implement tickets whose blockers are all done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`, not already on Kanban **Desk device** / **Operator** / **Field**).
 
 **First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
 
@@ -106,7 +106,7 @@ On each wave ticket (and the spec, if it is missing this too):
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
-On close: **Living docs**, then remove `ready-for-agent` and any `parked:<slug>`. A closed ticket must not stay on the Parked shelf. Append one named line to the map's Decisions-so-far. Leave the map open. **Keep the milestone** on the closed ticket. If this was the last open issue in that house (no parked leftovers), close the milestone and set `due_on` to today — `/umbrella` **Milestones** §9.
+On close: **Living docs**, then [DEVICE-QA.md](../umbrella/DEVICE-QA.md) if the ship is phone-visible (probe `adb`; no phone + crawl is last leftover → **Desk device**, do not close). If you do close: remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md) — close the parent when it has zero open children. **Keep the milestone** on the closed ticket. If this was the last open issue in that house (no parked leftovers), close the milestone and set `due_on` to today — `/umbrella` **Milestones** §9.
 
 ## Living docs
 

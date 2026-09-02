@@ -79,8 +79,9 @@ On close (same moment as Status **Done**):
 2. `--remove-label ready-for-agent` if present.
 3. Keep the milestone. Do **not** add `umbrella:<slug>` just because it shipped.
 4. Project Status **Done**.
+5. Then [CLOSE-PARENTS.md](CLOSE-PARENTS.md).
 
-Closing is not unpark. Unpark is only for an **open** ticket the user asked to pull.
+Closing is not unpark. Unpark is only for an **open** ticket the user asked to pull. Device QA wait is **Desk device**, not this Close — [DEVICE-QA.md](DEVICE-QA.md).
 
 ## Create sites
 
