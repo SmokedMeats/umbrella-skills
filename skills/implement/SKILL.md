@@ -43,7 +43,7 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / In Progress / Done). Then **Crawl** — do not stop the session.
+4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / GoLive / In Progress / Done). Then **Crawl** — do not stop the session.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
 
 A leftover lane is **not** Window full. Keep crawling.
@@ -56,7 +56,7 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 
 Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
-**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / In Progress / Done) — that card is leftover, not frontier.
+**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / GoLive / In Progress / Done) — that card is leftover, not frontier. **GoLive** is pullable (pre-prod queue).
 
 Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
 

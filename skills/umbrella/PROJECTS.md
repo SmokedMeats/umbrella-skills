@@ -34,7 +34,7 @@ Phone board **1** already has these. Satellites **2–4** have the same Status c
 | **Grill** | table | `label:wayfinder:grilling -label:parked:*` | HITL queue |
 | **Parked** | table | `label:parked:* is:open` | Open shelf only. Status may be Parked or a leftover column |
 
-Status columns today: **Parked** → **Unclaimed** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before Done, it is a **leftover lane** (below).
+Status columns today: **Parked** → **Unclaimed** → **GoLive** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before Done, it is a **leftover lane** (below). **GoLive** is a work queue (must finish before production), not a leftover lane.
 
 **Now** is a **view** (assignee / ready-for-agent). Working-now on the Kanban is **In Progress**.
 
@@ -43,6 +43,7 @@ Status columns today: **Parked** → **Unclaimed** → **In Progress** → lefto
 | Event | Status |
 | --- | --- |
 | Create / file | **Unclaimed** |
+| Must finish before production go-live | **GoLive** — between Unclaimed and In Progress. Pullable. Milestone **Go Live** on this repo. Claim → **In Progress** |
 | Park (`parked:*`) while code/grill still needed | **Parked** — left of Unclaimed. Do not pull |
 | Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
@@ -53,7 +54,7 @@ Status columns today: **Parked** → **Unclaimed** → **In Progress** → lefto
 
 ## Leftover lanes (code complete, not Done)
 
-A **leftover lane** is any Status that is **not** Parked, Unclaimed, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and Done.
+A **leftover lane** is any Status that is **not** Parked, Unclaimed, **GoLive**, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and Done. **GoLive** is a pullable work queue, not leftover.
 
 | | |
 | --- | --- |
@@ -115,6 +116,15 @@ gh project item-edit --project-id <PVID> --id <ITEM_ID> --field-id <STATUS_FIELD
 ```
 
 Shared option ids (all four boards): **Unclaimed** `f75ad846` · **In Progress** `47fc9ee4` · **Done** `98236657`.
+
+**GoLive** option ids (per board — not shared):
+
+| Board | GoLive |
+| --- | --- |
+| 1 XyberRun | `d5f33cf1` |
+| 2 XyberRun.IO | `9796bac4` |
+| 3 AppleWatch | `64263cd8` |
+| 4 AndroidWatch | `a00d5811` |
 
 Leftover option ids (per board):
 
@@ -178,7 +188,7 @@ Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Un
 
 | Skill | Project write |
 | --- | --- |
-| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress |
+| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress. Pre-prod tickets stay **GoLive** until claimed |
 | `/triage` | `item-add` when it files or houses |
 | `/wayfinder` | `item-add` on map + children + `Later:` |
 | `/grill-me` | Claim batch → In Progress |
