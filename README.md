@@ -43,12 +43,15 @@ Preferred order (you can skip this if you go straight to `/umbrella` — it runs
 npx skills@latest add SmokedMeats/umbrella-skills
 ```
 
-Grok / user-global:
+Grok / user-global, or a XyberRun workspace with this clone next to the product repos:
 
 ```powershell
 git clone https://github.com/SmokedMeats/umbrella-skills.git
-Copy-Item -Recurse .\umbrella-skills\skills\* $HOME\.grok\skills\
+cd umbrella-skills
+node scripts/sync-workspace.mjs
 ```
+
+That copies the overlay into `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, and each sibling repo’s `.cursor/skills` (`XyberRun`, `XyberRun.IO`, both watch repos). From the phone monorepo you can run the same thing as `npm run sync:umbrella-skills`.
 
 3. In **your** repo, keep `docs/agents/triage-labels.md`. That file lists **your** label names. This pack does not ship product words.
 
