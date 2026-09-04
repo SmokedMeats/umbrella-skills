@@ -43,7 +43,7 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / GoLive / In Progress / Done). Then **Crawl** — do not stop the session.
+4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Then **Crawl** — do not stop the session.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
 
 A leftover lane is **not** Window full. Keep crawling.
@@ -56,7 +56,7 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 
 Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
-**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / GoLive / In Progress / Done) — that card is leftover, not frontier. **GoLive** is pullable (pre-prod queue).
+**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done) — that card is leftover, not frontier. **Live Beta** and **GoLive** are pullable (beta / pre-prod queues).
 
 Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
 
@@ -168,11 +168,32 @@ Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is st
 
 This session stays conductor across waves. Completion: no unblocked implement tickets remain (leftover-lane cards do not count), the user stops, or **Window full**.
 
+
+## Ship mode (sticky — read the pin)
+
+Read `Ship mode: Development` or `Ship mode: PR` from `docs/agents/UMBRELLA_CURSOR.md` (or the conductor comment). **Do not re-pick.** Actor force already locked it for this run (Grok Bot / Cursor cloud -> PR; local Grok Build / Cursor IDE on AlphaTerminal -> Development). Wrong pin for this actor -> correct once, note it, stay sticky.
+
+Also: cloud **Mode B** always parks phone hardware on **Desk device**; Maestro crawl only on AlphaTerminal ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)).
+
+### Mode A — `Ship mode: Development`
+
+- Stay in the **same worktree** on **`Development`**. Isolated git worktrees only if Jacob asks.
+- Conductor commits on `Development` and **pushes to `origin/Development`** when implementing (cloud save). No PR.
+- Parallel waves OK in one worktree. Children never run git (see Child rules). Conductor serializes commits.
+- Close -> **Done** (or a leftover lane). Never **Ready to merge** in Mode A.
+
+### Mode B — `Ship mode: PR`
+
+- **One ticket -> one branch -> one PR** into `Development`, or **serialize**. Do not parallel-commit multiple tickets into one PR / one worktree tip.
+- Push **only** to the PR branch. Never push to `Development` tip, Preview, or `master`. Never merge without Jacob.
+- When PR is open, checks green, waiting on Jacob: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** until Done (merged) or parked -- Ready to merge is **not** a leftover lane.
+- Children still do not run git unless the spawn explicitly says Mode B solo (one ticket, one agent, one branch). Default: conductor owns git; children report file lists.
+
 ## Parallel wave
 
 A **wave** is two or more tickets whose blockers are all done. `/to-tickets` should have named exclusive paths. If it did not, **you** draft them now.
 
-Stay in the **same worktree**. Isolated git worktrees only if the user asks.
+Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one ticket one branch/PR or serialize -- not a shared Development tip.
 
 ### Conductor steps
 
@@ -190,9 +211,11 @@ Stay in the **same worktree**. Isolated git worktrees only if the user asks.
 - Frozen shared files are consume-only. Ask the conductor if you need an append.
 - If you changed behavior and the seam has no colocated behavior test, add one. Report that test path.
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
-- Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean`. Report a file list + test output when done.
-- Same branch, same worktree. No extra checkout.
+- Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
+- Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.
 
 ### Hard git rules (conductor)
 
 Stage named exclusive paths only. Leave other agents' untracked files on disk. One commit, then the next.
+
+Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch only; set **Ready to merge** when green and waiting on Jacob. Never master. Never merge without Jacob.

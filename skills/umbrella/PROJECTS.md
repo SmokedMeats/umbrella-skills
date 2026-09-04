@@ -17,6 +17,21 @@ SSOT for the GitHub Project that sits **on top of** issues + milestones. Labels 
 
 Owner is always `SmokedMeats`. Commands below use **N** = that row’s Number.
 
+## Four-repo Live Beta + GoLive
+
+Pre-prod work is **two lanes on every board**, not a phone-only shelf. File the ticket on the repo that owns the flip. Each repo has continuous **Live Beta** and **Go Live** milestones (do not Hit).
+
+**Live Beta** = must finish before a public live beta. **GoLive** = must finish before production store ship. Right edge of the board: leftover lanes → **Live Beta** → **GoLive** → **Done**. Both are pullable. Claim → **In Progress**.
+
+| Repo | Board | Live Beta | Go Live | First GoLive inventory |
+| --- | --- | --- | --- | --- |
+| XyberRun | [1](https://github.com/users/SmokedMeats/projects/1) | [Live Beta](https://github.com/SmokedMeats/XyberRun/milestone/47) | [Go Live](https://github.com/SmokedMeats/XyberRun/milestone/46) | [#736](https://github.com/SmokedMeats/XyberRun/issues/736) phone crons / GHA pauses |
+| XyberRun.IO | [2](https://github.com/users/SmokedMeats/projects/2) | [Live Beta](https://github.com/SmokedMeats/XyberRun.IO/milestone/2) | [Go Live](https://github.com/SmokedMeats/XyberRun.IO/milestone/1) | [#90](https://github.com/SmokedMeats/XyberRun.IO/issues/90) website GHA / digest / X flush |
+| XyberRun-AppleWatch | [3](https://github.com/users/SmokedMeats/projects/3) | [Live Beta](https://github.com/SmokedMeats/XyberRun-AppleWatch/milestone/3) | [Go Live](https://github.com/SmokedMeats/XyberRun-AppleWatch/milestone/2) | [#35](https://github.com/SmokedMeats/XyberRun-AppleWatch/issues/35) watchOS CI + store |
+| XyberRun-AndroidWatch | [4](https://github.com/users/SmokedMeats/projects/4) | [Live Beta](https://github.com/SmokedMeats/XyberRun-AndroidWatch/milestone/4) | [Go Live](https://github.com/SmokedMeats/XyberRun-AndroidWatch/milestone/3) | [#41](https://github.com/SmokedMeats/XyberRun-AndroidWatch/issues/41) Wear CI + Play |
+
+Cross-link siblings in the body. Do **not** put IO or watch cards on Project 1.
+
 ## Audit filing
 
 `/audit` and `/umbrella` file on **this clone’s repo**. Watch findings → AppleWatch or AndroidWatch. Website findings → XyberRun.IO. Phone-side smells → XyberRun. A CROSS_REPO sync-contract smell that lives in the monorepo stays on XyberRun; the watch half is a ticket on the watch repo. Do not add satellite findings as XyberRun #499 / #550 children.
@@ -34,7 +49,7 @@ Phone board **1** already has these. Satellites **2–4** have the same Status c
 | **Grill** | table | `label:wayfinder:grilling -label:parked:*` | HITL queue |
 | **Parked** | table | `label:parked:* is:open` | Open shelf only. Status may be Parked or a leftover column |
 
-Status columns today: **Parked** → **Unclaimed** → **GoLive** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before Done, it is a **leftover lane** (below). **GoLive** is a work queue (must finish before production), not a leftover lane.
+Status columns today: **Parked** → **Unclaimed** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Ready to merge** → **Live Beta** → **GoLive** → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before **Live Beta** (and it is not **Ready to merge**), it is a **leftover lane** (below). **Live Beta**, **GoLive**, and **Ready to merge** are work queues (not leftover).
 
 **Now** is a **view** (assignee / ready-for-agent). Working-now on the Kanban is **In Progress**.
 
@@ -43,18 +58,37 @@ Status columns today: **Parked** → **Unclaimed** → **GoLive** → **In Progr
 | Event | Status |
 | --- | --- |
 | Create / file | **Unclaimed** |
-| Must finish before production go-live | **GoLive** — between Unclaimed and In Progress. Pullable. Milestone **Go Live** on this repo. Claim → **In Progress** |
+| Must finish before public live beta | **Live Beta** — immediately before GoLive. Pullable. File on **this clone’s repo**. Milestone **Live Beta** on that same repo (continuous — do not Hit). Never `item-add` a satellite card to the phone board. Claim → **In Progress** |
+| Must finish before production go-live | **GoLive** — immediately before Done. Pullable. File on **this clone’s repo**. Milestone **Go Live** on that same repo (continuous — do not Hit). Website → IO board **2**. watchOS → AppleWatch **3**. Wear → AndroidWatch **4**. Never `item-add` a satellite GoLive card to the phone board. Claim → **In Progress** |
 | Park (`parked:*`) while code/grill still needed | **Parked** — left of Unclaimed. Do not pull |
 | Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
 | Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
 | Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device) |
-| Close after Build loop empty **and** no leftover-lane wait | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
+| Mode B PR open, checks green, waiting on Jacob | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until **Done** (merged) or parked. Jacob merges. |
+| Close after Build loop empty **and** no leftover-lane wait (Mode A), or after Jacob merges a Ready-to-merge PR (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
 
 ## Leftover lanes (code complete, not Done)
 
-A **leftover lane** is any Status that is **not** Parked, Unclaimed, **GoLive**, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and Done. **GoLive** is a pullable work queue, not leftover.
+A **leftover lane** is any Status that is **not** Parked, Unclaimed, **Live Beta**, **GoLive**, **Ready to merge**, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and **Live Beta**, **except Ready to merge**. **Live Beta** and **GoLive** are pullable work queues, not leftover.
+
+### Ready to merge — EXPLICIT exception (not a leftover lane)
+
+**Ready to merge** is a Mode B wait-on-Jacob lane. It is **not** a leftover lane.
+
+| | |
+| --- | --- |
+| When to set | PR is open, checks green, waiting on Jacob to merge into Development |
+| Pull this card? | **No** — not implement frontier |
+| Hold dependents? | **Yes** — dependents **WAIT** until this card is **Done** (merged) or parked. Do **not** unlock the next wave the way leftover lanes do |
+| Window full? | **No** |
+| Close? | **No** — Jacob merges; then Status **Done** |
+| Who merges | **Jacob only**. Bots never merge |
+
+Do **not** crawl dependents past a Ready-to-merge blocker. Do **not** call Ready to merge a leftover.
+
+### Leftover lane rules (Operator / Desk device / Field / ...)
 
 | | |
 | --- | --- |
@@ -64,7 +98,7 @@ A **leftover lane** is any Status that is **not** Parked, Unclaimed, **GoLive**,
 | Close? | **No** until the leftover is walked |
 | After the move | Living docs already on the ticket. `/implement` **Crawl** the next wave **in this session** |
 
-Do not write “still blocked until this ticket closes.”
+Do not write “still blocked until this ticket closes” for leftover lanes. **Do** hold for **Ready to merge**.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 
@@ -117,14 +151,16 @@ gh project item-edit --project-id <PVID> --id <ITEM_ID> --field-id <STATUS_FIELD
 
 Shared option ids (all four boards): **Unclaimed** `f75ad846` · **In Progress** `47fc9ee4` · **Done** `98236657`.
 
-**GoLive** option ids (per board — not shared):
+**Ready to merge** (XyberRun board **1**): `f8bebd99`. Satellites: add only if the founder created the column there — do not invent.
 
-| Board | GoLive |
-| --- | --- |
-| 1 XyberRun | `d5f33cf1` |
-| 2 XyberRun.IO | `9796bac4` |
-| 3 AppleWatch | `64263cd8` |
-| 4 AndroidWatch | `a00d5811` |
+**Live Beta** and **GoLive** option ids (per board — not shared):
+
+| Board | Live Beta | GoLive |
+| --- | --- | --- |
+| 1 XyberRun | `f09b4f60` | `d5f33cf1` |
+| 2 XyberRun.IO | `99d79487` | `9796bac4` |
+| 3 AppleWatch | `06fe12f9` | `64263cd8` |
+| 4 AndroidWatch | `07208bfc` | `a00d5811` |
 
 Leftover option ids (per board):
 
@@ -188,13 +224,13 @@ Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Un
 
 | Skill | Project write |
 | --- | --- |
-| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress. Pre-prod tickets stay **GoLive** until claimed |
+| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress. Live-beta / pre-prod tickets stay **Live Beta** / **GoLive** until claimed |
 | `/triage` | `item-add` when it files or houses |
 | `/wayfinder` | `item-add` on map + children + `Later:` |
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; close → Done (no immediate archive); last leftover Device QA / no phone → Desk device |
+| `/implement` | Backfill item; claim → In Progress; Mode B green PR waiting on Jacob → **Ready to merge**; Mode A close → Done (no immediate archive); last leftover Device QA / no phone → Desk device |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.

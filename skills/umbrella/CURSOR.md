@@ -33,6 +33,8 @@ Overwrite the file when any of these happen. Same change as the work when you ar
 
 Keep it short. No chat dump. No secrets.
 
+**Ship mode (sticky + actor force).** On first write this run, set **Ship mode** to `Development` or `PR` per actor force: Grok Bot / Cursor cloud -> always PR; local Grok Build / Cursor IDE on AlphaTerminal -> always Development. Every later skill reads that pin -- do not re-pick. If the file pin disagrees with the actor, correct it and note the correction.
+
 ## Idle
 
 When the house Hits or the user stops with nothing in flight, set **Phase** to `idle` and clear **Ticket** / **Step**. Leave the file in git so the next session still finds the path.

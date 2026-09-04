@@ -66,3 +66,8 @@ Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS
 | `/umbrella` | Same probe. After Desk device, **do not** wait on the picker — stay on `/implement` crawl if any product ticket is still unblocked |
 
 `/implement` **Count first** does not **pull** leftover-lane cards. It **does** treat them as satisfied blockers. Desk device is one leftover lane; any other leftover lane uses the same crawl rule — [PROJECTS.md](PROJECTS.md). This file is only the phone probe.
+
+## Ship mode and hardware
+
+- **Mode B** (Grok Bot / Cursor cloud, `Ship mode: PR`): always park phone-visible leftover on **Desk device**. Do **not** crawl hardware from the cloud VM.
+- **Crawl** (Probe -> Borrow -> Maestro) only on **AlphaTerminal** with exactly one USB `adb` device (**Mode A** / local).

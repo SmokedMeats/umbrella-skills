@@ -15,6 +15,26 @@ After any of those skills **creates** issues, check parked children (`Later:` / 
 
 **Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. GitHub labels win when the file’s phase is stale.
 
+## Ship mode (pin at start — sticky + actor force)
+
+Before Gather finishes (and before any `/implement` product commits), ensure `docs/agents/UMBRELLA_CURSOR.md` or the conductor comment carries exactly one pin:
+
+- `Ship mode: Development` — Mode A
+- `Ship mode: PR` — Mode B
+
+**Sticky.** Once set for this umbrella/skill run, every later skill (`/implement`, `/code-review`, Device QA, crawl, ...) reads the **same** pin. Do **not** re-pick mid-run.
+
+**Actor force** (overrides user whim and heuristics):
+
+| Actor | Forced pin |
+| --- | --- |
+| Grok Bot teammates or Cursor cloud coding agents | always `Ship mode: PR` (never Development-direct) |
+| Local Grok Build or Cursor IDE on AlphaTerminal | always `Ship mode: Development` (never PR) |
+
+Write the pin so every skill sees it. If the written pin disagrees with the actor, **correct it** to the forced mode and note the correction in one line. Heuristics (AlphaTerminal+adb -> Development; cloud/no USB -> PR) are backup only when discovering the actor.
+
+How to set: rewrite `docs/agents/UMBRELLA_CURSOR.md` with a **Ship mode** field (see [CURSOR.md](CURSOR.md)), or put the same line on the conductor comment.
+
 ## Claim (first write)
 
 When this session **pulls** a ticket — house picked, grill starts, fog ticket chosen, implement wave starts — **assign it on GitHub to the driving user** before any other write. That assignee *is* the claim. Do not leave it unassigned. Do not substitute a comment for the assignee. Set Project Status to **In Progress** ([PROJECTS.md](PROJECTS.md)).
