@@ -7,7 +7,7 @@ For people who edit this repo. Installers can ignore this file.
 Update both in the same change:
 
 1. The skill file under `skills/`
-2. The "What this pack changes" table in `README.md`
+2. The "What this pack changes" index + skill headings in `README.md`
 
 Then sync this clone into every IDE and every XyberRun workspace repo that sits next to it (`XyberRun`, `XyberRun.IO`, `XyberRun-AppleWatch`, `XyberRun-AndroidWatch`):
 
