@@ -197,8 +197,8 @@ Short index first. Detail for the fat overlays is under the headings.
 | Skill | What changed |
 | --- | --- |
 | `umbrella` | Only conductor. Auto-invoked. One house at a time. A named queue starts the next house after this coding crawl. Auto-routes Matt playbook skills. Thin conventions: DESIGN-IT-TWICE, decision trail, figure-it-out, comment cleanup, recall brief. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. |
-| `grilling` | Sibling batch + `Now on`. Loads `/domain-modeling` with the interview. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
-| `grill-me` | Load the map's grilling siblings. Refuse a lock with open gaps. Do not ask "next grill?" |
+| `grilling` | Sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend. Loads `/domain-modeling` with the interview. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
+| `grill-me` | Load the map's grilling siblings. Question shape stays in `/grilling`. Refuse a lock with open gaps. Do not ask "next grill?" |
 | `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Prototype tickets read Matt `/prototype`. Non-trivial UI uses DESIGN-IT-TWICE. Auto-invoked. |
 | `to-spec` | Spec the whole locked batch. Cite gap resolutions. No approval wait. Next is `/to-tickets`. |
 | `to-tickets` | 1:1 with the spec. Waves + exclusive paths. No approval wait. Next is `/implement`. |
@@ -239,8 +239,8 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/grilling` · `/grill-me` · `/wayfinder`
 
-- **grilling** — sibling batch + `Now on`. Read `/domain-modeling` with the interview. The pre-grill gap list is in the tree. Refuse the lock while a gap is open. After the confirm: `/to-spec` immediately. A “not this pack” branch files `Later:` with **When to do this**.
-- **grill-me** — load the map's grilling siblings. No gap list → do not start. Advance without asking "next grill?"
+- **grilling** — sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend. Read `/domain-modeling` with the interview. The pre-grill gap list is in the tree. Refuse the lock while a gap is open. After the confirm: `/to-spec` immediately. A “not this pack” branch files `Later:` with **When to do this**.
+- **grill-me** — load the map's grilling siblings. Question shape stays in `/grilling`. No gap list → do not start. Advance without asking "next grill?"
 - **wayfinder** — umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**. Forever-out stays map Out of scope. A prototype ticket reads Matt `/prototype`. A non-trivial UI or flow follows DESIGN-IT-TWICE.
 
 ### `/to-spec` · `/to-tickets`

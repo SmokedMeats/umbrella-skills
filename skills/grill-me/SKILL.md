@@ -7,7 +7,7 @@ description: "A relentless interview to sharpen a plan or design. Use when a way
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `grill-me`.
 
-Load the umbrella (parent `wayfinder:map`, or the map they named). Collect sibling `wayfinder:grilling` tickets that wear **`umbrella:<slug>`**. Skip `parked:<slug>` and `Later:` / `Leftover:` titles. **Claim the live batch first** — `gh issue edit <n> --add-assignee "@me"` on those live siblings only (quote `"@me"` on PowerShell). Set Project Status **In Progress** per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md). Show the batch once, by name. Then run `/grilling` — that skill owns the rounds, the **Now on** line, recording, and advancing.
+Load the umbrella (parent `wayfinder:map`, or the map they named). Collect sibling `wayfinder:grilling` tickets that wear **`umbrella:<slug>`**. Skip `parked:<slug>` and `Later:` / `Leftover:` titles. **Claim the live batch first** — `gh issue edit <n> --add-assignee "@me"` on those live siblings only (quote `"@me"` on PowerShell). Set Project Status **In Progress** per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md). Show the batch once, by name. Then run `/grilling` — that skill owns the rounds, the **Now on** line, recording, and advancing. Question shape is locked there: Context (plain terms), Choices, and Recommend. Do not ask a shorter form from this file.
 
 You pick the next ticket. The user never has to remember which issue is open or say "next grill."
 
