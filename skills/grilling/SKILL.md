@@ -5,6 +5,8 @@ description: "Grill the user relentlessly about a plan, decision, or idea. Use w
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `grilling`.
 
+Read `/domain-modeling` from the parent skills directory and follow it with this interview. Do not reimplement it. Do not copy that skill into this overlay.
+
 Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
 Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.

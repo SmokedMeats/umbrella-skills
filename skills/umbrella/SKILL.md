@@ -8,7 +8,7 @@ argument-hint: "issue numbers, umbrella slugs in order, or nothing to scan the i
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. **One house at a time.** A named **House queue** runs the next house after this house's coding crawl. Never interleave tickets across houses.
 
-Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, `/blast-radius`, `/diagnosing-bugs`, and `/tdd` when the playbook below says so. `/umbrella` is the only front door. Do not start a second conductor.
+Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not copy Matt skill bodies into this overlay. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`, and these when the playbook says so: `/domain-modeling` with `/grilling`; `/prototype` for fog or a cheap artifact (see **DESIGN-IT-TWICE**); `/codebase-design` for structure and module boundaries; `/improve-codebase-architecture` for architecture debt when asked, or when the build loop is idle and that work is in scope; `/zero-tech-debt` and `/pit-of-success` only when installed; `/diagnosing-bugs` and `/tdd`; `/simple-english` for user-facing copy and runner language (grill leftover questions, ship notes, Device QA wait comments); `/wait-what` when the user is confused or rejects jargon; `/writing-for-agents` when writing or editing agent-facing docs or skill-ish notes in-repo; `/handoff` at session end, Window full, or the next agent (include the **Recall** brief). `/umbrella` is the only front door. Do not start a second conductor.
 
 After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to this repo’s Project** (see [PROJECTS.md](PROJECTS.md)). After any of those skills **closes** an issue, [CLOSE-PARENTS.md](CLOSE-PARENTS.md). After product-done Device QA, [DEVICE-QA.md](DEVICE-QA.md).
 
@@ -60,7 +60,7 @@ Three different jobs — do not collapse them:
 | **`/wayfinder`** (and `/to-tickets`) | Labels **on create** (`wayfinder:*` or `ready-for-agent`, plus the house `domain:*` / `umbrella:*`) | This session is filing the map or a child. No `needs-triage`. Do not invoke `/triage` |
 | **`/umbrella`** | **Catch.** Every run, feed the inbox to **`/triage`** and let it label | Router. Does not stamp `umbrella:*` itself |
 
-A **loose idea** or a house with no map still goes to **`/wayfinder`** after the inbox catch. That is how you figure out the destination.
+A **loose idea** or a house with no map still goes to **`/wayfinder`** after the inbox catch. That is how you figure out the destination. **figure-it-out** is only when that map shape does not fit. One competing-planner pass, then back to this spine. Do not start a second conductor.
 
 Hard gates:
 
@@ -75,7 +75,7 @@ Hard gates:
 - Never skip a phase. The only planning pause is the grill lock.
 - If the grill skipped the doc/gap pass or left a gap open, **refuse auto-advance**. Finish the gaps or return to `/grill-me`.
 
-Stay in this session through `/to-tickets` and into the `/implement` house crawl after a successful lock. Do not stop when the tickets are filed. If the window is unhealthy, **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
+Stay in this session through `/to-tickets` and into the `/implement` house crawl after a successful lock. Do not stop when the tickets are filed. If the window is unhealthy, **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>` or the next queued house, plus the **Recall** brief). That brief does not start the next house.
 
 ## 0. Prerequisite
 
@@ -184,8 +184,52 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 | Explain a subsystem or a change | `/how`, `/why`, or `/teach`. A multi-session course is `/teach-me` |
 | Tickets already filed from a locked grill | Default house crawl: `/implement` in this session. Set each empty Build loop to the lane that matches what is left. Stop only as **House crawl** says |
 | Architecture debt | Matt `/improve-codebase-architecture` when asked, or when the build loop is idle and that work is in scope. Read `/zero-tech-debt` or `/pit-of-success` only when that skill is installed |
+| User-facing prose, leftover questions, ship notes, Device QA wait comments | `/simple-english` |
+| User says the reply is unclear or too jargony | `/wait-what` |
+| Writing or editing agent-facing docs or skill-ish notes in the repo | `/writing-for-agents` |
+| Structure or module boundaries | `/codebase-design` |
+| Cheap artifact, or prove a fold | `/prototype`. **DESIGN-IT-TWICE** when the user asks, or when the artifact is a non-trivial UI or flow |
+| Off-map, and `/wayfinder` does not fit | **figure-it-out** below. One competing-planner pass, then this spine. Do not invent a second conductor |
+| Window full, end of session, or the next agent | `/handoff` when that skill is installed, with the **Recall** brief |
 
 Never-block on reversible work (a lookup, a test, a rename, a local commit in the pinned ship mode). Founder gates still pause.
+
+## Thin conventions
+
+House rules. Not new skill folders. Not a second conductor. Matt skills stay Matt installs. Read `SKILL.md` from the parent skills directory. Do not copy those bodies here. Missing file → do not invent the body. Swarm and arena are not standing slashes. `/automate-me` stays maintainer-only. Do not add a `typescript-best-practices` overlay.
+
+### DESIGN-IT-TWICE
+
+Only when the user asks, or when `/prototype` is loaded for a non-trivial UI or flow. Write two short competing sketches, then lock one. A trivial stub skips it. Do not require this for every feature. `/implement` uses the same rule when a prototype ticket is in the wave.
+
+### Decision trail
+
+On a long house crawl — multi-ticket, or a **House queue** — keep a decision trail. Default on. Do not wait on the founder to start it. One house at a time still holds. The trail does not hop houses.
+
+- `decisions.tsv` in the house notes (columns `when`, `ticket`, `decision`, `why`), or
+- short bullets in `docs/agents/UMBRELLA_CURSOR.md`
+
+**Window full** and `/handoff` point at that path. A one-ticket session with no real fork may skip the file.
+
+### figure-it-out
+
+Use only when `/wayfinder` does not fit: no destination to chart, no map shape, off-map rigor. One competing-planner pass: two short plans, pick one, write the choice on the decision trail when a trail is already in use. Then return to this spine. Fog with a destination is still `/wayfinder`. Not a slash. Not a standing front door.
+
+### Comment cleanup
+
+Before `/code-review` closes a ticket, strip narrative and noise comments added in this change. Keep intentional API and docs comments. `/implement` **Build loop** runs that pass. `/code-review` **Standards** flags a leftover as in-scope. Do not spawn a comment-cleanup subagent.
+
+### Recall
+
+Do not add a `/recall` skill. **Window full**, end of session, and the next agent get a resume brief:
+
+- **House queue** (current house first; keep later houses)
+- ship mode
+- now-on tickets
+- decisions trail path
+- blockers
+
+If `handoff/SKILL.md` exists in the parent skills directory, read it and follow `/handoff`, and include that brief. The brief is still required when `/handoff` is not installed. The brief does not start the next house. **House queue** still decides when that house starts.
 
 ## Founder intervention
 
@@ -270,11 +314,11 @@ Grill lock is the per-house planning gate. It waits on this house and does not o
 
 Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
-On a long run, leave a decision trail: optional `decisions.tsv` in the house notes, or a short note in `docs/agents/UMBRELLA_CURSOR.md`. Do not block on the founder to start that trail.
+On a long crawl (multi-ticket, or a **House queue**), keep the **Decision trail**. Default on. Do not wait on the founder to start it.
 
 ## Load a skill
 
-Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `grilling`, `to-spec`, `to-tickets`, `implement`, `code-review`, `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `diagnosing-bugs`, `tdd`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**), and the Spec axis includes `/blast-radius`.
+Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `grilling`, `domain-modeling`, `to-spec`, `to-tickets`, `implement`, `code-review`, `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `diagnosing-bugs`, `tdd`, `prototype`, `codebase-design`, `improve-codebase-architecture`, `simple-english`, `wait-what`, `writing-for-agents`, `handoff`). `/zero-tech-debt` and `/pit-of-success` only when that file exists. `/handoff` only when that file exists. Do not invent a missing Matt body. Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**), and the Spec axis includes `/blast-radius`.
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 
@@ -332,7 +376,7 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 **A half-done card stays in progress.** "Keep going" does not move a partial ticket to Desk device or any leftover lane. The parent ticket says which part is the phone and which part is the leftover.
 
-**Words.** Do not say "judgement" to the user. A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Leave those notes off the chat summary.
+**Words.** Do not say "judgement" to the user. A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Leave those notes off the chat summary. User-facing copy, grill leftover questions, ship notes, and Device QA wait comments are runner language: read `/simple-english` when that skill is installed. If the user says the reply is unclear or too jargony, read `/wait-what`. Do not reimplement those skills.
 
 **Subagents.** Two or more unblocked tickets is a wave. Spawn one implement subagent per extra ticket before the conductor writes product code. The conductor does not write those extras. Shared files stay with the conductor. A ticket whose blocker is still open is not in the wave.
 
@@ -344,4 +388,4 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 ## Done
 
-The house crawl is this session, **one house at a time**. It stops this house as **House crawl** says, then starts the next queued house. The session stops only on **Window full**, the user stops, or a Founder pause that blocks the session. The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf). In Ship mode PR, the merge prompt is the last step for **this** house, not a silent stop, and not a merge. **Ready to merge** on this house does not block the next house. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The house crawl is this session, **one house at a time**. It stops this house as **House crawl** says, then starts the next queued house. The session stops only on **Window full** (with the **Recall** brief), the user stops, or a Founder pause that blocks the session. The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf). In Ship mode PR, the merge prompt is the last step for **this** house, not a silent stop, and not a merge. **Ready to merge** on this house does not block the next house. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.

@@ -17,9 +17,11 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Finish the errors.** A type error, a warning, or an error you hit while building is fixed in this change. Do not file it as a leftover. At the end of the user reply, summarize what you fixed, in plain language.
 
-**Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Follow [Build standing law](../umbrella/SKILL.md#build-standing-law).
+**Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Ship notes in the user reply follow `/simple-english` when that skill is installed. Follow [Build standing law](../umbrella/SKILL.md#build-standing-law).
 
-**Per ticket, before close or a terminal lane:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
+**DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See `/umbrella` **DESIGN-IT-TWICE**.
+
+**Per ticket, before close or a terminal lane:** gap check on **that** ticket, then **Comment cleanup**, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
 
 ## Gap check
 
@@ -27,7 +29,7 @@ After product code is in the tree, **before** you close a ticket, move it to a l
 
 1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment), the spec, **and** the grill lock that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner. This check is against that lock. It is not a second pre-grill survey of every doc.
 2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path. Code that disagrees with the locked page is FAIL. Do not invent a softer reading of a line that is already decided.
-3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. The parent says which part is the phone and which part is the leftover.
+3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. Read `/simple-english` when that skill is installed. The parent says which part is the phone and which part is the leftover.
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
 5. Post the PASS / PARTIAL / FAIL table on **that** ticket.
 6. Behavior in the diff that the grill, the spec, and the tickets did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not close the ticket as if that scope shipped. Do not merge it as done.
@@ -38,14 +40,18 @@ Commit your work to the current branch.
 
 **Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `cd backend ; npm run db:migrate:all` in the same session after the file is on disk. A migrate run before that file exists will not include it. Do not edit a file that has already been applied. Do not run migrate again when this change added no new SQL file. A missed migrate stays on this ticket. It is not a leftover.
 
+## Comment cleanup
+
+One pass on this ticket before `/code-review`. Strip comments added in this change that narrate the next line, or that are leftover noise. Keep a comment that documents an intentional API or a non-obvious constraint. Do not spawn a comment-cleanup subagent. A leftover narrative comment is an in-scope `/code-review` **Standards** finding.
+
 ## Build loop
 
-Gap check and `/code-review` feed the **same** tickets until they are empty.
+Gap check, **Comment cleanup**, and `/code-review` feed the **same** tickets until they are empty.
 
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
-2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
+2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
 4. When this ticket’s list is empty, set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
 5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. **Ready to merge** holds dependents until merge.
@@ -101,9 +107,10 @@ When this session **cannot** take the next wave (context/window actually full, o
 1. Post or update the **conductor comment on the spec** with remaining frontier (ticket numbers, unblocked vs held, exclusive globs if a parallel wave, frozen shared).
 2. This house still has an unblocked coding ticket → print `Next: /implement #<n>`. If that frontier is **2+** tickets, add: this next session is **conductor** and must spawn extras before product code.
 3. This house's coding crawl is already done and **House queue** has a next house → do not start that house. Keep the queue in `docs/agents/UMBRELLA_CURSOR.md`. The last line names that next house.
-4. Stop. Tickets plus that comment are the resume.
+4. **Resume brief** (recall — do not add a `/recall` skill). Put it on the conductor comment and in `docs/agents/UMBRELLA_CURSOR.md`: **House queue** (keep later houses), ship mode, now-on tickets, decisions trail path, blockers. If `handoff/SKILL.md` exists in the parent skills directory, read it and follow `/handoff`, and include this brief. The brief does not start the next house.
+5. Stop. Tickets plus that comment are the resume.
 
-Completion: the spec comment matches the remaining tree, and the user-visible last line is `Next: /implement #<n>` or the next queued house.
+Completion: the spec comment matches the remaining tree, the resume brief is on that comment, and the user-visible last line is `Next: /implement #<n>` or the next queued house.
 
 ## House
 
@@ -173,6 +180,8 @@ The house is a tree, not one wave. After each ticket **closes**, **moves to a le
 
 Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is still open. T3 later leftover-lanes and unlocks T5/T6. Spawn T5 and T6 in this session.
 
+**Decision trail.** A multi-ticket crawl, or a **House queue**, keeps a trail as it goes: `decisions.tsv` in the house notes, or short bullets in `docs/agents/UMBRELLA_CURSOR.md`. Default on. Do not wait on the founder. One house at a time still holds. **Window full** points at the path. See `/umbrella` **Decision trail**.
+
 This session stays conductor across waves of **this** house. Completion of this house: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), a Founder pause blocks the session, the user stops, or **Window full**. When `/umbrella` **House queue** has a next house, that house starts after **End of house**. Do not pull its tickets from here. Filing tickets is not completion.
 
 
@@ -211,7 +220,7 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 3. **Dispatch.** Spawn one implement subagent per extra ticket **before** this session writes product code. Do not skip the spawn and write the extras yourself. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. A ticket whose blocker is still open is not spawned. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
+6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → **Comment cleanup** → `/code-review` two-axis on the ticket → remainder back here). When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
 7. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave of **this** house. Repeat until **Crawl** says this house is done. A **House queue** with a next house returns to `/umbrella` after **End of house**. Do not pull that house's tickets here.
 
 ### Child rules (paste into every spawn)
@@ -219,6 +228,7 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 - Edit only your exclusive globs. Leave every other untracked file on disk.
 - Frozen shared files are consume-only. Ask the conductor if you need an append.
 - If you changed behavior and the seam has no colocated behavior test, add one. Report that test path.
+- Do not add comments that narrate the change. An intentional API or constraint comment may stay. The conductor strips the rest in **Comment cleanup** before `/code-review`.
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
 - Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.

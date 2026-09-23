@@ -15,6 +15,7 @@ This is the **step** pointer. GitHub labels still win for **phase**.
 | **Phase** | Step label. GitHub labels win when this is stale |
 | **Ticket** / **Now on** | Live ticket numbers, or Qs on hold |
 | **Step** / **Next** | Current skill and why |
+| **Decisions** | On a long crawl: path to `decisions.tsv`, or short bullets. Default on for multi-ticket work and a **House queue** |
 
 **House queue** is a short ordered list:
 
@@ -42,7 +43,7 @@ No file → idle. Run `/umbrella` as usual.
 
 ## Write (automatic — not a human ritual)
 
-Overwrite the file when any of these happen. Same change as the work when you are already committing. Every rewrite keeps **Ship mode** and **House queue** unless the event below changes the queue.
+Overwrite the file when any of these happen. Same change as the work when you are already committing. Every rewrite keeps **Ship mode**, **House queue**, and an existing **Decisions** pointer unless the event below changes the queue.
 
 | Event | What to put in **Step** / **Next** |
 | --- | --- |
@@ -57,9 +58,12 @@ Overwrite the file when any of these happen. Same change as the work when you ar
 | `/implement` claim | Conductor + child tickets · exclusive files |
 | This house's coding crawl is done, and the queue has a next house | Drop the finished slug. **House** is the new head. **Next** is that house's skill. Do not clear **Ship mode** |
 | Ticket close / Window full | Remaining tickets on **this** house, or the next queued house if this house's coding crawl is done. `idle` only when the queue has no next house and nothing is in flight |
-| Long unattended implement | Optional decision note, or a pointer at `decisions.tsv` |
+| Long crawl (multi-ticket, or a **House queue**) | Decision trail: path to `decisions.tsv` in the house notes, or short bullets here. Default on. Do not wait on the founder |
+| Window full / session end / next agent | **Recall** brief: **House queue**, **Ship mode**, now-on tickets, decisions trail path, blockers. Follow `/handoff` when that skill is installed. The brief does not start the next house |
 
 Keep it short. No chat dump. No secrets.
+
+**Resume brief.** On Window full, session end, or the next agent, the file carries **House queue** (keep later houses), **Ship mode**, now-on tickets, the decisions trail path, and blockers. If `handoff/SKILL.md` is in the parent skills directory, follow `/handoff` and include that brief. Do not add a `/recall` skill.
 
 **Ship mode (sticky + actor force).** On first write this run, set **Ship mode** to `Development` or `PR` per actor force: Grok Bot / Cursor cloud -> always PR; local Grok Build / Cursor IDE on AlphaTerminal -> always Development. Every later skill, and every later house in **House queue**, reads that pin -- do not re-pick. If the file pin disagrees with the actor, correct it and note the correction.
 

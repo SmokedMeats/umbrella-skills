@@ -47,7 +47,7 @@ If the only remaining work on the ticket is the Device QA crawl (Leaves done or 
 1. Keep the issue **open**.
 2. Drop `ready-for-agent`. Keep `umbrella:<slug>` and the milestone. Do **not** add `parked:<slug>` (that is the grill/spec shelf, not a desk wait).
 3. Project Status **Desk device** (this board’s Desk device option in [PROJECTS.md](PROJECTS.md)).
-4. Comment (required):
+4. Comment (required). Write it in runner language. Read `/simple-english` when that skill is installed next to this pack. Do not reimplement it.
 
 ```markdown
 ## Waiting: Device QA

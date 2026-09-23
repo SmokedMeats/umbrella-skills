@@ -16,11 +16,11 @@ House gates still win where they conflict. Reversible work proceeds. Grill lock,
 - **attack-the-premise.** Two fixes that share one premise have failed the same gate. Census who holds the imbalance, then question the premise. Grill that fork with `/grilling` instead of writing a third patch.
 - **build-the-lever.** Non-trivial work gets the smallest script, codemod, or check a reviewer can rerun. `/blast-radius` proves its one fact this way. Do not build a framework.
 - **encode-lessons-in-structure.** The second time you write the same instruction, put it in a lint, a test, a schema row, or a living doc. `/implement` **Living docs** and the Effect Schema inventory are the house form.
-- **exhaust-the-design-space.** A novel interaction or architecture with no precedent gets two or three real alternatives before you commit. `/wayfinder` charts them. `/prototype` (Matt) makes a cheap one to react to.
+- **exhaust-the-design-space.** A novel interaction or architecture with no precedent gets two or three real alternatives before you commit. `/wayfinder` charts them. `/prototype` (Matt) makes a cheap one to react to. A non-trivial UI or flow under `/prototype`, or an explicit ask, uses `/umbrella` **DESIGN-IT-TWICE** (two short sketches). Do not require that for every feature.
 - **experience-first.** Product and UX tradeoffs pick the person's outcome over implementation convenience. Settle it in `/grill-me`, not in the builder's convenience.
 - **foundational-thinking.** Before logic, name the core types and what concurrent actors share. `/to-spec` seams and `/domain-modeling` (Matt) are the house form.
 - **laziness-protocol.** Prefer deletion and the smallest change that solves the problem. Pair with **subtract-before-you-add**.
-- **minimize-reader-load.** Collapse one-caller wrappers and shrink hidden state a reader must hold. `/code-review` smell baseline flags the shape. It does not by itself reopen a locked product decision.
+- **minimize-reader-load.** Collapse one-caller wrappers and shrink hidden state a reader must hold. `/code-review` smell baseline flags the shape. It does not by itself reopen a locked product decision. Narrative comments added in the change are stripped in `/implement` **Comment cleanup** before that review.
 - **outcome-oriented-execution.** Planned rewrites converge on the target. Do not keep throwaway compatibility as the design. Temporary breakage is allowed only inside a sequenced unit you can verify.
 - **redesign-from-first-principles.** A new requirement integrated into an old design is redesigned as if it had been there from day one. `/wayfinder` when the route is fog. Do not bolt the requirement onto a shape that cannot hold it.
 - **subtract-before-you-add.** Remove dead weight before adding or rewriting. Architecture debt, when asked or when the build loop is idle and that work is in scope: Matt `/improve-codebase-architecture`. Read `/zero-tech-debt` or `/pit-of-success` only when that skill is installed. Do not invent them.
@@ -43,5 +43,5 @@ House gates still win where they conflict. Reversible work proceeds. Grill lock,
 
 ## Delegation
 
-- **guard-the-context-window.** Large outputs, long files, and fan-out stay out of the main thread. Subagents return summaries. `/implement` **Window full** is the house stop when the window is actually full.
+- **guard-the-context-window.** Large outputs, long files, and fan-out stay out of the main thread. Subagents return summaries. `/implement` **Window full** is the house stop when the window is actually full. That stop includes the recall brief (house queue, ship mode, now-on tickets, decisions trail path, blockers). Follow `/handoff` when that skill is installed. The brief does not start the next house.
 - **never-block-on-the-human.** On reversible work, do it and show the result. Ask only for a real preference, authority, or an irreversible act. Founder gates in `/umbrella` still pause. This principle does not skip grill lock, Ready-to-merge, promote, Device QA ownership conflicts, or data deletion.
