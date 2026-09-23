@@ -61,6 +61,8 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
+**Narrative comments (in scope).** Separate from the smell baseline. A comment added in this diff that narrates what the code does, or noise left from the change, is an in-scope Standards finding. Keep intentional API and docs comments. `/implement` **Comment cleanup** should already have stripped them. A leftover still returns to the build loop. Do not treat it as a judgement-only smell. Do not require a comment-cleanup subagent.
+
 ### 4. Cycles probe (XyberRun)
 
 Development `verify` does **not** run circular-import checks. `preflight:master` / `preflight:governance:cycles` do (`backend` and `mobile/xyberrun-mobile` `check-cycles`, madge). Run the matching package check **before** Standards when the diff touches that tree:
@@ -82,10 +84,10 @@ Also note for Standards (do not invent; just state facts):
 **Standards sub-agent prompt** — include:
 
 - The full diff command and commit list.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it.
+- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it. Also paste the **Narrative comments** rule from step 3.
 - The `check-cycles` output from step 4 (or “not run — no backend/mobile src in this diff”).
 - The map / auth-glob notes from step 4.
-- The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip lint/tsc/`verify` noise. **XyberRun hard pins** (cite the rule; skip the row if the note says not in this diff): (1) **Cycles** — non-empty `check-cycles` is hard; do not invent a cycle if the check is green or was not run. (2) **Map** — new/renamed router, screen, service, write path, webhook, cron, or integration with no `map-build` fragment in this change is hard (`architecture-map-maintenance`). Typo/rename of an existing node is label-only, not a new node. (3) **Thin router** — `backend/src/trpc/routers/*` that queries DB or orchestrates instead of Zod + procedure + feature-service call is hard (`trpc-router-auth`). (4) **Auth glob** — those files in the diff on a ticket that is not auth/session/OTA is hard; do not 'fix for consistency'. (5) **Low-value tests** — *new* `*.smoke.test`, `toMatchSnapshot`, `toBeDefined`/module-exists, or `jest.mock` of the module under test / `use*Controller` is hard (`TEST_DELETE_ON_SIGHT`). Skip edits to an existing allowed test. (6) **Tier** — new `subscriptionTier === 'pro'|'plus'` (Founders-blind) in product UI/service is hard; use `hasPlusEntitlement` / `hasProEntitlement` / effective-tier helpers. Skip `subscriptionEntitlements.ts` and tests that assert stored raw. (7) **OTA modal** — new `import { Modal } from 'react-native'` for a product overlay without `OtaAwareModal` / `useOtaUiBusy` is hard. Skip the OTA Restart prompt. **Effect-TS:** flag new hand-narrowed `JSON.parse` / webhook / native dict / untyped `res.json` when a sibling uses `Schema`+`Either`, and new one-off HTTP retry next to walking-way `Effect`+`Schedule`. Do not flag tRPC Zod, Wear Kotlin, or `Effect.gen` for its own sake. Under 400 words."
+- The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip lint/tsc/`verify` noise. **XyberRun hard pins** (cite the rule; skip the row if the note says not in this diff): (1) **Cycles** — non-empty `check-cycles` is hard; do not invent a cycle if the check is green or was not run. (2) **Map** — new/renamed router, screen, service, write path, webhook, cron, or integration with no `map-build` fragment in this change is hard (`architecture-map-maintenance`). Typo/rename of an existing node is label-only, not a new node. (3) **Thin router** — `backend/src/trpc/routers/*` that queries DB or orchestrates instead of Zod + procedure + feature-service call is hard (`trpc-router-auth`). (4) **Auth glob** — those files in the diff on a ticket that is not auth/session/OTA is hard; do not 'fix for consistency'. (5) **Low-value tests** — *new* `*.smoke.test`, `toMatchSnapshot`, `toBeDefined`/module-exists, or `jest.mock` of the module under test / `use*Controller` is hard (`TEST_DELETE_ON_SIGHT`). Skip edits to an existing allowed test. (6) **Tier** — new `subscriptionTier === 'pro'|'plus'` (Founders-blind) in product UI/service is hard; use `hasPlusEntitlement` / `hasProEntitlement` / effective-tier helpers. Skip `subscriptionEntitlements.ts` and tests that assert stored raw. (7) **OTA modal** — new `import { Modal } from 'react-native'` for a product overlay without `OtaAwareModal` / `useOtaUiBusy` is hard. Skip the OTA Restart prompt. **Effect-TS:** flag new hand-narrowed `JSON.parse` / webhook / native dict / untyped `res.json` when a sibling uses `Schema`+`Either`, and new one-off HTTP retry next to walking-way `Effect`+`Schedule`. Do not flag tRPC Zod, Wear Kotlin, or `Effect.gen` for its own sake. **Comment cleanup (in scope):** a comment added in this diff that narrates the change or is noise is in-scope, not a judgement-only smell. Keep intentional API and docs comments. Do not require a comment-cleanup subagent. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
@@ -120,6 +122,7 @@ Findings that are still true in **current code** and still belong to **this ship
 **Build now** (post as remaining ACs, then load `/implement` in this session)
 
 - Standards **hard violations** (documented-standard breaches, not judgement-only smells)
+- Narrative or noise comments added in this diff (keep intentional API and docs comments)
 - Spec **missing / partial / wrong**
 
 **Skip** (do not ask the user; do not say "judgement" in chat)
@@ -128,7 +131,7 @@ Findings that are still true in **current code** and still belong to **this ship
 - Code-shape notes (the smell baseline). They are not a product choice. Leave them off the user summary. If nothing is waiting on the user, say that in one line.
 - Findings that already have an open ticket (link that URL; if it is live `umbrella:*`, include it in the loop)
 
-A type error, a warning, or an error in this diff is **Build now**, not a skip and not a leftover. A leftover is only a fact the code cannot see and you cannot invent. The question goes on that ticket in runner language.
+A type error, a warning, or an error in this diff is **Build now**, not a skip and not a leftover. A leftover is only a fact the code cannot see and you cannot invent. The question goes on that ticket in runner language. Read `/simple-english` when that skill is installed.
 
 **Park** only a grill / spec **not this pack** lock — `Later:` per [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
 

@@ -55,3 +55,12 @@ On notice, or on a periodic review. Open a PR with the cherry-picks. A human (or
 
 - **README** — for people who install the overlay.
 - **This file** — how maintainers edit the pack.
+
+## Leave these out
+
+- Swarm and arena are not standing slashes and not an always-on fan-out.
+- `/automate-me` and reflect stay maintainer-only. Do not port them as always-on pack writers.
+- Do not add a `typescript-best-practices` skill. It fights the Effect pins.
+- Do not copy Matt `/tdd`, `/prototype`, `/research`, or `/diagnosing-bugs` bodies into this overlay. `/umbrella` routes them.
+
+When you edit agent-facing files in this repo, read `/writing-for-agents` if that skill is installed next to the pack. Do not copy it into this repo.
