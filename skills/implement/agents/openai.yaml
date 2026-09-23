@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Count table first, spawn extras, crawl, build-loop remainder, living docs on close"
+  short_description: "Build the filed tickets; lock gap, living docs, blast-radius before merge"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

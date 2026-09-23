@@ -1,6 +1,6 @@
 ---
 name: grilling
-description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases. On a wayfinder ticket or map, load the umbrella, grill every sibling in the same session, and announce which ticket is live — the user only answers questions.
+description: "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any grill trigger phrases. On a wayfinder ticket or map, load the umbrella, grill every sibling in the same session, and announce which ticket is live. The user only answers questions. Refuse the lock while a pre-grill gap is open."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `grilling`.
@@ -43,4 +43,8 @@ When the now-on ticket's branches are empty: record the resolution, close it, up
 
 When a branch is **not this pack** (v1 shipped without it, still wanted): file `Later: …` on the map **before** you close the grill. Label `parked:<slug>` — **not** live `umbrella:<slug>`. No `ready-for-agent`. Do not assign. Body **When to do this** per `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) — name the grill that locked v1, what that v1 shipped, why this branch was not in it, and the unpark gate. Do not leave “we’ll do avatars later” as a comment on the closed grill.
 
-The session ends only when the **whole live batch** is empty and the user confirms. Then say: the umbrella is locked; **next is `/to-spec`**. Do not implement. Do not start `/to-tickets` or `/implement`. Do not run `/to-spec` until they ask — unless `/umbrella` is driving this session, in which case continue into `/to-spec` after that confirm.
+## Gaps
+
+The gap list from `/umbrella` **Pre-grill** is part of the design tree. Every gap is a frontier item until it is **answered**, **deferred** (owner + ticket), or **cut** (reason). Do not confirm the lock while one is open or vague (`later`, `TBD`, no owner). If the list was never written, stop and run the pre-grill doc pass before the first question.
+
+The session ends only when the **whole live batch** is empty, every gap is closed, and the user confirms the shared understanding. That confirm is the lock. Then **next is `/to-spec` immediately**. Do not wait for them to ask. Do not implement yet. `/umbrella` continues into `/to-spec` in this session. Do not start `/to-tickets` or `/implement` until `/to-spec` has published.

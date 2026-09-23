@@ -1,3 +1,5 @@
 interface:
   display_name: "Code Review"
-  short_description: "Two-axis review, then build-loop remainder on the same tickets"
+  short_description: "Two-axis review plus blast-radius, then build-loop remainder"
+policy:
+  allow_implicit_invocation: true

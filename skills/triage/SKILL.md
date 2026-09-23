@@ -1,7 +1,6 @@
 ---
 name: triage
-description: Move issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.
-disable-model-invocation: true
+description: "Move issues and external PRs through triage roles: categorise, verify, grill if needed, and write agent-ready briefs. Use when the inbox is unlabeled, needs-triage, or a pack has no house label. For a hard or flaky bug, name next skill /diagnosing-bugs."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `triage`.
@@ -83,9 +82,9 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 
 1. **Gather context.** Read the full issue or PR (body, comments, labels, author, dates; for a PR, the diff too). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Run two checks against the codebase: (a) **redundancy** — search for an existing implementation of the requested behavior by domain concept (not just the request's wording), and report where you looked. If found, it's an already-implemented `wontfix` (step 5). (b) **prior rejection** — read `.out-of-scope/*.md` and surface any that resembles this request.
 
-2. **Recommend.** Tell the maintainer **category**, **state**, every fitting **domain**, and an **`umbrella:<slug>`** when the house-name table says so (create the label if missing). Creating the umbrella label is not creating a map. Plus a brief codebase summary, including whether it's already implemented. If a `wayfinder:map` already owns that slug, name it and recommend `Part of #<map>`. Decision tickets also get one `wayfinder:<type>`. Wait for direction on category/state and on **ambiguous** clusters (could be two houses). Do not wait to name a map or a clear 2+ pack.
+2. **Recommend.** Tell the maintainer **category**, **state**, every fitting **domain**, and an **`umbrella:<slug>`** when the house-name table says so (create the label if missing). Creating the umbrella label is not creating a map. Plus a brief codebase summary, including whether it's already implemented. If a `wayfinder:map` already owns that slug, name it and recommend `Part of #<map>`. Decision tickets also get one `wayfinder:<type>`. For a **bug** that is hard, flaky, or whose repro is the actual work, name next skill **`/diagnosing-bugs`** (Matt), then `/implement` after the cause is known. Do not stop at "reproduce" in the brief. Wait for direction on category/state and on **ambiguous** clusters (could be two houses). Do not wait to name a map or a clear 2+ pack.
 
-3. **Verify the claim.** Before any grilling, check that the claim holds up. For a bug, reproduce it from the reporter's steps. For a PR, confirm the diff does what it claims — check it out, run the relevant tests or commands. Report what happened: confirmed (with code path), failed, or insufficient detail (a strong `needs-info` signal). A confirmed verification makes a much stronger agent brief.
+3. **Verify the claim.** Before any grilling, check that the claim holds up. For a bug, reproduce it from the reporter's steps. When that repro is hard or flaky, read `/diagnosing-bugs` and follow it. The brief names that skill. It does not substitute a sentence that says "try to reproduce." For a PR, confirm the diff does what it claims — check it out, run the relevant tests or commands. Report what happened: confirmed (with code path), failed, or insufficient detail (a strong `needs-info` signal). A confirmed verification makes a much stronger agent brief.
 
 4. **Grill (if needed).** If the request needs fleshing out, run the `/grilling` and `/domain-modeling` skills together — grill it into shape a round of questions at a time, sharpening domain terms and updating `CONTEXT.md`/ADRs inline as decisions land.
 

@@ -2,7 +2,7 @@
 
 This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills).
 
-Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` names the pack of issues (the **house**) and names the **next** Matt skill. A locked grill goes to `/to-spec`. It does not jump to a build.
+Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` is the only front door. It names the pack of issues (the **house**) and the **next** skill. Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
 
 ## Why this is not a fork
 
@@ -11,7 +11,7 @@ A fork copies Matt's whole repo. Then every upstream change needs a merge. Then 
 This repo is an **overlay**:
 
 1. Install Matt's pack first. That is the skillset.
-2. Install this pack second. It overwrites a few of those skills and adds `/umbrella`.
+2. Install this pack second. It overwrites a few of those skills, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`.
 3. Unedited skills stay Matt's (`/tdd`, `/research`, `/prototype`, `/ask-matt`, `/setup-matt-pocock-skills`).
 
 Keep both. Update Matt's pack on its own schedule.
@@ -37,7 +37,7 @@ On a cluster of related grilling tickets, three gaps showed up for our pack:
 Preferred order (you can skip this if you go straight to `/umbrella` — it runs the same check):
 
 1. Install [mattpocock/skills](https://github.com/mattpocock/skills). Then run `/setup-matt-pocock-skills` once in each repo.
-2. Add this overlay. It overwrites the skills in the table below and adds `/umbrella`:
+2. Add this overlay. It overwrites the skills in the table below, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`:
 
 ```bash
 npx skills@latest add SmokedMeats/umbrella-skills
@@ -91,16 +91,24 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Matt's pack or repo mapping missing | `/umbrella` prerequisite (install Matt, then setup) | **new** |
 | Once per repo | `/setup-matt-pocock-skills` | no — Matt |
 | Inbox is dirty | `/triage` | **overlay** |
-| Which house / which phase | **`/umbrella`** | **new** |
+| Which house / which phase / overnight continue | **`/umbrella`** (auto-invoked) | **new** |
 | Foggy effort, no map yet | `/wayfinder` (chart) | **overlay** |
+| Before grill | Doc review + explicit gap list | **`/umbrella` pre-grill** |
 | Open grilling siblings | `/grill-me` → `/grilling` + `/domain-modeling` | grill-me + grilling **overlay**; domain-modeling **Matt** |
 | Fact a decision waits on | `/research` | no — Matt |
 | Need a cheap artifact | `/prototype` | no — Matt |
-| Grill locked | **`/to-spec`** | **overlay** |
-| Spec approved | **`/to-tickets`** | **overlay** |
-| Tickets approved | **`/implement`** → `/tdd` → **Build loop** (gap-check → living docs including a phone **P\*** Device QA leaf → `/code-review` → remainder back on the same tickets) | implement + code-review **overlay**; tdd **Matt** |
+| Grill locked, every gap closed | **`/to-spec`** immediately (no spec approval) | **overlay** |
+| Spec published from that lock | **`/to-tickets`** immediately (no ticket approval) | **overlay** |
+| Tickets filed from that lock | **`/implement`** → `/tdd` → **Build loop** (gap-check vs the lock → living docs for touched docs, including a phone **P\*** Device QA leaf → `/code-review` including `/blast-radius` → remainder back on the same tickets) | implement + code-review **overlay**; tdd **Matt** |
 | Two or more unblocked implement tickets | `/implement` **wave**: count table first, spawn children (spawn gate), then crawl later waves as they unlock | same overlay |
 | Gap-check remainder or in-scope review findings | `/implement` **Build loop** in this session, then `/code-review` again | same overlay |
+| Hard or flaky bug | `/diagnosing-bugs`, then `/implement` | diagnosing-bugs **Matt** |
+| How does this work / where should it live | `/how` | **new** |
+| Why is it shaped this way | `/why` (git and PRs first; widen only when needed) | **new** |
+| Explain this code or change | `/teach` (weaves `/how` and `/why`) | **new** |
+| Learn a topic over multiple sessions | `/teach-me` (former Matt `/teach`) | **new** |
+| Mid-task principle redirect | `/principles` (one index) | **new** |
+| What else could this break | `/blast-radius` (also from `/code-review`) | **new** |
 | "Which skill do I type?" | `/ask-matt` | no — Matt |
 
 ### Who applies labels
@@ -118,16 +126,20 @@ Three jobs. Do not merge them.
 ```
 every /umbrella run       →  prerequisite (Matt pack + repo mapping), then /triage catch
 loose idea / no map       →  /wayfinder
-open grilling siblings    →  /grill-me
-locked grill              →  /to-spec
-approved spec             →  /to-tickets
-approved tickets          →  /implement
+open grilling siblings    →  pre-grill doc + gap list, then /grill-me
+grill lock (gaps closed)  →  /to-spec → /to-tickets → /implement
 two+ unblocked tickets    →  /implement wave (count table, spawn gate, crawl)
 gap-check / review remainder →  /implement Build loop (same tickets), then /code-review again
+before Ready-to-merge     →  lock gap check, living-doc verify, blast-radius
 window full during build  →  /implement Window full (spec comment + Next: /implement #<n>)
+hard or flaky bug         →  /diagnosing-bugs, then /implement
+explain                   →  /how, /why, or /teach
+course over sessions      →  /teach-me
 ```
 
-A locked grill is not a build. Keep the `/triage` catch every time.
+A locked grill is not a build. It is the only planning pause. After that confirm, do not wait for spec approval or ticket approval. Keep the `/triage` catch every time.
+
+PAUSE for the grill lock, Ready-to-merge, Preview / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance.
 
 `/grill-with-docs` is still Matt's interview when you are not on a wayfinder map. `/umbrella` does not replace it.
 
@@ -148,15 +160,21 @@ Short index first. Detail for the fat overlays is under the headings.
 
 | Skill | What changed |
 | --- | --- |
-| `umbrella` | New conductor. Ship mode, cursor file, inbox catch, one board per repo. |
-| `grilling` | Sibling batch + `Now on`. After lock: `/to-spec`, not implement. |
-| `grill-me` | Load the map's grilling siblings. Do not ask "next grill?" |
-| `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. |
-| `to-spec` | Spec the whole locked batch. Stop. Next is `/to-tickets`. |
-| `to-tickets` | Waves + exclusive paths. House labels. Parked slices are `Later:`. |
-| `implement` | Count table, spawn gate, crawl, Build loop. Reads sticky Ship mode. |
-| `code-review` | Two-axis report, then remaining ACs on the same tickets. |
-| `triage` | Every fitting `domain:…`. Names `umbrella:…` for a map or two+ like issues. |
+| `umbrella` | Only conductor. Auto-invoked. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → implement. |
+| `grilling` | Sibling batch + `Now on`. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
+| `grill-me` | Load the map's grilling siblings. Refuse a lock with open gaps. Do not ask "next grill?" |
+| `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Auto-invoked. |
+| `to-spec` | Spec the whole locked batch. Cite gap resolutions. No approval wait. Next is `/to-tickets`. |
+| `to-tickets` | 1:1 with the spec. Waves + exclusive paths. No approval wait. Next is `/implement`. |
+| `implement` | Count table, spawn gate, crawl, Build loop. Lock gap check, living-doc verify, blast-radius before Ready-to-merge. |
+| `code-review` | Two-axis report, Spec-axis blast-radius, optional adversarial notes, then remaining ACs on the same tickets. |
+| `triage` | Every fitting `domain:…`. Names `umbrella:…` for a map or two+ like issues. Hard bugs name `/diagnosing-bugs`. |
+| `how` | Subsystem walkthrough. Auto-invoked. |
+| `why` | Why the code is shaped that way. Git and PRs first. Widen only when the question needs it. |
+| `teach` | One-sitting explanation. Weaves `/how` and `/why`. Not a course. |
+| `teach-me` | Multi-session learning workspace. Former Matt `/teach`. |
+| `principles` | One index of mid-task redirects. Not 23 skill folders. Not a second conductor. |
+| `blast-radius` | What else a change breaks. Prove the one safety fact by running code. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.
 
@@ -169,6 +187,11 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - After create: `Later:` / `Leftover:` need **When to do this** ([PARKED-TICKETS.md](skills/umbrella/PARKED-TICKETS.md)).
 - After close: [CLOSE-PARENTS.md](skills/umbrella/CLOSE-PARENTS.md) (child first; parent only when open children = 0, including parked).
 - Claim: assign `@me`, Status **In Progress**.
+- Pre-grill before `/grill-me`: review CONTEXT, ADRs, living docs, related tickets, and prior locks. Write the gap list. No lock while a gap is open or vague.
+- After the lock confirm: `/to-spec` (cite gap resolutions) → `/to-tickets` (1:1) → `/implement`. Do not wait for spec or ticket approval.
+- Before Ready-to-merge: gap check vs the lock, living-doc verify for touched docs, `/code-review` including `/blast-radius`. Invented scope is new fog, not a silent merge.
+- Playbooks: feature/fog stays on the spine. Bug or flake → `/diagnosing-bugs`, then `/implement`. Explain → `/how` / `/why` / `/teach`. Course → `/teach-me`. Architecture debt → Matt `/improve-codebase-architecture` when asked or when that work is in scope (`/zero-tech-debt` and `/pit-of-success` only if installed).
+- Overnight after tickets are filed: keep crawling `/implement` until Ready-to-merge. `/loop` is optional. Long unattended runs may leave `decisions.tsv` or a note in the cursor file.
 - Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock.
 - After product-done Device QA: [DEVICE-QA.md](skills/umbrella/DEVICE-QA.md). No phone + last leftover → **Desk device**, do not close.
 - Done cards stay on the board until [PROJECTS.md](skills/umbrella/PROJECTS.md) **Archive Done** (Done > 200, or other lanes need the page).
@@ -177,14 +200,14 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/grilling` · `/grill-me` · `/wayfinder`
 
-- **grilling** — sibling batch + `Now on`. After lock: `/to-spec`. A “not this pack” branch files `Later:` with **When to do this**.
-- **grill-me** — load the map's grilling siblings. Advance without asking "next grill?"
+- **grilling** — sibling batch + `Now on`. The pre-grill gap list is in the tree. Refuse the lock while a gap is open. After the confirm: `/to-spec` immediately. A “not this pack” branch files `Later:` with **When to do this**.
+- **grill-me** — load the map's grilling siblings. No gap list → do not start. Advance without asking "next grill?"
 - **wayfinder** — umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**. Forever-out stays map Out of scope.
 
 ### `/to-spec` · `/to-tickets`
 
-- **to-spec** — spec the whole locked batch, then stop. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or walking-way HTTP.
-- **to-tickets** — waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. Effect-TS acceptance only on tickets that own a bag or walking-way HTTP.
+- **to-spec** — spec the whole locked batch and cite every gap resolution. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or walking-way HTTP. Open gaps → back to grill. Do not publish.
+- **to-tickets** — 1:1 with that spec. No approval quiz. Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. Effect-TS acceptance only on tickets that own a bag or walking-way HTTP. Next is `/implement`.
 
 ### `/implement`
 
@@ -192,7 +215,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**.
 - Window full → conductor comment on the spec + `Next: /implement #<n>` (2+ frontier = next session is conductor).
 - Before product code, backfill parent + map + house labels if create missed them.
-- **Build loop:** gap-check remaining ACs vs current code. PARTIAL/FAIL stays on the same tickets. Living docs when PASS (phone-visible ships append a **P\*** leaf on `DEVICE_QA_PHASED_CHECKLIST.md`). `/code-review` in-scope findings return here.
+- **Build loop:** gap-check remaining ACs vs the grill lock, the spec, and current code. PARTIAL/FAIL stays on the same tickets. Invented scope is parked as new fog and re-grilled. Living docs when PASS: update/verify docs this change touched (phone-visible ships append a **P\*** leaf on `DEVICE_QA_PHASED_CHECKLIST.md`). Not a second pre-grill survey. `/code-review` (including blast-radius) in-scope findings return here.
 - New `backend/drizzle/0xxx_*.sql` → `npm run db:migrate:all` in the same session.
 - **Effect-TS (XyberRun pin):** skip unless the change matches an existing Effect seam (`Schema`/`Either` on an untrusted bag, or `Effect`+`Schedule` next to walking-way HTTP). Do not wrap services in `Effect.gen`. A new `JSON.parse` / webhook / native dict still gets a census row.
 - Per ticket before close or leftover-lane: gap check + `/code-review` two-axis + **Living docs** comment (grep `docs/`).
@@ -201,7 +224,8 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/code-review`
 
-- After the two-axis report, **Close the loop**: each Standards hard violation and Spec missing/partial/wrong becomes remaining ACs on the **same** tickets, then `/implement` again.
+- Spec axis includes **blast-radius**: prove the one safety fact by running code, or mark it unproven. Optional adversarial notes are a short annex. No multi-model product.
+- After the two-axis report, **Close the loop**: each Standards hard violation and Spec missing/partial/wrong (including an unproven safety fact the ship depends on) becomes remaining ACs on the **same** tickets, then `/implement` again.
 - `Later:` only for grill/spec not-this-pack. A report without that remaining-AC verdict is unfinished.
 - Flag a hand-parsed bag or one-off retry only next to an existing Effect sibling — not `Effect.gen` for its own sake.
 - On XyberRun: `check-cycles` when the diff touches backend or mobile `src`. Also hard-pin missing map fragment, fat router, auth-glob drive-by, new low-value test, raw tier check, raw RN `Modal`.
@@ -211,6 +235,19 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - Apply every fitting `domain:…`.
 - Create `umbrella:…` for a map, or for two or more like issues in the same pack.
 - House-name pass does not flip state.
+- A hard or flaky bug names next skill `/diagnosing-bugs`, then `/implement`. The brief does not stop at "reproduce."
+
+### `/how` · `/why` · `/teach` · `/teach-me`
+
+- **how** — how a subsystem works, and where a change should live.
+- **why** — why it is shaped that way. Git history and pull requests first. Add issues, docs, chat, observability, errors, or analytics only when the question needs them and a tool exists.
+- **teach** — one plain explanation that weaves how and why. Not a course.
+- **teach-me** — former Matt `/teach`. Multi-session workspace: `MISSION.md`, `RESOURCES.md`, `lessons/`, learning records. Do not use it to explain a diff.
+
+### `/principles` · `/blast-radius`
+
+- **principles** — one index. Redirect mid-task by name. Each line is a short rule and, where the house already has the move, a pointer at `/umbrella`, `/implement`, `/to-tickets`, `/blast-radius`, `/tdd`, `/diagnosing-bugs`, or `/domain-modeling`. Never-block applies to reversible work only.
+- **blast-radius** — what else the change breaks. Prove the one safety fact by running code. `/code-review` runs this before Ready-to-merge.
 
 ## Credit
 

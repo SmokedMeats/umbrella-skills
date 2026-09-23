@@ -1,7 +1,6 @@
 ---
 name: to-spec
-description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
-disable-model-invocation: true
+description: "Turn a locked grill and its closed gap list into a spec and publish it to the issue tracker. Use when a grill just locked, or the user asks for a spec from decisions already made. No interview. No spec-approval wait. Cite every gap resolution. Next is /to-tickets."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `to-spec`.
@@ -9,6 +8,8 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `to-spec`.
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
 
 If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfinder tickets), the spec is the **whole batch**: every grilling sibling that locked in this session plus already-closed siblings on that map. Name them in Further Notes. Do not spec only the last ticket you talked about. Parked / later tickets stay out of this spec unless the user pulled them in. After publish, every `Later:` that belongs to that park must already exist as a map child with **When to do this** ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). If **Out of Scope** is actually later work and there is no ticket, file `Later:` now — do not leave it as a spec-only bullet.
+
+Ingest the locked grill and the gap list. Further Notes cites every gap as **answered**, **deferred** (owner + ticket), or **cut** (reason). If the doc/gap pass was skipped, or any gap is still open or vague, do not publish. Return to `/grill-me`. A one-off `/to-spec` the user asked for on an already-settled design still publishes without an approval wait, and cites the decisions it ingested.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
@@ -22,11 +23,11 @@ Rewrite `docs/agents/UMBRELLA_CURSOR.md` when you start and after the spec is pu
 
 If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native dict, untyped `res.json`), name it in Implementation Decisions and say it must be listed in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` (Effect Schema #655) and decoded with `Schema`/`Either` the way sibling bags already are. Do not leave a new bag off the census. If the seam is flaky outbound HTTP next to walking-way clients, name `Effect`+`Schedule` retry. Do not dual-schema tRPC Zod. Do not pull Effect onto Wear. Skip this paragraph when the spec has no such seam.
 
-Check with the user that these seams match their expectations.
+Seams come from the locked grill. Do not stop to ask the user to approve them. If a seam is still an open gap, return to `/grill-me`.
 
 3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
-4. Stop. Show the published spec and wait for approval. **Next is `/to-tickets`.** Do not implement. If `/umbrella` is driving this session, continue into `/to-tickets` only after they approve.
+4. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
 
 <spec-template>
 

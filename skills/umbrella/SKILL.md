@@ -1,7 +1,6 @@
 ---
 name: umbrella
-description: Conduct a pack of related issues through triage → wayfinder → grill-me → to-spec → to-tickets → implement, in that order. Use when the user runs /umbrella, names a house, or a multi-ticket grill just locked and the next step is unclear.
-disable-model-invocation: true
+description: "Auto-conductor for a pack of related issues. Use when the user runs /umbrella, for multi-ticket work, when the next phase is unclear, or to continue overnight after tickets are filed. Routes triage → wayfinder → pre-grill doc review and gap list → grill-me (lock only when every gap is closed) → to-spec → to-tickets → implement. Spec approval and ticket approval are not gates. The only front door. Not a second conductor."
 argument-hint: "issue numbers, an umbrella slug, or nothing to scan the inbox"
 ---
 
@@ -9,7 +8,7 @@ argument-hint: "issue numbers, an umbrella slug, or nothing to scan the inbox"
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. One house at a time.
 
-Name the next Matt skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase.
+Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, `/blast-radius`, `/diagnosing-bugs`, and `/tdd` when the playbook below says so. `/umbrella` is the only front door. Do not start a second conductor.
 
 After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to this repo’s Project** (see [PROJECTS.md](PROJECTS.md)). After any of those skills **closes** an issue, [CLOSE-PARENTS.md](CLOSE-PARENTS.md). After product-done Device QA, [DEVICE-QA.md](DEVICE-QA.md).
 
@@ -68,15 +67,15 @@ Hard gates:
 - **Every run** — start with the **prerequisite**. If Matt's pack or the repo mapping is missing, install / run setup **before** the `/triage` catch.
 - **Every run** — including each return here — run the **`/triage` catch**. Query unlabeled + `needs-triage` + **unhoused maps and their children** (`wayfinder:map` / children with no `umbrella:*`). Skip housed `wayfinder:*` and `/to-tickets` children that already wear `umbrella:*`. If hits remain, **read `/triage` and run it** (house-name pass for unhoused maps). Do not skip the catch because you already ran it earlier. Do not invent `umbrella:*` here.
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
-- Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → `/grill-me`. Parked tickets do not start a grill.
-- A locked grill is **not** a build. Next is `/to-spec`.
-- A published spec is not tickets until the user **approves** it. Then `/to-tickets`.
-- Approved tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS, `/code-review` two-axis report, every in-scope finding built on the **same** tickets, **Living docs** (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. Then [DEVICE-QA.md](DEVICE-QA.md): `adb devices` — exactly one phone → `/device-qa-agent`; else if the crawl is the last leftover → Kanban **Desk device** + Waiting comment (do not close, do not silent-skip).
+- Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → **pre-grill**, then `/grill-me`. Parked tickets do not start a grill. No grill lock while a gap is open or vague.
+- A locked grill is **not** a build. Next is `/to-spec` immediately, then `/to-tickets`, then `/implement`. Do not wait for spec approval or ticket approval.
+- Filed tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review` including `/blast-radius`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS against the grill lock, the spec, and the tickets, `/code-review` two-axis report including blast-radius, every in-scope finding built on the **same** tickets, **Living docs** update/verify for docs this change touched (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. Then [DEVICE-QA.md](DEVICE-QA.md): `adb devices` — exactly one phone → `/device-qa-agent`; else if the crawl is the last leftover → Kanban **Desk device** + Waiting comment (do not close, do not silent-skip).
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
-- Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Grill / spec / tickets still wait for approval. Name one skill, finish it, then the next.
-- Never skip a phase.
+- Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Do not pause for another spec or ticket approval. Name one skill, finish it, then the next.
+- Never skip a phase. The only planning pause is the grill lock.
+- If the grill skipped the doc/gap pass or left a gap open, **refuse auto-advance**. Finish the gaps or return to `/grill-me`.
 
-Stay in this session through `/to-tickets`. After tickets are approved, load `/implement` here if the window is healthy; otherwise **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
+Stay in this session through `/to-tickets` and into `/implement` after a successful lock. If the window is unhealthy, **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
 
 ## 0. Prerequisite
 
@@ -142,16 +141,16 @@ Completion: a numbered list. Wait for which house to work. One house per session
 
 ## 4. Phase loop
 
-Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)). Read that skill. Follow it to its own completion. Then wait for any approval the table requires. Recompute. Repeat.
+Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)). Read that skill. Follow it to its own completion. Wait only for a gate in **Founder intervention** or the table. Recompute. Repeat.
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
 | triage | inbound unlabeled, `needs-triage`, or unhoused map/children (no `umbrella:*`) | `/triage` | maintainer confirms only when `/triage` flags an ambiguous cluster |
 | chart | no `wayfinder:map` | `/wayfinder` (chart) | — |
 | parked | open children are only `parked:<slug>` / `Later:` / `Leftover:` | stay — do not pull | user explicitly unparks (see [PARKED-TICKETS.md](PARKED-TICKETS.md)) |
-| grill | open **live** `wayfinder:grilling` siblings (have `umbrella:*`, not `parked:*`) | `/grill-me` | user confirms the live batch is locked |
-| spec | grill locked (or no grilling tickets) and no spec | `/to-spec` | user approves the spec (seams + published body) |
-| tickets | spec approved, no implement tickets | `/to-tickets` | user approves the breakdown |
+| grill | open **live** `wayfinder:grilling` siblings (have `umbrella:*`, not `parked:*`) | pre-grill, then `/grill-me` | user confirms the lock only after every gap is closed |
+| spec | grill locked (gaps closed) and no spec | `/to-spec` | — (no spec approval) |
+| tickets | spec published from that lock, no implement tickets | `/to-tickets` | — (no ticket approval) |
 | build | one unblocked implement ticket | `/implement` (this session) | — |
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
@@ -160,13 +159,79 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
-If they ask to implement, code, or "just build it" while the phase is grill or spec: **stop**. Name the missing skill. Do not write product code.
+If they ask to implement, code, or "just build it" while the phase is grill and the lock is not confirmed: **stop**. Name `/grill-me`. Do not write product code. If the grill is already locked, do not stop for a spec or ticket approval. Load `/to-spec`.
 
 When the user names one ticket in a wave (e.g. T5), start there as the **conductor's** ticket. Still spawn the rest of the unblocked wave. Shared files stay on this session.
 
+## Playbook routing
+
+`/umbrella` is the only front door.
+
+| Work | Route |
+| --- | --- |
+| Feature or fog | Spine: `/triage` → `/wayfinder` → pre-grill → `/grill-me` → `/to-spec` → `/to-tickets` → `/implement` |
+| Bug or flake | `/diagnosing-bugs` (Matt) when the repro is the work, then `/implement` |
+| Explain a subsystem or a change | `/how`, `/why`, or `/teach`. A multi-session course is `/teach-me` |
+| Tickets already filed from a locked grill, or overnight continue | `/implement` until Ready-to-merge |
+| Architecture debt | Matt `/improve-codebase-architecture` when asked, or when the build loop is idle and that work is in scope. Read `/zero-tech-debt` or `/pit-of-success` only when that skill is installed |
+
+Never-block on reversible work (a lookup, a test, a rename, a local commit in the pinned ship mode). Founder gates still pause.
+
+## Founder intervention
+
+PAUSE and wait:
+
+- Grill lock (the shared-understanding confirm, and only after every gap is closed)
+- Ready-to-merge
+- Preview, migrate, OTA, or master promote
+- Phone Device QA ownership conflicts
+- Irreversible actions (force-push to a shared branch, data deletion, customer messages, merging)
+
+Do not pause for spec → tickets, or tickets → implement, after a successful grill lock with gaps closed.
+
+If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. Finish the gaps or return to grill.
+
+## Pre-grill
+
+Before `/grill-me`, this pass is mandatory. Do not open the interview without it.
+
+1. Review the docs that bear on this house: `CONTEXT.md`, ADRs, living docs the map names, related tickets, and prior locks.
+2. Write an explicit gap list. One line per gap: source, what is missing, status `open`.
+3. Open `/grill-me` with that list. Every gap is in the design tree.
+4. Address every gap before lock: **answered**, **deferred** (owner + ticket), or **cut** (reason). No lock while any gap is open or vague (`later`, `TBD`, no owner).
+
+Record the list on the map or the live grilling ticket, and in `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)).
+
+## After grill lock
+
+The user's lock confirm is the only planning gate. Immediately:
+
+1. `/to-spec`. Cite each gap resolution in the spec.
+2. `/to-tickets`. 1:1 with the spec. Group a story only with the reason written on the ticket.
+3. `/implement`.
+
+Do not ask the user to approve the spec. Do not ask the user to approve the tickets.
+
+## Post-implement
+
+Before Ready-to-merge, `/implement` still runs its Build loop. In addition:
+
+- Gap check against the grill lock, the spec, and the tickets. This is not a second pre-grill survey.
+- Living-doc update/verify for docs this change touched.
+- `/code-review`, which includes `/blast-radius`.
+- Leftover lane and Device QA as [DEVICE-QA.md](DEVICE-QA.md) and [PROJECTS.md](PROJECTS.md) already say.
+
+Behavior the lock did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not merge it as done.
+
+## Overnight
+
+After tickets are filed from a locked grill, you may `/loop` or keep crawling `/implement` until Ready-to-merge. `/loop` is optional. A harness without it keeps crawling in this session until Window full or a Founder pause.
+
+On a long unattended run, leave a decision trail: optional `decisions.tsv` in the house notes, or a short note in `docs/agents/UMBRELLA_CURSOR.md`. Do not block on the founder to start that trail.
+
 ## Load a skill
 
-Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `to-spec`, `to-tickets`, `implement`, `code-review`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**).
+Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-pocock-skills`, `triage`, `wayfinder`, `grill-me`, `grilling`, `to-spec`, `to-tickets`, `implement`, `code-review`, `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `diagnosing-bugs`, `tdd`). Follow it until *that* skill says it is done. `/code-review` is not done at the report — it still **closes the loop** (in-scope findings back through `/implement` **Build loop**), and the Spec axis includes `/blast-radius`.
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 

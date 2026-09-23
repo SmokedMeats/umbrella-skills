@@ -1,0 +1,5 @@
+interface:
+  display_name: "Why"
+  short_description: "Evidence for why code is shaped this way, git and PRs first"
+policy:
+  allow_implicit_invocation: true

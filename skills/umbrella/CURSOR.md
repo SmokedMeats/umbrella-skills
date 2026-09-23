@@ -30,6 +30,7 @@ Overwrite the file when any of these happen. Same change as the work when you ar
 | `/to-tickets` published | Wave ticket numbers |
 | `/implement` claim | Conductor + child tickets · exclusive files |
 | Ticket close / Window full | Remaining tickets or `idle` if the house Hit |
+| Long unattended implement | Optional decision note, or a pointer at `decisions.tsv` |
 
 Keep it short. No chat dump. No secrets.
 

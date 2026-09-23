@@ -1,5 +1,5 @@
 interface:
   display_name: "Umbrella"
-  short_description: "Triage, pick a house, then spec → tickets → implement in order"
+  short_description: "Auto-conductor: grill lock, then spec, tickets, and implement"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
