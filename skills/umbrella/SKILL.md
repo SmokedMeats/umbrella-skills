@@ -218,6 +218,8 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 **Finish what you can.** Type errors, warnings, and errors hit while building are fixed in this change. Summarize them at the end of the user reply in plain language. Do not leave them as a leftover.
 
+**Database migrate.** When this change adds a new `backend/drizzle/0xxx_*.sql`, run `npm run db:migrate:all` from `backend/` in that same session, after the file is on disk. Do not run it before the file exists. Do not edit a migration that has already been applied. Do not run it again when no new file was added. A missed migrate is not a leftover.
+
 **A leftover is only an unknown.** File one when the code cannot see a fact and you cannot invent the store, the clock, or the amount. If you can finish it without the user, finish it. Do not file a leftover for a decision already written, or for a typecheck, a lint, or a warning. Any question that leftover still needs is written on that ticket in runner language. Filing it is inside the loop. Same session, crawl the next unblocked ticket. Do not end the turn on the leftover.
 
 **A half-done card stays in progress.** "Keep going" does not move a partial ticket to Desk device or any leftover lane. The parent ticket says which part is the phone and which part is the leftover.
@@ -234,4 +236,4 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 ## Done
 
-The frontier for this house shipped under `/implement` **after the Build loop is empty**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.

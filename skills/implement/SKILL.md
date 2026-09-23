@@ -36,7 +36,7 @@ Completion: that ticket is PASS in current code, or **Window full** with the rem
 
 Commit your work to the current branch.
 
-**Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `cd backend ; npm run db:migrate:all` in the same session after the file is on disk. A migrate run before that file exists will not include it.
+**Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `cd backend ; npm run db:migrate:all` in the same session after the file is on disk. A migrate run before that file exists will not include it. Do not edit a file that has already been applied. Do not run migrate again when this change added no new SQL file. A missed migrate stays on this ticket. It is not a leftover.
 
 ## Build loop
 
@@ -45,7 +45,7 @@ Gap check and `/code-review` feed the **same** tickets until they are empty.
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
-2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
+2. When every AC is PASS: **Living docs**, then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
 4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Filing a leftover issue is the same step. Then **Crawl in this session**. Do not end the turn on the leftover.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
@@ -249,4 +249,5 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 
 3. **Labels match the lane.** Drop `ready-for-agent` on Parked, a leftover lane, and Done. Keep it on Unclaimed, In Progress, Live Beta, and GoLive. A `parked:*` label belongs on Parked or a leftover lane, not on GoLive.
 4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
-5. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. After they merge, set those tickets to the lane that is actually left and walk the list again.
+5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `npm run db:migrate:all` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
+6. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. After they merge, set those tickets to the lane that is actually left and walk the list again.
