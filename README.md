@@ -2,9 +2,11 @@
 
 This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills). Install Matt's pack first. Install this overlay second. `/umbrella` is the only front door.
 
-It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. After tickets are filed, `/umbrella` keeps the house crawl going in that session. `/loop` is optional and is not required for the crawl. This overlay does not install poteto-mode or the full pstack plugin.
+It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. This overlay does not install poteto-mode or the full pstack plugin.
 
 Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` names the pack of issues (the **house**) and the **next** skill. Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
+
+After a locked grill, the house crawl is default `/umbrella` behavior in that session, not a separate overnight arm, and `/loop` is optional. A named **House queue** ("work through these") runs one house at a time, then the next; Ready to merge on house A does not block house B. Phase B: `/umbrella` auto-routes installed Matt skills (`/simple-english`, `/wait-what`, `/writing-for-agents`, `/handoff`, `/domain-modeling`, `/prototype`, `/codebase-design`, `/diagnosing-bugs`, `/tdd`, …) without copying their bodies into this overlay. See [Thin conventions](#thin-conventions).
 
 ## Why this is not a fork
 
@@ -164,6 +166,18 @@ A locked grill is not a build. It is the only planning pause. After that confirm
 PAUSE for the grill lock (per house), Ready-to-merge waiting on Jacob, Preview fast-forward / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. An ownership conflict pauses the phone and the crawl continues on this house's other coding tickets. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. One named house stops at Ready-to-merge waiting on Jacob. A house queue starts the next house instead. The session stops on Window full, a Founder pause that blocks the session, or when the user stops.
 
 `/grill-with-docs` is still Matt's interview when you are not on a wayfinder map. `/umbrella` does not replace it.
+
+## Thin conventions
+
+House rules in `/umbrella`. Not new skill folders.
+
+- **DESIGN-IT-TWICE.** Only when asked, or when `/prototype` is a non-trivial UI or flow. Two short sketches, then lock one. A trivial stub skips it.
+- **Decision trail.** Default on a long crawl (multi-ticket or a **House queue**). `decisions.tsv` (`when`, `ticket`, `decision`, `why`) or short bullets in the cursor file. One house at a time.
+- **figure-it-out.** Only when `/wayfinder` does not fit. One competing-planner pass, then the spine. Not a slash.
+- **Comment cleanup.** Before `/code-review` closes a ticket, strip narrative and noise comments from this change. Keep intentional API and docs comments. No cleanup subagent.
+- **Recall** brief (handoff). On Window full, end of session, or the next agent: house queue, ship mode, now-on tickets, decisions trail path, blockers. Follow `/handoff` when that skill is installed. The brief does not start the next house.
+
+Swarm and arena are not standing. `/automate-me` is maintainer-only. There is no `typescript-best-practices` always-on overlay.
 
 ## Ship mode
 
