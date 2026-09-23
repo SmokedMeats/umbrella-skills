@@ -29,6 +29,28 @@ From a dirty local clone (before push), run `sync-workspace.mjs` from that folde
 
 Do **not** update or reopen a field-notes issue on `mattpocock/skills`. This repo is the SSOT.
 
+## Upstream pulls
+
+This pack is the SSOT. Never auto-merge Matt or pstack.
+
+### Matt ([mattpocock/skills](https://github.com/mattpocock/skills))
+
+Unedited Matt skills update by reinstalling Matt's pack on its own schedule.
+
+Overlay copies we own never get a blind overwrite: `umbrella`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, plus `how`, `why`, `teach`, `teach-me`, `principles`, and `blast-radius`.
+
+Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Then run `node scripts/sync-workspace.mjs`.
+
+### pstack ([cursor/plugins](https://github.com/cursor/plugins))
+
+`how`, `why`, `teach`, `principles`, and `blast-radius` are adapted copies inside this overlay. The upstream folders are under [pstack](https://github.com/cursor/plugins/tree/main/pstack). Do not install poteto-mode as a second conductor.
+
+When cursor/plugins ships pstack changes, diff only those skill folders we ported. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+
+### Cadence
+
+On notice, or on a periodic review. Open a PR with the cherry-picks. A human (or CoS) merges.
+
 ## What belongs where
 
 - **README** — for people who install the overlay.

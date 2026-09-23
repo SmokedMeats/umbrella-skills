@@ -1,8 +1,10 @@
 # umbrella-skills
 
-This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills).
+This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills). Install Matt's pack first. Install this overlay second. `/umbrella` is the only front door.
 
-Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` is the only front door. It names the pack of issues (the **house**) and the **next** skill. Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
+It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. After tickets are filed, overnight `/loop` is optional. This overlay does not install poteto-mode or the full pstack plugin.
+
+Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` names the pack of issues (the **house**) and the **next** skill. Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
 
 ## Why this is not a fork
 
@@ -11,7 +13,7 @@ A fork copies Matt's whole repo. Then every upstream change needs a merge. Then 
 This repo is an **overlay**:
 
 1. Install Matt's pack first. That is the skillset.
-2. Install this pack second. It overwrites a few of those skills, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`.
+2. Install this pack second. It overwrites a few of those skills, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`. Planning-spine overlays stay Matt-based. `/how`, `/why`, `/teach`, `/principles`, and `/blast-radius` are adapted from [poteto](https://github.com/poteto) / [pstack](https://github.com/cursor/plugins/tree/main/pstack), with house unslop. `/teach-me` is Matt's former `/teach`.
 3. Unedited skills stay Matt's (`/tdd`, `/research`, `/prototype`, `/ask-matt`, `/setup-matt-pocock-skills`).
 
 Keep both. Update Matt's pack on its own schedule.
@@ -37,7 +39,7 @@ On a cluster of related grilling tickets, three gaps showed up for our pack:
 Preferred order (you can skip this if you go straight to `/umbrella` — it runs the same check):
 
 1. Install [mattpocock/skills](https://github.com/mattpocock/skills). Then run `/setup-matt-pocock-skills` once in each repo.
-2. Add this overlay. It overwrites the skills in the table below, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`:
+2. Add this overlay. It overwrites the skills in the table below, adds `/umbrella`, and adds `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`. Planning-spine overlays stay Matt-based. `/how`, `/why`, `/teach`, `/principles`, and `/blast-radius` are adapted from [poteto](https://github.com/poteto) / [pstack](https://github.com/cursor/plugins/tree/main/pstack), with house unslop. `/teach-me` is Matt's former `/teach`.
 
 ```bash
 npx skills@latest add SmokedMeats/umbrella-skills
@@ -251,7 +253,11 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ## Credit
 
-Built to sit on [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files start from those skills. `/umbrella` is original to this repo. This pack is the SSOT — we do not keep a field-notes issue on Matt's repo.
+Planning spine: [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files for that spine start from those skills. `/umbrella` is original to this repo.
+
+Understand and rigor: [Lauren Tan (poteto)](https://github.com/poteto). Skills stack: [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins). `/how`, `/why`, `/teach`, the `/principles` index, and `/blast-radius` are adapted from pstack, with house unslop.
+
+This pack is the SSOT — we do not keep a field-notes issue on Matt's repo.
 
 Maintainer notes: [MAINTAINING.md](./MAINTAINING.md).
 
