@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Build work from a spec or from tickets filed after a locked grill. Use when those tickets exist, overnight continue, or a build-loop remainder is still open. Count the frontier, house each ticket, spawn extras, crawl newly unblocked tickets. Before Ready-to-merge: gap-check against the lock, living-doc verify, and /code-review including blast-radius."
+description: "Build work from a spec or from tickets filed after a locked grill. Use when those tickets exist, the /umbrella house crawl is in progress, or a build-loop remainder is still open. Count the frontier, house each ticket, spawn extras, crawl newly unblocked tickets. When a Build loop is empty, set the lane from what is left. Before a terminal lane: gap-check against the lock, living-doc verify, and /code-review including blast-radius."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `implement`.
@@ -19,7 +19,7 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Follow [Build standing law](../umbrella/SKILL.md#build-standing-law).
 
-**Per ticket, before close or leftover-lane:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket.
+**Per ticket, before close or a terminal lane:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
 
 ## Gap check
 
@@ -47,8 +47,9 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Filing a leftover issue is the same step. Then **Crawl in this session**. Do not end the turn on the leftover.
-5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
+4. When this ticket’s list is empty, set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
+5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. **Ready to merge** holds dependents until merge.
+6. Stop the house only when the remaining frontier is **Ready to merge** waiting on Jacob, **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
 A leftover lane is **not** Window full. Keep crawling.
 
@@ -122,7 +123,7 @@ On each wave ticket (and the spec, if it is missing this too):
 
 Completion: every wave ticket names spec + map, wears the house labels, is a child of the map, has a milestone, is on the Project, and is assigned to `@me`.
 
-On close **or** leftover-lane: **Living docs** comment must already be on the ticket. Pick the leftover Status that matches the wait (phone → Desk device via [DEVICE-QA.md](../umbrella/DEVICE-QA.md); console → Operator; outdoor → Field; or a later leftover column). Do not close. Then **Crawl**. If you do close (no leftover): remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Close **this child** (Status **Done**, keep the milestone). Do **not** archive that card yet. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md). Then [PROJECTS.md](../umbrella/PROJECTS.md) **Archive Done**. Then **Crawl**. Leftover cards still open → do not Hit the milestone.
+On close **or** a terminal lane: **Living docs** comment must already be on the ticket. Set the lane from what is left (phone this pass cannot run → **Desk device** via [DEVICE-QA.md](../umbrella/DEVICE-QA.md); console → **Operator**; outdoor → **Field**; green PR waiting on Jacob → **Ready to merge**; beta queue → **Live Beta**; production switch → **GoLive**; nothing left → **Done**). A Desk device move does not close the ticket. Then **Crawl** the next unblocked coding ticket. If you do close (nothing left): remove `ready-for-agent` and any `parked:<slug>`. Append one named line to the map's Decisions-so-far. Close **this child** (Status **Done**, keep the milestone). Do **not** archive that card yet. Then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md). Then [PROJECTS.md](../umbrella/PROJECTS.md) **Archive Done**. Then **Crawl**. Leftover cards still open → do not Hit the milestone.
 
 ## Living docs
 
@@ -165,19 +166,20 @@ The house is a tree, not one wave. After each ticket **closes**, **moves to a le
 
 - Unblocked and not in-flight → join the live wave. Draft exclusives if missing. Spawn a child for each extra (and for every new ticket if the conductor is already writing one).
 - Open **product** blocker remains (still In Progress / Unclaimed, ACs not PASS) → **hold**. Name the blocker.
-- Blocker is already on a leftover lane → **not a hold**. Unlock dependents now.
+- Blocker is already on a leftover lane → **not a hold**. Unlock dependents now. **Ready to merge** still holds its dependents.
+- Phone-visible and this pass cannot run Device QA (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) → **Desk device**, do not close, crawl the next unblocked coding ticket.
 - Exclusive glob still owned by an in-flight child → hold until that commit.
 
 Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is still open. T3 later leftover-lanes and unlocks T5/T6. Spawn T5 and T6 in this session.
 
-This session stays conductor across waves. Completion: no unblocked implement tickets remain (leftover-lane cards do not count), the user stops, or **Window full**.
+This session stays conductor across waves. Completion: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), the frontier is **Ready to merge** waiting on Jacob, a Founder pause blocks the session, the user stops, or **Window full**. Filing tickets is not completion.
 
 
 ## Ship mode (sticky — read the pin)
 
 Read `Ship mode: Development` or `Ship mode: PR` from `docs/agents/UMBRELLA_CURSOR.md` (or the conductor comment). **Do not re-pick.** Actor force already locked it for this run (Grok Bot / Cursor cloud -> PR; local Grok Build / Cursor IDE on AlphaTerminal -> Development). Wrong pin for this actor -> correct once, note it, stay sticky.
 
-Also: cloud **Mode B** always parks phone hardware on **Desk device**; Maestro crawl only on AlphaTerminal ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)).
+Also: Device QA runs only when this runner can see the USB phone (local AlphaTerminal, or a private worker on that machine). A Cursor cloud VM cannot. Cloud **Mode B** leaves phone-visible leftover on **Desk device** and crawls the next coding ticket. One Ship mode pin. No second worktree on the same `adb` device. If another actor owns the phone this pass, stand down and leave **Desk device** ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)).
 
 ### Mode A — `Ship mode: Development`
 
@@ -189,7 +191,7 @@ Also: cloud **Mode B** always parks phone hardware on **Desk device**; Maestro c
 ### Mode B — `Ship mode: PR`
 
 - **One ticket -> one branch -> one PR** into `Development`, or **serialize**. Do not parallel-commit multiple tickets into one PR / one worktree tip.
-- Push **only** to the PR branch. Never push to `Development` tip, Preview, or `master`. Never merge without Jacob.
+- Push **only** to the PR branch. Never push to `Development` tip, Preview, or `master`. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. Jacob does those. `npm run db:migrate:all` for a new drizzle file in this change stays in the Build loop.
 - When PR is open, checks green, waiting on Jacob: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** until Done (merged) or parked -- Ready to merge is **not** a leftover lane.
 - If the ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull the dependent while the blocker is open, unless the blocker is on a leftover lane.
 - A later production switch (class, weapon, flag) is **GoLive**, not Parked. GoLive stays held while its blocker is open.
@@ -208,7 +210,7 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 3. **Dispatch.** Spawn one implement subagent per extra ticket **before** this session writes product code. Do not skip the spawn and write the extras yourself. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. A ticket whose blocker is still open is not spawned. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). Close or leftover-park that ticket only when **its** loop is empty. Do not batch one review for the whole wave. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
+6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
 7. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
 
 ### Child rules (paste into every spawn)
@@ -224,11 +226,11 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 
 Stage named exclusive paths only. Leave other agents' untracked files on disk. One commit, then the next.
 
-Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch only; set **Ready to merge** when green and waiting on Jacob. Never master. Never merge until the user says so.
+Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch only; set **Ready to merge** when green and waiting on Jacob. Never master. Never merge, Preview fast-forward, migrate, OTA, or master promote until the user says so in that turn.
 
 ## End of house
 
-When **Crawl** says no unblocked implement tickets remain, do this before you stop. Window full skips it and names the tickets still on the wrong lane.
+When **Crawl** says no unblocked implement tickets remain, do this before you stop. Each empty Build loop already set its own lane. This walk corrects any card still on the wrong Status. Window full skips it and names the tickets still on the wrong lane.
 
 1. **Every open ticket in the house.** Live, parked, leftover, Ready to merge, Live Beta, and GoLive. Not a sample.
 2. **Set each Status from what is actually left** ([PROJECTS.md](../umbrella/PROJECTS.md)):
@@ -237,7 +239,7 @@ When **Crawl** says no unblocked implement tickets remain, do this before you st
 | --- | --- |
 | Code still to write, unblocked | In Progress if claimed, otherwise Unclaimed |
 | Pull request open, waiting on merge | Ready to merge |
-| Phone on the desk, Preview APK, Device QA | Desk device |
+| Phone on the desk, Preview APK, Device QA, or this pass cannot see the USB phone | Desk device |
 | Outdoor run or watch on the wrist | Field |
 | Store, console, signing, Clerk | Operator |
 | Switch that waits for production | GoLive |

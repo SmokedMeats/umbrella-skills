@@ -2,7 +2,7 @@
 
 This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills). Install Matt's pack first. Install this overlay second. `/umbrella` is the only front door.
 
-It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. After tickets are filed, overnight `/loop` is optional. This overlay does not install poteto-mode or the full pstack plugin.
+It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. After tickets are filed, `/umbrella` keeps the house crawl going in that session. `/loop` is optional and is not required for the crawl. This overlay does not install poteto-mode or the full pstack plugin.
 
 Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` names the pack of issues (the **house**) and the **next** skill. Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
 
@@ -93,7 +93,7 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Matt's pack or repo mapping missing | `/umbrella` prerequisite (install Matt, then setup) | **new** |
 | Once per repo | `/setup-matt-pocock-skills` | no — Matt |
 | Inbox is dirty | `/triage` | **overlay** |
-| Which house / which phase / overnight continue | **`/umbrella`** (auto-invoked) | **new** |
+| Which house / which phase / keep the house crawl | **`/umbrella`** (auto-invoked) | **new** |
 | Foggy effort, no map yet | `/wayfinder` (chart) | **overlay** |
 | Before grill | Doc review + explicit gap list | **`/umbrella` pre-grill** |
 | Open grilling siblings | `/grill-me` → `/grilling` + `/domain-modeling` | grill-me + grilling **overlay**; domain-modeling **Matt** |
@@ -101,8 +101,10 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Need a cheap artifact | `/prototype` | no — Matt |
 | Grill locked, every gap closed | **`/to-spec`** immediately (no spec approval) | **overlay** |
 | Spec published from that lock | **`/to-tickets`** immediately (no ticket approval) | **overlay** |
-| Tickets filed from that lock | **`/implement`** → `/tdd` → **Build loop** (gap-check vs the lock → living docs for touched docs, including a phone **P\*** Device QA leaf → `/code-review` including `/blast-radius` → remainder back on the same tickets) | implement + code-review **overlay**; tdd **Matt** |
+| Tickets filed from that lock | **`/implement`** house crawl (default under `/umbrella`) → `/tdd` → **Build loop** (gap-check vs the lock → living docs for touched docs, including a phone **P\*** Device QA leaf → `/code-review` including `/blast-radius` → remainder back on the same tickets). Do not stop after filing | implement + code-review **overlay**; tdd **Matt** |
 | Two or more unblocked implement tickets | `/implement` **wave**: count table first, spawn children (spawn gate), then crawl later waves as they unlock | same overlay |
+| Build loop empty on a ticket | Set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done. Leftover lanes do not hold the next wave. Ready to merge holds dependents until merge | same overlay |
+| Phone-visible, and this pass cannot run Device QA | **Desk device**, do not close, crawl the next unblocked coding ticket. Device QA only when this runner sees exactly one USB phone and no other actor owns it | same overlay |
 | Gap-check remainder or in-scope review findings | `/implement` **Build loop** in this session, then `/code-review` again | same overlay |
 | Hard or flaky bug | `/diagnosing-bugs`, then `/implement` | diagnosing-bugs **Matt** |
 | How does this work / where should it live | `/how` | **new** |
@@ -129,10 +131,13 @@ Three jobs. Do not merge them.
 every /umbrella run       →  prerequisite (Matt pack + repo mapping), then /triage catch
 loose idea / no map       →  /wayfinder
 open grilling siblings    →  pre-grill doc + gap list, then /grill-me
-grill lock (gaps closed)  →  /to-spec → /to-tickets → /implement
+grill lock (gaps closed)  →  /to-spec → /to-tickets → /implement house crawl
+tickets filed             →  keep /implement crawling in this session (/loop is optional)
 two+ unblocked tickets    →  /implement wave (count table, spawn gate, crawl)
 gap-check / review remainder →  /implement Build loop (same tickets), then /code-review again
-before Ready-to-merge     →  lock gap check, living-doc verify, blast-radius
+empty Build loop          →  lane from what is left, then the next unblocked coding ticket
+no phone / cannot see USB →  Desk device, do not close, keep coding elsewhere
+before a terminal lane    →  lock gap check, living-doc verify, blast-radius
 window full during build  →  /implement Window full (spec comment + Next: /implement #<n>)
 hard or flaky bug         →  /diagnosing-bugs, then /implement
 explain                   →  /how, /why, or /teach
@@ -141,7 +146,7 @@ course over sessions      →  /teach-me
 
 A locked grill is not a build. It is the only planning pause. After that confirm, do not wait for spec approval or ticket approval. Keep the `/triage` catch every time.
 
-PAUSE for the grill lock, Ready-to-merge, Preview / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance.
+PAUSE for the grill lock, Ready-to-merge waiting on Jacob, Preview fast-forward / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. An ownership conflict pauses the phone and the crawl continues on other coding tickets. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. The crawl stops at Ready-to-merge waiting on Jacob, Window full, a Founder pause that blocks the session, or when the user stops.
 
 `/grill-with-docs` is still Matt's interview when you are not on a wayfinder map. `/umbrella` does not replace it.
 
@@ -154,7 +159,7 @@ Pin once at `/umbrella` start. Sticky for the whole house (`/implement`, `/code-
 | Grok Bot teammates or Cursor cloud | `Ship mode: PR` — never `Development` tip |
 | Local Grok Build or Cursor IDE on AlphaTerminal | `Ship mode: Development` — never a PR branch |
 
-Wrong pin for this actor → correct once, note it, stay sticky. Mode A pushes `origin/Development`. Mode B is one ticket → one branch → one PR; green + waiting on Jacob is Kanban **Ready to merge** (not leftover; dependents wait). Cloud Mode B parks phone leftover on **Desk device**.
+Wrong pin for this actor → correct once, note it, stay sticky. Mode A pushes `origin/Development`. Mode B is one ticket → one branch → one PR; green + waiting on Jacob is Kanban **Ready to merge** (dependents wait). Cloud Mode B leaves phone leftover on **Desk device** and keeps the coding crawl. One pin. No second worktree on the same `adb` device.
 
 ## What this pack changes
 
@@ -162,13 +167,13 @@ Short index first. Detail for the fat overlays is under the headings.
 
 | Skill | What changed |
 | --- | --- |
-| `umbrella` | Only conductor. Auto-invoked. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → implement. |
+| `umbrella` | Only conductor. Auto-invoked. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. |
 | `grilling` | Sibling batch + `Now on`. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
 | `grill-me` | Load the map's grilling siblings. Refuse a lock with open gaps. Do not ask "next grill?" |
 | `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Auto-invoked. |
 | `to-spec` | Spec the whole locked batch. Cite gap resolutions. No approval wait. Next is `/to-tickets`. |
 | `to-tickets` | 1:1 with the spec. Waves + exclusive paths. No approval wait. Next is `/implement`. |
-| `implement` | Count table, spawn gate, crawl, Build loop. Lock gap check, living-doc verify, blast-radius before Ready-to-merge. |
+| `implement` | Count table, spawn gate, crawl, Build loop. Empty loop sets the lane from what is left. Lock gap check, living-doc verify, blast-radius before that lane. |
 | `code-review` | Two-axis report, Spec-axis blast-radius, optional adversarial notes, then remaining ACs on the same tickets. |
 | `triage` | Every fitting `domain:…`. Names `umbrella:…` for a map or two+ like issues. Hard bugs name `/diagnosing-bugs`. |
 | `how` | Subsystem walkthrough. Auto-invoked. |
@@ -190,12 +195,12 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - After close: [CLOSE-PARENTS.md](skills/umbrella/CLOSE-PARENTS.md) (child first; parent only when open children = 0, including parked).
 - Claim: assign `@me`, Status **In Progress**.
 - Pre-grill before `/grill-me`: review CONTEXT, ADRs, living docs, related tickets, and prior locks. Write the gap list. No lock while a gap is open or vague.
-- After the lock confirm: `/to-spec` (cite gap resolutions) → `/to-tickets` (1:1) → `/implement`. Do not wait for spec or ticket approval.
-- Before Ready-to-merge: gap check vs the lock, living-doc verify for touched docs, `/code-review` including `/blast-radius`. Invented scope is new fog, not a silent merge.
+- After the lock confirm: `/to-spec` (cite gap resolutions) → `/to-tickets` (1:1) → `/implement` house crawl. Do not wait for spec or ticket approval. Do not stop after filing tickets.
+- When a Build loop is empty: set the lane from what is left (Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done). Gap check vs the lock, living-doc verify for touched docs, `/code-review` including `/blast-radius` still run first. Invented scope is new fog, and it is not a silent merge.
 - Playbooks: feature/fog stays on the spine. Bug or flake → `/diagnosing-bugs`, then `/implement`. Explain → `/how` / `/why` / `/teach`. Course → `/teach-me`. Architecture debt → Matt `/improve-codebase-architecture` when asked or when that work is in scope (`/zero-tech-debt` and `/pit-of-success` only if installed).
-- Overnight after tickets are filed: keep crawling `/implement` until Ready-to-merge. `/loop` is optional. Long unattended runs may leave `decisions.tsv` or a note in the cursor file.
-- Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock.
-- After product-done Device QA: [DEVICE-QA.md](skills/umbrella/DEVICE-QA.md). No phone + last leftover → **Desk device**, do not close.
+- House crawl is default `/umbrella` behavior. `/loop` is optional. The crawl continues in this session without it. Stop only at Ready-to-merge waiting on Jacob, Window full, a Founder pause that blocks the session, or when the user stops. Long runs may leave `decisions.tsv` or a note in the cursor file. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
+- Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. Leftover lanes do not hold that wave. Ready to merge holds dependents until merge.
+- Device QA: [DEVICE-QA.md](skills/umbrella/DEVICE-QA.md). `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Cursor cloud cannot see the phone. One Ship mode pin. No second worktree on the same `adb` device.
 - Done cards stay on the board until [PROJECTS.md](skills/umbrella/PROJECTS.md) **Archive Done** (Done > 200, or other lanes need the page).
 - **One board per repo:** phone **1**, IO **2**, AppleWatch **3**, AndroidWatch **4**. File on this clone. Never put watch or website cards on the phone board.
 - Status right edge: leftover lanes → **Ready to merge** → **Live Beta** → **GoLive** → **Done**. Live Beta / GoLive are pullable. Resolve a card via `issue.projectItems` — do not `item-list` the first 200.
@@ -221,7 +226,8 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - New `backend/drizzle/0xxx_*.sql` → `npm run db:migrate:all` in the same session.
 - **Effect-TS (XyberRun pin):** skip unless the change matches an existing Effect seam (`Schema`/`Either` on an untrusted bag, or `Effect`+`Schedule` next to walking-way HTTP). Do not wrap services in `Effect.gen`. A new `JSON.parse` / webhook / native dict still gets a census row.
 - Per ticket before close or leftover-lane: gap check + `/code-review` two-axis + **Living docs** comment (grep `docs/`).
-- Leftover lanes (Operator / Desk / Field) **Crawl** the next wave. They do not hold dependents. **Live Beta** / **GoLive** are pullable, not leftover. Mode B **Ready to merge** holds dependents until Jacob merges.
+- When the Build loop is empty, set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done. Leftover lanes **Crawl** the next wave. They do not hold dependents. **Live Beta** / **GoLive** are pullable. Mode B **Ready to merge** holds dependents until Jacob merges.
+- No phone, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 - On close: drop `ready-for-agent`, child first, CLOSE-PARENTS. Do not archive Done unless the 200-card trim says so.
 
 ### `/code-review`

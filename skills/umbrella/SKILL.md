@@ -1,6 +1,6 @@
 ---
 name: umbrella
-description: "Auto-conductor for a pack of related issues. Use when the user runs /umbrella, for multi-ticket work, when the next phase is unclear, or to continue overnight after tickets are filed. Routes triage → wayfinder → pre-grill doc review and gap list → grill-me (lock only when every gap is closed) → to-spec → to-tickets → implement. Spec approval and ticket approval are not gates. The only front door. Not a second conductor."
+description: "Auto-conductor for a pack of related issues. Use when the user runs /umbrella, for multi-ticket work, when the next phase is unclear, or to keep the house crawl going after tickets are filed. Routes triage → wayfinder → pre-grill doc review and gap list → grill-me (lock only when every gap is closed) → to-spec → to-tickets → implement Build loop crawl. Spec approval and ticket approval are not gates. The crawl is default /umbrella behavior, not a separate overnight arm. The only front door. Not a second conductor."
 argument-hint: "issue numbers, an umbrella slug, or nothing to scan the inbox"
 ---
 
@@ -69,13 +69,13 @@ Hard gates:
 - No map yet → **`/wayfinder`** (chart). A map with fog or leftover research / prototype / task → `/wayfinder` (work the map).
 - Open **live** grilling siblings (`umbrella:<slug>` + `wayfinder:grilling`, not `parked:<slug>`) → **pre-grill**, then `/grill-me`. Parked tickets do not start a grill. No grill lock while a gap is open or vague.
 - A locked grill is **not** a build. Next is `/to-spec` immediately, then `/to-tickets`, then `/implement`. Do not wait for spec approval or ticket approval.
-- Filed tickets are not "just start coding." Next is the **`/implement` skill** (`/tdd`, `/code-review` including `/blast-radius`, conductor waves). `/implement` is not done until the **Build loop** is empty: gap-check PASS against the grill lock, the spec, and the tickets, `/code-review` two-axis report including blast-radius, every in-scope finding built on the **same** tickets, **Living docs** update/verify for docs this change touched (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. Then [DEVICE-QA.md](DEVICE-QA.md): `adb devices` — exactly one phone → `/device-qa-agent`; else if the crawl is the last leftover → Kanban **Desk device** + Waiting comment (do not close, do not silent-skip).
+- Filed tickets are not "just start coding," and filing them is not the end of the run. Next is the **`/implement` skill** (`/tdd`, `/code-review` including `/blast-radius`, conductor waves). Keep the **Build loop** crawling in this session. `/implement` is not done on a ticket until that ticket’s **Build loop** is empty: gap-check PASS against the grill lock, the spec, and the tickets, `/code-review` two-axis report including blast-radius, every in-scope finding built on the **same** tickets, **Living docs** update/verify for docs this change touched (including a **P\*** leaf in `docs/operations/DEVICE_QA_PHASED_CHECKLIST.md` when the ship is phone-visible), **Effect-TS check** (skip unless this change is an untrusted bag or flaky outbound HTTP next to walking-way clients — then match sibling `Schema`/`Either` or `Effect`+`Schedule`; not a census row and not `Effect.gen` on every service), **Effect Schema inventory** (`docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md` + `npm run check:effect-schema-inventory`) when the ship adds a `JSON.parse` / webhook / native dict bag, and **`npm run db:migrate:all`** when the change added a `backend/drizzle/0xxx_*.sql`. Then set that ticket’s lane from what is left, and [DEVICE-QA.md](DEVICE-QA.md): phone-visible Device QA only when `adb devices` is exactly one **and** this runner can see that USB **and** no other actor owns the phone. Otherwise **Desk device** + Waiting comment (do not close), then crawl the next unblocked coding ticket.
 - If the house has **two or more** unblocked implement tickets, load `/implement` as a **wave**. Product-code edits start after every extra ticket has a live child. `/implement` **crawls**: after each close, recount and spawn whatever just unlocked; hold tickets that still have an open blocker.
 - Gap-check remainder and in-scope `/code-review` findings re-enter `/implement` in **this session** (Build loop). Do not pause for another spec or ticket approval. Name one skill, finish it, then the next.
 - Never skip a phase. The only planning pause is the grill lock.
 - If the grill skipped the doc/gap pass or left a gap open, **refuse auto-advance**. Finish the gaps or return to `/grill-me`.
 
-Stay in this session through `/to-tickets` and into `/implement` after a successful lock. If the window is unhealthy, **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
+Stay in this session through `/to-tickets` and into the `/implement` house crawl after a successful lock. Do not stop when the tickets are filed. If the window is unhealthy, **Window full** in `/implement` (conductor comment on the spec + `Next: /implement #<n>`).
 
 ## 0. Prerequisite
 
@@ -155,7 +155,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
 | fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
-| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — 1 `adb` device → `/device-qa-agent`; else **Desk device** + notes, then **stay on `/implement`** if another product ticket is unblocked | — |
+| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — exactly one `adb` device, this runner can see that USB, and no other actor owns the phone → `/device-qa-agent`; else **Desk device**, do not close, then **stay on `/implement`** and crawl the next unblocked coding ticket | ownership conflict pauses Device QA only |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
@@ -172,7 +172,7 @@ When the user names one ticket in a wave (e.g. T5), start there as the **conduct
 | Feature or fog | Spine: `/triage` → `/wayfinder` → pre-grill → `/grill-me` → `/to-spec` → `/to-tickets` → `/implement` |
 | Bug or flake | `/diagnosing-bugs` (Matt) when the repro is the work, then `/implement` |
 | Explain a subsystem or a change | `/how`, `/why`, or `/teach`. A multi-session course is `/teach-me` |
-| Tickets already filed from a locked grill, or overnight continue | `/implement` until Ready-to-merge |
+| Tickets already filed from a locked grill | Default house crawl: `/implement` in this session. Set each empty Build loop to the lane that matches what is left. Stop only as **House crawl** says |
 | Architecture debt | Matt `/improve-codebase-architecture` when asked, or when the build loop is idle and that work is in scope. Read `/zero-tech-debt` or `/pit-of-success` only when that skill is installed |
 
 Never-block on reversible work (a lookup, a test, a rename, a local commit in the pinned ship mode). Founder gates still pause.
@@ -181,11 +181,13 @@ Never-block on reversible work (a lookup, a test, a rename, a local commit in th
 
 PAUSE and wait:
 
-- Grill lock (the shared-understanding confirm, and only after every gap is closed)
-- Ready-to-merge
-- Preview, migrate, OTA, or master promote
-- Phone Device QA ownership conflicts
+- Grill lock (the shared-understanding confirm, and only after every gap is closed). Once that lock is in, the house crawl does not pause for it again.
+- Ready-to-merge waiting on Jacob
+- Preview fast-forward, migrate, OTA, or master promote
+- Phone Device QA ownership conflicts (stand down on the phone; keep coding other unblocked tickets)
 - Irreversible actions (force-push to a shared branch, data deletion, customer messages, merging)
+
+Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. The crawl waits. `npm run db:migrate:all` for a new `backend/drizzle/0xxx_*.sql` in this change stays inside the Build loop. That run is not a Preview or master promote.
 
 Do not pause for spec → tickets, or tickets → implement, after a successful grill lock with gaps closed.
 
@@ -208,26 +210,45 @@ The user's lock confirm is the only planning gate. Immediately:
 
 1. `/to-spec`. Cite each gap resolution in the spec.
 2. `/to-tickets`. 1:1 with the spec. Group a story only with the reason written on the ticket.
-3. `/implement`.
+3. `/implement`, and keep the house crawl in this session.
 
-Do not ask the user to approve the spec. Do not ask the user to approve the tickets.
+Do not ask the user to approve the spec. Do not ask the user to approve the tickets. Do not stop after the tickets are filed.
 
 ## Post-implement
 
-Before Ready-to-merge, `/implement` still runs its Build loop. In addition:
+`/implement` still runs its Build loop before a ticket leaves In Progress. When that loop is empty, set Project Status from what is left. In addition:
 
 - Gap check against the grill lock, the spec, and the tickets. This is not a second pre-grill survey.
 - Living-doc update/verify for docs this change touched.
 - `/code-review`, which includes `/blast-radius`.
-- Leftover lane and Device QA as [DEVICE-QA.md](DEVICE-QA.md) and [PROJECTS.md](PROJECTS.md) already say.
+- The lane that matches what is left, and Device QA, as [DEVICE-QA.md](DEVICE-QA.md) and [PROJECTS.md](PROJECTS.md) already say.
 
 Behavior the lock did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not merge it as done.
 
-## Overnight
+## House crawl (default)
 
-After tickets are filed from a locked grill, you may `/loop` or keep crawling `/implement` until Ready-to-merge. `/loop` is optional. A harness without it keeps crawling in this session until Window full or a Founder pause.
+This is how `/umbrella` runs a house. It is the session after a locked grill. It is not a separate overnight automation to arm.
 
-On a long unattended run, leave a decision trail: optional `decisions.tsv` in the house notes, or a short note in `docs/agents/UMBRELLA_CURSOR.md`. Do not block on the founder to start that trail.
+After a locked grill with every gap closed: `/to-spec` → `/to-tickets` → keep the `/implement` **Build loop** crawling in this session. Do not stop after filing tickets. `/loop` is optional. The crawl continues in this session without it.
+
+When a ticket’s Build loop is empty, set Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until Jacob merges.
+
+Phone / Device QA ([DEVICE-QA.md](DEVICE-QA.md)):
+
+- `adb devices` is not exactly one → leave the phone-visible leftover on **Desk device**, do not close, crawl the next unblocked coding ticket.
+- A phone is on the desk → run Device QA only when **this** runner can see that USB (local AlphaTerminal, or a private worker on that machine). A Cursor cloud VM cannot. One Ship mode pin. Do not open a second worktree on the same `adb` device.
+- Another actor owns the phone this pass (Grok Build, for example) → stand down on Device QA, leave **Desk device**, and crawl the next unblocked coding ticket. That ownership conflict pauses the phone. It does not close the ticket.
+
+Stop the crawl only when:
+
+- the remaining frontier is **Ready to merge** waiting on Jacob
+- **Window full**
+- a Founder pause blocks the session (Preview fast-forward, migrate, OTA, or master promote; an irreversible action). Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets. Grill lock is already done before this crawl.
+- the user stops
+
+Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
+
+On a long run, leave a decision trail: optional `decisions.tsv` in the house notes, or a short note in `docs/agents/UMBRELLA_CURSOR.md`. Do not block on the founder to start that trail.
 
 ## Load a skill
 
@@ -235,7 +256,7 @@ Read `SKILL.md` from the same parent skills directory as this file (`setup-matt-
 
 Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any new issue is `Later:` / `Leftover:` or says shelved). Every such issue wears `parked:<slug>` **not** `umbrella:<slug>`, is unassigned, has a **house milestone**, is on the XyberRun Project, and has **When to do this**. If any of that is wrong, fix the issue now. Grill / spec **not this pack** is the only new park from build.
 
-If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; last leftover without a phone → **Desk device**, do not close, then `/implement` **Crawl** — do not stop).
+If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; not exactly one `adb` device, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, then `/implement` **Crawl** the next unblocked coding ticket).
 
 If `/implement` still has unblocked product tickets, **do not** return here to wait on a picker. Stay on `/implement`. A leftover-lane card does not end the session. Return here only when that skill’s Crawl says the session is done.
 
@@ -295,10 +316,10 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 **Dependencies.** If a ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull it while the blocker is open, unless that blocker is on a leftover lane. Ready to merge still holds dependents. A later production switch stays on **GoLive**. Do not park it to keep the build from pulling it.
 
-**Lanes at the end.** When the build loop is empty, walk every open ticket in the house and set each board Status from what is actually left ([PROJECTS.md](PROJECTS.md)). A production switch is GoLive, not Parked. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree.
+**Lanes when a Build loop empties.** Set that ticket’s Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. A production switch is GoLive. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until Jacob merges. Phone-visible work this pass cannot run (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) stays **Desk device** ([DEVICE-QA.md](DEVICE-QA.md)). Then crawl the next unblocked coding ticket. At the end of the house, walk every open ticket and correct any lane that still disagrees.
 
 **Merge prompt.** Ship mode PR, after that lane walk: one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn.
 
 ## Done
 
-The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The house crawl is this session. It stops only as **House crawl** says. The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop, and not a merge. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.

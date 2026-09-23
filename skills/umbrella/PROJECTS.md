@@ -64,7 +64,7 @@ Status columns today: **Parked** → **Unclaimed** → **In Progress** → lefto
 | Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
 | Repo or spec done; leftover is Play Console, Connect, Xcode, signing, Clerk | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
-| Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA crawl with no phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** |
+| Leftover is Maestro, Preview APK, sideload, desk companion, or Device QA this pass cannot run — `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA**. Then crawl the next unblocked coding ticket |
 | Leftover is a physical outdoor run, goldens, or watch on-wrist outside | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Mode B PR open, checks green, waiting on Jacob | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until **Done** (merged) or parked. Jacob merges. |
 | Close after Build loop empty **and** no leftover-lane wait (Mode A), or after Jacob merges a Ready-to-merge PR (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
@@ -230,7 +230,7 @@ Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Un
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; Mode B green PR waiting on Jacob → **Ready to merge**; Mode A close → Done (no immediate archive); last leftover Device QA / no phone → Desk device |
+| `/implement` | Backfill item; claim → In Progress; empty Build loop → the lane that matches what is left (Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done); Mode B green PR waiting on Jacob → **Ready to merge** (holds dependents); Mode A close with nothing left → Done (no immediate archive); phone-visible and this pass cannot run Device QA → Desk device, then crawl the next coding ticket |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.
