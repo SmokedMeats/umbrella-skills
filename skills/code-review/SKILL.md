@@ -91,7 +91,7 @@ Also note for Standards (do not invent; just state facts):
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Also read the kit or grill page the ticket names. If the code disagrees with that locked page, that is a Spec miss even when the ticket bullets are thinner. Do not invent a softer reading of a decided line. Quote the spec or locked-page line for each finding. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
@@ -112,11 +112,13 @@ Findings that are still true in **current code** and still belong to **this ship
 - Standards **hard violations** (documented-standard breaches, not judgement-only smells)
 - Spec **missing / partial / wrong**
 
-**Skip**
+**Skip** (do not ask the user; do not say "judgement" in chat)
 
 - Founder locks and approved grill answers
-- Judgement-only smells
+- Code-shape notes (the smell baseline). They are not a product choice. Leave them off the user summary. If nothing is waiting on the user, say that in one line.
 - Findings that already have an open ticket (link that URL; if it is live `umbrella:*`, include it in the loop)
+
+A type error, a warning, or an error in this diff is **Build now**, not a skip and not a leftover. A leftover is only a fact the code cannot see and you cannot invent. The question goes on that ticket in runner language.
 
 **Park** only a grill / spec **not this pack** lock — `Later:` per [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
 

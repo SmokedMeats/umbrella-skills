@@ -16,15 +16,19 @@ This is not an `/audit` crawl. Do not inventory the neighborhood. Do not grind l
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
+**Finish the errors.** A type error, a warning, or an error you hit while building is fixed in this change. Do not file it as a leftover. At the end of the user reply, summarize what you fixed, in plain language.
+
+**Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Follow [Build standing law](../umbrella/SKILL.md#build-standing-law).
+
 **Per ticket, before close or leftover-lane:** gap check on **that** ticket, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket.
 
 ## Gap check
 
 After product code is in the tree, **before** you close a ticket, move it to a leftover lane, or say ACs hold. Run this **on each ticket**, not once for the wave.
 
-1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment). Chat memory is not the list.
-2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path.
-3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again.
+1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment) **and** the kit or grill page that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner.
+2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path. Code that disagrees with the locked page is FAIL. Do not invent a softer reading of a line that is already decided.
+3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. The parent says which part is the phone and which part is the leftover.
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
 5. Post the PASS / PARTIAL / FAIL table on **that** ticket.
 
@@ -43,7 +47,7 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Then **Crawl** — do not stop the session.
+4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Filing a leftover issue is the same step. Then **Crawl in this session**. Do not end the turn on the leftover.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
 
 A leftover lane is **not** Window full. Keep crawling.
@@ -157,7 +161,7 @@ Completion: the Living docs comment is on the ticket, and every grep hit is done
 
 ## Crawl
 
-The house is a tree, not one wave. After each ticket **closes** **or** moves to a **leftover lane** (product ACs PASS), recount **in this session**. Post the count table. Spawn the next wave. Do not stop because the last card stayed open on a leftover column.
+The house is a tree, not one wave. After each ticket **closes**, **moves to a leftover lane** (product ACs PASS), **or you file a leftover issue**, recount **in this session**. Post the count table. Spawn the next wave. Do not stop because the last card stayed open on a leftover column. Do not end the turn by explaining the leftover.
 
 - Unblocked and not in-flight → join the live wave. Draft exclusives if missing. Spawn a child for each extra (and for every new ticket if the conductor is already writing one).
 - Open **product** blocker remains (still In Progress / Unclaimed, ACs not PASS) → **hold**. Name the blocker.
@@ -187,6 +191,8 @@ Also: cloud **Mode B** always parks phone hardware on **Desk device**; Maestro c
 - **One ticket -> one branch -> one PR** into `Development`, or **serialize**. Do not parallel-commit multiple tickets into one PR / one worktree tip.
 - Push **only** to the PR branch. Never push to `Development` tip, Preview, or `master`. Never merge without Jacob.
 - When PR is open, checks green, waiting on Jacob: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** until Done (merged) or parked -- Ready to merge is **not** a leftover lane.
+- If the ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull the dependent while the blocker is open, unless the blocker is on a leftover lane.
+- A later production switch (class, weapon, flag) is **GoLive**, not Parked. GoLive stays held while its blocker is open.
 - Children still do not run git unless the spawn explicitly says Mode B solo (one ticket, one agent, one branch). Default: conductor owns git; children report file lists.
 
 ## Parallel wave
@@ -199,7 +205,7 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 
 1. **Draft.** Load exclusive globs and frozen shared from the ticket bodies or the parent spec's conductor comment. If those lists are missing, draft them and post them. Wait for a one-line confirm **only** when two tickets still claim the same path after the draft.
 2. **House.** Wire parent + map on every wave ticket (see **House**). Then **claim** — `gh issue edit <n> --add-assignee "@me"` on each wave ticket (quote `"@me"` on PowerShell) so a second terminal does not grab it. Do not use a comment instead.
-3. **Dispatch.** Spawn one implement subagent per extra ticket. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
+3. **Dispatch.** Spawn one implement subagent per extra ticket **before** this session writes product code. Do not skip the spawn and write the extras yourself. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. A ticket whose blocker is still open is not spawned. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
 6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). Close or leftover-park that ticket only when **its** loop is empty. Do not batch one review for the whole wave. **Living docs**, then remove `ready-for-agent` only. Append a named line to the map.
@@ -218,4 +224,29 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 
 Stage named exclusive paths only. Leave other agents' untracked files on disk. One commit, then the next.
 
-Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch only; set **Ready to merge** when green and waiting on Jacob. Never master. Never merge without Jacob.
+Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch only; set **Ready to merge** when green and waiting on Jacob. Never master. Never merge until the user says so.
+
+## End of house
+
+When **Crawl** says no unblocked implement tickets remain, do this before you stop. Window full skips it and names the tickets still on the wrong lane.
+
+1. **Every open ticket in the house.** Live, parked, leftover, Ready to merge, Live Beta, and GoLive. Not a sample.
+2. **Set each Status from what is actually left** ([PROJECTS.md](../umbrella/PROJECTS.md)):
+
+| What is left | Lane |
+| --- | --- |
+| Code still to write, unblocked | In Progress if claimed, otherwise Unclaimed |
+| Pull request open, waiting on merge | Ready to merge |
+| Phone on the desk, Preview APK, Device QA | Desk device |
+| Outdoor run or watch on the wrist | Field |
+| Store, console, signing, Clerk | Operator |
+| Switch that waits for production | GoLive |
+| Must finish before public beta | Live Beta |
+| Shelved on purpose | Parked |
+| Merged and nothing left | Done |
+
+A desk check whose real remainder is "turn this on at production" moves to **GoLive** after the desk check, not to Done. Do not park a GoLive switch to keep the build from pulling it.
+
+3. **Labels match the lane.** Drop `ready-for-agent` on Parked, a leftover lane, and Done. Keep it on Unclaimed, In Progress, Live Beta, and GoLive. A `parked:*` label belongs on Parked or a leftover lane, not on GoLive.
+4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
+5. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. After they merge, set those tickets to the lane that is actually left and walk the list again.
