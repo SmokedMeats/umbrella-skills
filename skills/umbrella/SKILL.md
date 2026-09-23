@@ -210,6 +210,28 @@ One user-owned GitHub Project **per repo** is the Kanban + Roadmap over that rep
 
 On create: `item-add` after the milestone. On claim: Status **In Progress** (**Now** is a view, not a column). Leftover outside the repo: **Operator** / **Desk device** / **Field** — do not close. On close: Status **Done**, drop `ready-for-agent` and any `parked:<slug>` ([PARKED-TICKETS.md](PARKED-TICKETS.md) **Close**), then [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (child first). Do **not** archive that card unless [PROJECTS.md](PROJECTS.md) **Archive Done** says a cap is over. Device QA wait (no phone, last leftover) is **Desk device**, not Done — [DEVICE-QA.md](DEVICE-QA.md). Catch missing items (bucket 7) and the Done-lane trim (bucket 8) every `/umbrella` run. Do not invent Start / Target dates — **Houses** (group by milestone) is the undated pack timeline.
 
+## Build standing law
+
+`/implement` and `/code-review` follow this on every house. Chat to the user is what a runner sees on a run. A ticket comment may name files.
+
+**The locked page wins.** The gap check and the Spec review read the kit or grill page the ticket names, not only the ticket bullets. If the code disagrees with that page, the check fails and the build loop continues. Do not invent a softer reading of a line that is already decided.
+
+**Finish what you can.** Type errors, warnings, and errors hit while building are fixed in this change. Summarize them at the end of the user reply in plain language. Do not leave them as a leftover.
+
+**A leftover is only an unknown.** File one when the code cannot see a fact and you cannot invent the store, the clock, or the amount. If you can finish it without the user, finish it. Do not file a leftover for a decision already written, or for a typecheck, a lint, or a warning. Any question that leftover still needs is written on that ticket in runner language. Filing it is inside the loop. Same session, crawl the next unblocked ticket. Do not end the turn on the leftover.
+
+**A half-done card stays in progress.** "Keep going" does not move a partial ticket to Desk device or any leftover lane. The parent ticket says which part is the phone and which part is the leftover.
+
+**Words.** Do not say "judgement" to the user. A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Leave those notes off the chat summary.
+
+**Subagents.** Two or more unblocked tickets is a wave. Spawn one implement subagent per extra ticket before the conductor writes product code. The conductor does not write those extras. Shared files stay with the conductor. A ticket whose blocker is still open is not in the wave.
+
+**Dependencies.** If a ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull it while the blocker is open, unless that blocker is on a leftover lane. Ready to merge still holds dependents. A later production switch stays on **GoLive**. Do not park it to keep the build from pulling it.
+
+**Lanes at the end.** When the build loop is empty, walk every open ticket in the house and set each board Status from what is actually left ([PROJECTS.md](PROJECTS.md)). A production switch is GoLive, not Parked. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree.
+
+**Merge prompt.** Ship mode PR, after that lane walk: one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn.
+
 ## Done
 
-The frontier for this house shipped under `/implement` **after the Build loop is empty** and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The frontier for this house shipped under `/implement` **after the Build loop is empty**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
