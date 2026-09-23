@@ -1,18 +1,18 @@
 ---
 name: umbrella
-description: "Auto-conductor for a pack of related issues. Use when the user runs /umbrella, for multi-ticket work, when the next phase is unclear, or to keep the house crawl going after tickets are filed. Routes triage → wayfinder → pre-grill doc review and gap list → grill-me (lock only when every gap is closed) → to-spec → to-tickets → implement Build loop crawl. Spec approval and ticket approval are not gates. The crawl is default /umbrella behavior, not a separate overnight arm. The only front door. Not a second conductor."
-argument-hint: "issue numbers, an umbrella slug, or nothing to scan the inbox"
+description: "Auto-conductor for a pack of related issues. Use when the user runs /umbrella, for multi-ticket work, when the next phase is unclear, to keep the house crawl going after tickets are filed, or when the user names several houses to work through. Routes triage → wayfinder → pre-grill doc review and gap list → grill-me (lock only when every gap is closed) → to-spec → to-tickets → implement Build loop crawl. One house at a time. A named queue starts the next house when this house's coding crawl is done. Spec approval and ticket approval are not gates. The crawl is default /umbrella behavior, not a separate overnight arm. The only front door. Not a second conductor."
+argument-hint: "issue numbers, umbrella slugs in order, or nothing to scan the inbox"
 ---
 
 # Umbrella
 
-Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. One house at a time.
+Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. **One house at a time.** A named **House queue** runs the next house after this house's coding crawl. Never interleave tickets across houses.
 
 Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, `/blast-radius`, `/diagnosing-bugs`, and `/tdd` when the playbook below says so. `/umbrella` is the only front door. Do not start a second conductor.
 
 After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to this repo’s Project** (see [PROJECTS.md](PROJECTS.md)). After any of those skills **closes** an issue, [CLOSE-PARENTS.md](CLOSE-PARENTS.md). After product-done Device QA, [DEVICE-QA.md](DEVICE-QA.md).
 
-**Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. GitHub labels win when the file’s phase is stale.
+**Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. Keep its **House queue**. If this house's coding crawl is already done and that queue has a next house, start that house. GitHub labels win when the file’s phase is stale.
 
 ## Ship mode (pin at start — sticky + actor force)
 
@@ -21,7 +21,7 @@ Before Gather finishes (and before any `/implement` product commits), ensure `do
 - `Ship mode: Development` — Mode A
 - `Ship mode: PR` — Mode B
 
-**Sticky.** Once set for this umbrella/skill run, every later skill (`/implement`, `/code-review`, Device QA, crawl, ...) reads the **same** pin. Do **not** re-pick mid-run.
+**Sticky.** Once set for this umbrella run, every later skill (`/implement`, `/code-review`, Device QA, crawl, ...) and every later house in a **House queue** reads the **same** pin. Do **not** re-pick mid-run, or when the queue advances.
 
 **Actor force** (overrides user whim and heuristics):
 
@@ -137,11 +137,21 @@ Do not propose slugs in this list. If a **live** pack is still unhoused, the cat
 
 For each house show: slug, domains, live issue names, parked issue names (if any), whether a `wayfinder:map` exists, **current phase** (from **live** tickets only), **next skill**. If the only open children are `parked:*`, phase is **parked** — do not load `/grill-me` or `/implement`.
 
-Completion: a numbered list. Wait for which house to work. One house per session. Picking a house does **not** pull its parked tickets.
+Completion: a numbered list when the user has not named the work. Wait for which house to work.
+
+**One house at a time.** Never interleave tickets across houses. Finish this house's phase and coding crawl for this session, then the next house.
+
+**One house named.** Work that house. Write it as **House** and set **House queue** to that slug only ([CURSOR.md](CURSOR.md)). When its coding crawl is done, there is no next house. No auto-hop.
+
+**Several houses.** The user names an ordered list of houses, slugs, or issues that map to more than one `umbrella:*`, or says to work through these. Write that order into **House queue**. The queue is houses, in the order each house is first named. A later issue from a house already queued stays in that house's slot. Start the first house now. Do not wait on the picker between houses.
+
+Picking a house does **not** pull its parked tickets.
 
 ## 4. Phase loop
 
-Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)). Read that skill. Follow it to its own completion. Wait only for a gate in **Founder intervention** or the table. Recompute. Repeat.
+Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the tickets that skill will work (`--add-assignee "@me"`) before loading it. Say **`Next: /<skill>`**. Rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](CURSOR.md)). Keep **Ship mode** and **House queue** on that rewrite. Read that skill. Follow it to its own completion. Wait only for a gate in **Founder intervention** or the table. Recompute. Repeat.
+
+**Next house.** When this house's coding crawl is done (**House crawl**) and **House queue** has another house, claim that house, detect its phase, and say **`Next: /<skill>`**. Do not wait on the picker. Do not wait for Jacob to merge. Grill lock on the new house is still that house's planning gate.
 
 | Phase | Evidence | Next | Approval before leaving |
 | --- | --- | --- | --- |
@@ -181,13 +191,15 @@ Never-block on reversible work (a lookup, a test, a rename, a local commit in th
 
 PAUSE and wait:
 
-- Grill lock (the shared-understanding confirm, and only after every gap is closed). Once that lock is in, the house crawl does not pause for it again.
-- Ready-to-merge waiting on Jacob
-- Preview fast-forward, migrate, OTA, or master promote
-- Phone Device QA ownership conflicts (stand down on the phone; keep coding other unblocked tickets)
-- Irreversible actions (force-push to a shared branch, data deletion, customer messages, merging)
+- Grill lock (the shared-understanding confirm, and only after every gap is closed). This is a **per-house** planning gate. Wait on this house. Do not start the next queued house during the lock. Once that lock is in, this house's crawl does not pause for it again.
+- Ready-to-merge waiting on Jacob. Do not merge. This ends the current house's coding crawl. It does **not** block the next house in a **House queue**. Soft-queue overlap checks still run before the merge prompt.
+- Preview fast-forward, migrate, OTA, or master promote. These block the **session**.
+- Phone Device QA ownership conflicts. Stand down on the phone, leave **Desk device**, and keep coding this house's other unblocked tickets. When this house's coding crawl is done, a **House queue** still advances.
+- Irreversible actions (force-push to a shared branch, data deletion, customer messages, merging). These block the **session**.
 
-Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. The crawl waits. `npm run db:migrate:all` for a new `backend/drizzle/0xxx_*.sql` in this change stays inside the Build loop. That run is not a Preview or master promote.
+**Session stops** are **Window full**, the user stops, or a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible). Grill lock is not a session stop. A phone ownership conflict is not a session stop. Ready-to-merge is not a session stop when a next house is queued.
+
+Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. The crawl waits on those. `npm run db:migrate:all` for a new `backend/drizzle/0xxx_*.sql` in this change stays inside the Build loop. That run is not a Preview or master promote.
 
 Do not pause for spec → tickets, or tickets → implement, after a successful grill lock with gaps closed.
 
@@ -237,14 +249,24 @@ Phone / Device QA ([DEVICE-QA.md](DEVICE-QA.md)):
 
 - `adb devices` is not exactly one → leave the phone-visible leftover on **Desk device**, do not close, crawl the next unblocked coding ticket.
 - A phone is on the desk → run Device QA only when **this** runner can see that USB (local AlphaTerminal, or a private worker on that machine). A Cursor cloud VM cannot. One Ship mode pin. Do not open a second worktree on the same `adb` device.
-- Another actor owns the phone this pass (Grok Build, for example) → stand down on Device QA, leave **Desk device**, and crawl the next unblocked coding ticket. That ownership conflict pauses the phone. It does not close the ticket.
+- Another actor owns the phone this pass (Grok Build, for example) → stand down on Device QA, leave **Desk device**, and crawl the next unblocked coding ticket. That ownership conflict pauses the phone. It does not close the ticket. When this house's coding crawl is done, a **House queue** still advances.
 
-Stop the crawl only when:
+**One house at a time.** Never interleave tickets across houses. Finish this house's phase and coding crawl, then the next.
 
-- the remaining frontier is **Ready to merge** waiting on Jacob
+**Coding crawl done (this house).** Every live ticket is on its real lane — **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done** — and no unblocked coding ticket is left. A **Live Beta** or **GoLive** card whose code is still to write is still a coding ticket. Claim it on this house before the hop. A ticket held by a **Ready to merge** blocker in this house is not unblocked coding. Parked `Later:` / `Leftover:` stay listed and are not pulled. **Ready to merge** still holds dependents inside this house until Jacob merges. A house whose open children are only `parked:*` is not pulled. If **House queue** has another house, advance. If it does not, stay.
+
+**Next house.** If **House queue** has another house, start it immediately: claim, phase detect, **`Next: /<skill>`**. Do not wait on the picker. Do not wait for Jacob to merge this house. **Ship mode** stays the pin already set for this run. **Ready to merge** on this house does not block that start. Merge still waits on Jacob. Soft-queue overlap checks still apply before any merge prompt (**Merge prompt** below).
+
+One named house has no next entry. No auto-hop. When its coding crawl is done, stop the session. **Ready to merge** waiting on Jacob is that stop when that lane is the frontier.
+
+Stop the **session** only when:
+
+- this house's coding crawl is done and **House queue** has no next house
 - **Window full**
-- a Founder pause blocks the session (Preview fast-forward, migrate, OTA, or master promote; an irreversible action). Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets. Grill lock is already done before this crawl.
 - the user stops
+- a Founder pause blocks the session (Preview fast-forward, migrate, OTA, or master promote; an irreversible action)
+
+Grill lock is the per-house planning gate. It waits on this house and does not open the next house. A phone ownership conflict leaves **Desk device** and the crawl continues on this house's other coding tickets.
 
 Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
@@ -258,7 +280,7 @@ Then **parked-ticket check** (read [PARKED-TICKETS.md](PARKED-TICKETS.md) if any
 
 If that skill **closed** an issue, run [CLOSE-PARENTS.md](CLOSE-PARENTS.md) (**child first**, then parent only when open children = 0). Then [PROJECTS.md](PROJECTS.md) **Archive Done**. If it reached Device QA, run [DEVICE-QA.md](DEVICE-QA.md) (probe phone; not exactly one `adb` device, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, then `/implement` **Crawl** the next unblocked coding ticket).
 
-If `/implement` still has unblocked product tickets, **do not** return here to wait on a picker. Stay on `/implement`. A leftover-lane card does not end the session. Return here only when that skill’s Crawl says the session is done.
+If `/implement` still has unblocked product tickets on **this** house, **do not** return here to wait on a picker. Stay on `/implement`. A leftover-lane card does not end the session. When this house's coding crawl is done and **House queue** has a next house, return here and start that house. Do not wait on the picker. Stop only when the crawl is done and no next house is queued, or a session stop fires.
 
 ## Milestones
 
@@ -318,8 +340,8 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 **Lanes when a Build loop empties.** Set that ticket’s Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. A production switch is GoLive. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until Jacob merges. Phone-visible work this pass cannot run (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) stays **Desk device** ([DEVICE-QA.md](DEVICE-QA.md)). Then crawl the next unblocked coding ticket. At the end of the house, walk every open ticket and correct any lane that still disagrees.
 
-**Merge prompt.** Ship mode PR, after that lane walk: one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn.
+**Merge prompt.** Ship mode PR, after that lane walk: run the **soft-queue overlap** check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until Jacob says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. A **House queue** with a next house does not wait on that answer.
 
 ## Done
 
-The house crawl is this session. It stops only as **House crawl** says. The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf), or the user stops, or the window is too full — then `/implement` **Window full**. In Ship mode PR, the last step is the merge prompt, not a silent stop, and not a merge. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.
+The house crawl is this session, **one house at a time**. It stops this house as **House crawl** says, then starts the next queued house. The session stops only on **Window full**, the user stops, or a Founder pause that blocks the session. The frontier for this house shipped under `/implement` **after the Build loop is empty**, **a new database migration from this house has been applied**, **every open house ticket is on the lane that matches what is left**, and **Living docs** (phone-visible ships include a Device QA **P\*** leaf). In Ship mode PR, the merge prompt is the last step for **this** house, not a silent stop, and not a merge. **Ready to merge** on this house does not block the next house. Do not call a ticket shipped from chat memory. Parked `Later:` children stay listed **under** the house; they do not start a new `/implement` wave.

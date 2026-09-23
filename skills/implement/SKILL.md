@@ -49,7 +49,7 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
 4. When this ticket’s list is empty, set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
 5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. **Ready to merge** holds dependents until merge.
-6. Stop the house only when the remaining frontier is **Ready to merge** waiting on Jacob, **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
+6. Stop **this house's** coding crawl when no unblocked coding ticket remains (live tickets on their real lanes, or held by a Ready-to-merge blocker in this house), **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. **Ready to merge** holds dependents in this house until Jacob merges. It does not block the next house when `/umbrella` **House queue** has one — finish **End of house**, then return to `/umbrella` and start that house. Do not interleave tickets across houses. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets in this house. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
 A leftover lane is **not** Window full. Keep crawling.
 
@@ -99,10 +99,11 @@ After any leftover-lane move: **post the count table again in the same session**
 When this session **cannot** take the next wave (context/window actually full, or `/umbrella` stops before loading implement). Moving a ticket to a leftover lane is **not** this. Crawl the next unblocked tickets.
 
 1. Post or update the **conductor comment on the spec** with remaining frontier (ticket numbers, unblocked vs held, exclusive globs if a parallel wave, frozen shared).
-2. Print `Next: /implement #<n>` for the unblocked frontier. If that frontier is **2+** tickets, add: this next session is **conductor** and must spawn extras before product code.
-3. Stop. Tickets plus that comment are the resume.
+2. This house still has an unblocked coding ticket → print `Next: /implement #<n>`. If that frontier is **2+** tickets, add: this next session is **conductor** and must spawn extras before product code.
+3. This house's coding crawl is already done and **House queue** has a next house → do not start that house. Keep the queue in `docs/agents/UMBRELLA_CURSOR.md`. The last line names that next house.
+4. Stop. Tickets plus that comment are the resume.
 
-Completion: the spec comment matches the remaining tree, and the user-visible last line is `Next: /implement #<n>`.
+Completion: the spec comment matches the remaining tree, and the user-visible last line is `Next: /implement #<n>` or the next queued house.
 
 ## House
 
@@ -172,7 +173,7 @@ The house is a tree, not one wave. After each ticket **closes**, **moves to a le
 
 Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is still open. T3 later leftover-lanes and unlocks T5/T6. Spawn T5 and T6 in this session.
 
-This session stays conductor across waves. Completion: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), the frontier is **Ready to merge** waiting on Jacob, a Founder pause blocks the session, the user stops, or **Window full**. Filing tickets is not completion.
+This session stays conductor across waves of **this** house. Completion of this house: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), a Founder pause blocks the session, the user stops, or **Window full**. When `/umbrella` **House queue** has a next house, that house starts after **End of house**. Do not pull its tickets from here. Filing tickets is not completion.
 
 
 ## Ship mode (sticky — read the pin)
@@ -211,7 +212,7 @@ Obey **Ship mode** above. Mode A: same worktree on Development. Mode B: one tick
 4. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 5. **Serialize git.** Children never run git. When a child reports done, the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
 6. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → `/code-review` two-axis on the ticket → remainder back here). When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
-7. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave. Repeat until **Crawl** says this session is done.
+7. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave of **this** house. Repeat until **Crawl** says this house is done. A **House queue** with a next house returns to `/umbrella` after **End of house**. Do not pull that house's tickets here.
 
 ### Child rules (paste into every spawn)
 
@@ -230,7 +231,7 @@ Mode A: commit + push to `Development`. Mode B: commit + push to the PR branch o
 
 ## End of house
 
-When **Crawl** says no unblocked implement tickets remain, do this before you stop. Each empty Build loop already set its own lane. This walk corrects any card still on the wrong Status. Window full skips it and names the tickets still on the wrong lane.
+When **Crawl** says no unblocked implement tickets remain, do this before you stop, or before `/umbrella` starts the next house in **House queue**. Each empty Build loop already set its own lane. This walk corrects any card still on the wrong Status. Window full skips it and names the tickets still on the wrong lane. Do not start the next house's tickets in this walk.
 
 1. **Every open ticket in the house.** Live, parked, leftover, Ready to merge, Live Beta, and GoLive. Not a sample.
 2. **Set each Status from what is actually left** ([PROJECTS.md](../umbrella/PROJECTS.md)):
@@ -252,4 +253,4 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 3. **Labels match the lane.** Drop `ready-for-agent` on Parked, a leftover lane, and Done. Keep it on Unclaimed, In Progress, Live Beta, and GoLive. A `parked:*` label belongs on Parked or a leftover lane, not on GoLive.
 4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
 5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `npm run db:migrate:all` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
-6. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. After they merge, set those tickets to the lane that is actually left and walk the list again.
+6. **Merge prompt (Ship mode PR only).** Soft-queue overlap check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until Jacob says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. A **House queue** with a next house does not wait on that answer — return to `/umbrella` and start that house. After they merge, set those tickets to the lane that is actually left and walk the list again.

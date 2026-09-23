@@ -93,7 +93,8 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | Matt's pack or repo mapping missing | `/umbrella` prerequisite (install Matt, then setup) | **new** |
 | Once per repo | `/setup-matt-pocock-skills` | no — Matt |
 | Inbox is dirty | `/triage` | **overlay** |
-| Which house / which phase / keep the house crawl | **`/umbrella`** (auto-invoked) | **new** |
+| Which house / which phase / keep the house crawl | **`/umbrella`** (auto-invoked). One house at a time | **new** |
+| Several houses named, or "work through these" | **`/umbrella`** runs that queue one house at a time. Ready to merge on the current house does not block the next | **new** |
 | Foggy effort, no map yet | `/wayfinder` (chart) | **overlay** |
 | Before grill | Doc review + explicit gap list | **`/umbrella` pre-grill** |
 | Open grilling siblings | `/grill-me` → `/grilling` + `/domain-modeling` | grill-me + grilling **overlay**; domain-modeling **Matt** |
@@ -136,6 +137,7 @@ tickets filed             →  keep /implement crawling in this session (/loop i
 two+ unblocked tickets    →  /implement wave (count table, spawn gate, crawl)
 gap-check / review remainder →  /implement Build loop (same tickets), then /code-review again
 empty Build loop          →  lane from what is left, then the next unblocked coding ticket
+named houses, in order    →  one house at a time; coding crawl done → next house (Ready to merge does not block)
 no phone / cannot see USB →  Desk device, do not close, keep coding elsewhere
 before a terminal lane    →  lock gap check, living-doc verify, blast-radius
 window full during build  →  /implement Window full (spec comment + Next: /implement #<n>)
@@ -146,13 +148,13 @@ course over sessions      →  /teach-me
 
 A locked grill is not a build. It is the only planning pause. After that confirm, do not wait for spec approval or ticket approval. Keep the `/triage` catch every time.
 
-PAUSE for the grill lock, Ready-to-merge waiting on Jacob, Preview fast-forward / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. An ownership conflict pauses the phone and the crawl continues on other coding tickets. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. The crawl stops at Ready-to-merge waiting on Jacob, Window full, a Founder pause that blocks the session, or when the user stops.
+PAUSE for the grill lock (per house), Ready-to-merge waiting on Jacob, Preview fast-forward / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. An ownership conflict pauses the phone and the crawl continues on this house's other coding tickets. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. One named house stops at Ready-to-merge waiting on Jacob. A house queue starts the next house instead. The session stops on Window full, a Founder pause that blocks the session, or when the user stops.
 
 `/grill-with-docs` is still Matt's interview when you are not on a wayfinder map. `/umbrella` does not replace it.
 
 ## Ship mode
 
-Pin once at `/umbrella` start. Sticky for the whole house (`/implement`, `/code-review`, Device QA, crawl). Do **not** re-pick mid-run. Write it on `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](skills/umbrella/CURSOR.md)) or the conductor comment.
+Pin once at `/umbrella` start. Sticky for the whole multi-house run (`/implement`, `/code-review`, Device QA, crawl, every house in the queue). Do **not** re-pick mid-run. Write it on `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](skills/umbrella/CURSOR.md)) or the conductor comment.
 
 | Actor | Forced pin |
 | --- | --- |
@@ -167,7 +169,7 @@ Short index first. Detail for the fat overlays is under the headings.
 
 | Skill | What changed |
 | --- | --- |
-| `umbrella` | Only conductor. Auto-invoked. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. |
+| `umbrella` | Only conductor. Auto-invoked. One house at a time. A named queue starts the next house after this coding crawl. Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. |
 | `grilling` | Sibling batch + `Now on`. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
 | `grill-me` | Load the map's grilling siblings. Refuse a lock with open gaps. Do not ask "next grill?" |
 | `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Auto-invoked. |
@@ -187,8 +189,9 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/umbrella`
 
-- Pin **Ship mode** first (table above).
-- Read and rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](skills/umbrella/CURSOR.md)). That file is the **step**. GitHub labels win for **phase**.
+- Pin **Ship mode** first (table above). The same pin covers every house in the queue.
+- Read and rewrite `docs/agents/UMBRELLA_CURSOR.md` ([CURSOR.md](skills/umbrella/CURSOR.md)). That file is the **step**, plus a **House queue** when the user names several houses. GitHub labels win for **phase**.
+- **One house at a time.** An ordered list of houses, slugs, or issues that map to more than one `umbrella:*`, or "work through these", is that queue. Finish this house's coding crawl, then claim the next house and detect its phase. Do not interleave tickets. One named house does not auto-hop. Ready to merge waits on Jacob and does not block the next house. Soft-queue overlap still runs before any merge prompt.
 - Every run: if Matt's pack or the repo mapping is missing, install / run setup first.
 - Inbox catch → `/triage`: unlabeled, `needs-triage`, unhoused maps/children, open issues with no milestone, open issues missing from **this clone’s** Project.
 - After create: `Later:` / `Leftover:` need **When to do this** ([PARKED-TICKETS.md](skills/umbrella/PARKED-TICKETS.md)).
@@ -198,7 +201,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - After the lock confirm: `/to-spec` (cite gap resolutions) → `/to-tickets` (1:1) → `/implement` house crawl. Do not wait for spec or ticket approval. Do not stop after filing tickets.
 - When a Build loop is empty: set the lane from what is left (Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done). Gap check vs the lock, living-doc verify for touched docs, `/code-review` including `/blast-radius` still run first. Invented scope is new fog, and it is not a silent merge.
 - Playbooks: feature/fog stays on the spine. Bug or flake → `/diagnosing-bugs`, then `/implement`. Explain → `/how` / `/why` / `/teach`. Course → `/teach-me`. Architecture debt → Matt `/improve-codebase-architecture` when asked or when that work is in scope (`/zero-tech-debt` and `/pit-of-success` only if installed).
-- House crawl is default `/umbrella` behavior. `/loop` is optional. The crawl continues in this session without it. Stop only at Ready-to-merge waiting on Jacob, Window full, a Founder pause that blocks the session, or when the user stops. Long runs may leave `decisions.tsv` or a note in the cursor file. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
+- House crawl is default `/umbrella` behavior. `/loop` is optional. The crawl continues in this session without it. One house stops at Ready-to-merge waiting on Jacob. A queue starts the next house. The session stops on Window full, a Founder pause that blocks the session, or when the user stops. Long runs may leave `decisions.tsv` or a note in the cursor file. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 - Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. Leftover lanes do not hold that wave. Ready to merge holds dependents until merge.
 - Device QA: [DEVICE-QA.md](skills/umbrella/DEVICE-QA.md). `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Cursor cloud cannot see the phone. One Ship mode pin. No second worktree on the same `adb` device.
 - Done cards stay on the board until [PROJECTS.md](skills/umbrella/PROJECTS.md) **Archive Done** (Done > 200, or other lanes need the page).
@@ -220,13 +223,13 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 - Read the sticky **Ship mode** pin. Do not re-pick.
 - Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**.
-- Window full → conductor comment on the spec + `Next: /implement #<n>` (2+ frontier = next session is conductor).
+- Window full → conductor comment on the spec + `Next: /implement #<n>` (2+ frontier = next session is conductor). If this house's coding crawl is already done, the last line names the next queued house and does not start it.
 - Before product code, backfill parent + map + house labels if create missed them.
 - **Build loop:** gap-check remaining ACs vs the grill lock, the spec, and current code. PARTIAL/FAIL stays on the same tickets. Invented scope is parked as new fog and re-grilled. Living docs when PASS: update/verify docs this change touched (phone-visible ships append a **P\*** leaf on `DEVICE_QA_PHASED_CHECKLIST.md`). Not a second pre-grill survey. `/code-review` (including blast-radius) in-scope findings return here.
 - New `backend/drizzle/0xxx_*.sql` → `npm run db:migrate:all` in the same session.
 - **Effect-TS (XyberRun pin):** skip unless the change matches an existing Effect seam (`Schema`/`Either` on an untrusted bag, or `Effect`+`Schedule` next to walking-way HTTP). Do not wrap services in `Effect.gen`. A new `JSON.parse` / webhook / native dict still gets a census row.
 - Per ticket before close or leftover-lane: gap check + `/code-review` two-axis + **Living docs** comment (grep `docs/`).
-- When the Build loop is empty, set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done. Leftover lanes **Crawl** the next wave. They do not hold dependents. **Live Beta** / **GoLive** are pullable. Mode B **Ready to merge** holds dependents until Jacob merges.
+- When the Build loop is empty, set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done. Leftover lanes **Crawl** the next wave. They do not hold dependents. **Live Beta** / **GoLive** are pullable. Mode B **Ready to merge** holds dependents until Jacob merges. It does not block the next house in a **House queue**. After **End of house**, return to `/umbrella` for that house.
 - No phone, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 - On close: drop `ready-for-agent`, child first, CLOSE-PARENTS. Do not archive Done unless the 200-card trim says so.
 
