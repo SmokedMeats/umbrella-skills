@@ -4,13 +4,15 @@
  *
  *   node scripts/sync-workspace.mjs
  *
- * Only replaces the nine overlay skill folders. Other project skills stay.
+ * Overlay = conductor + planning overlays + understand/rigor imports.
+ * Replaces only those skill folders. Other project skills stay.
  */
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Overlay = conductor + planning overlays + understand/rigor imports.
 const OVERLAY_SKILLS = [
   'code-review',
   'grill-me',
@@ -21,6 +23,12 @@ const OVERLAY_SKILLS = [
   'triage',
   'umbrella',
   'wayfinder',
+  'how',
+  'why',
+  'teach',
+  'teach-me',
+  'principles',
+  'blast-radius',
 ];
 
 const USER_SKILL_DIRS = ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills'];

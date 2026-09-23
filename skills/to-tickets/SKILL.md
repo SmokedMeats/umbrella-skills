@@ -1,7 +1,6 @@
 ---
 name: to-tickets
-description: Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges. When several tickets can start together, publish a wave plus exclusive file ownership so /implement can dispatch same-worktree subagents.
-disable-model-invocation: true
+description: "Break a spec published from a locked grill into tracer-bullet tickets, each declaring its blocking edges. Use when that spec exists and implement tickets do not. Map 1:1 to the spec. No ticket-approval wait. When several tickets can start together, publish a wave plus exclusive file ownership so /implement can dispatch same-worktree subagents. Next is /implement."
 ---
 
 # To Tickets
@@ -45,28 +44,19 @@ Group tickets into **waves**: one wave is every ticket whose blockers are the sa
 
 **Wide refactors are the exception to vertical slicing.** A **wide refactor** is one mechanical change — rename a column, retype a shared symbol — whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no vertical slice can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket — green is promised only there.
 
-### 4. Quiz the user
+### 4. Map 1:1
 
-Present the proposed breakdown as a numbered list. For each ticket, show:
+When the spec was published from a locked grill, do not quiz and do not wait for approval.
 
-- **Title**: short descriptive name
-- **Blocked by**: which other tickets (if any) must complete first
-- **Wave**: which tickets start together
-- **Exclusive**: path globs this ticket owns (required on a parallel wave)
-- **What it delivers**: the end-to-end behaviour this ticket makes work
+Each user story, and each implementation decision that changes behavior, becomes a tracer bullet, or is grouped with a reason written on the ticket. Blocking edges are only real gates. A product choice the lock did not settle is an open gap. Refuse to publish. Return to `/grill-me`.
 
-Ask the user:
+Show the breakdown in the reply (title, blocked by, wave, exclusive, what it delivers) as the record of what you published. It is not a question.
 
-- Does the granularity feel right? (too coarse / too fine)
-- Are the blocking edges correct — does each ticket only depend on tickets that genuinely gate it?
-- Should any tickets be merged or split further?
-- On a parallel wave: are the exclusive lists disjoint, and is the frozen shared set right?
-
-Iterate until the user approves the breakdown.
+If there is no spec, stop and name `/to-spec`. Do not invent tickets from a foggy chat.
 
 ### 5. Publish the tickets to the configured tracker
 
-Publish the approved tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured — the tickets are the same either way, only the shape of the blocking edges changes:
+Publish those tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured — the tickets are the same either way, only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-ticket file template below — one ticket per file, never a single combined file.
 - **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking / sub-issue relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. **Label on create** — this is not `/triage`. Apply `ready-for-agent` plus the parent house's `domain:*` and `umbrella:*` (create `umbrella:*` if the pack is real and the label is missing). **Milestone on create** — find or create the house GitHub milestone and assign every published ticket (parked too). See `/umbrella` **Milestones**. **Project on create** — `item-add` every published ticket per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md). **Parked slices** the user left out of this wave: title `Later: …`, `parked:<slug>` + `domain:*` — **no** `umbrella:<slug>`, **no** `ready-for-agent`, **no** assignee. Body **When to do this** per `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) (why this slice missed the rest of the breakdown, unpark gate). Do **not** apply `needs-triage` and do **not** run `/triage` on tickets you just published. Inbound leftovers stay on `/umbrella`’s `/triage` catch. **Parent + map on create** — `## Parent` names the spec **and** the `wayfinder:map` (title + link). Link each ticket as a **child of the map** (sub-issue, or `Part of #<map>` at the top). The spec itself is a child of the map if it is not already. You may add house labels and child links on the map/spec; do not close them.
@@ -75,7 +65,7 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 Do NOT close or modify any parent issue.
 
-Stop after publishing. **Next is `/implement`** — the skill, not ad-hoc coding (`/tdd`, `/code-review`, conductor waves). If `/umbrella` is driving this session, load `/implement` after they approve the breakdown.
+Do not wait after publish. **Next is `/implement`** — the skill, not ad-hoc coding (`/tdd`, `/code-review` including `/blast-radius`, conductor waves). If `/umbrella` is driving this session, load `/implement` in this session. Do not ask the user to approve the breakdown.
 
 <local-ticket-template>
 

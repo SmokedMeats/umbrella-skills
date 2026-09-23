@@ -1,5 +1,5 @@
 interface:
   display_name: "To Spec"
-  short_description: "Turn a conversation into a spec"
+  short_description: "Publish a spec from a locked grill; no approval wait"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

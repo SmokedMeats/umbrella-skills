@@ -1,7 +1,6 @@
 ---
 name: implement
-description: "Build work from a spec or tickets. Count the frontier, house each ticket on its spec and map, spawn extras, crawl newly unblocked tickets."
-disable-model-invocation: true
+description: "Build work from a spec or from tickets filed after a locked grill. Use when those tickets exist, overnight continue, or a build-loop remainder is still open. Count the frontier, house each ticket, spawn extras, crawl newly unblocked tickets. Before Ready-to-merge: gap-check against the lock, living-doc verify, and /code-review including blast-radius."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `implement`.
@@ -26,11 +25,12 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 After product code is in the tree, **before** you close a ticket, move it to a leftover lane, or say ACs hold. Run this **on each ticket**, not once for the wave.
 
-1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment) **and** the kit or grill page that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner.
+1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment), the spec, **and** the grill lock that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner. This check is against that lock. It is not a second pre-grill survey of every doc.
 2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path. Code that disagrees with the locked page is FAIL. Do not invent a softer reading of a line that is already decided.
 3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. The parent says which part is the phone and which part is the leftover.
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
 5. Post the PASS / PARTIAL / FAIL table on **that** ticket.
+6. Behavior in the diff that the grill, the spec, and the tickets did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not close the ticket as if that scope shipped. Do not merge it as done.
 
 Completion: that ticket is PASS in current code, or **Window full** with the remaining ACs written on the spec. No close or leftover-lane on chat memory.
 
@@ -45,7 +45,7 @@ Gap check and `/code-review` feed the **same** tickets until they are empty.
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
-2. When every AC is PASS: **Living docs**, then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then `/code-review` to the two-axis report (`## Standards` / `## Spec`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
+2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
 4. When this ticket’s list is empty: close **or** move to a **leftover lane** ([PROJECTS.md](../umbrella/PROJECTS.md) — any Status that is not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done). Filing a leftover issue is the same step. Then **Crawl in this session**. Do not end the turn on the leftover.
 5. Stop the house only when no unblocked implement tickets remain, **Window full**, or the user stops.
@@ -126,7 +126,7 @@ On close **or** leftover-lane: **Living docs** comment must already be on the ti
 
 ## Living docs
 
-Hard gate. After gap check PASS, **before** GitHub close **or** a leftover-lane move. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`.
+Hard gate. After gap check PASS, **before** GitHub close **or** a leftover-lane move. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`. Update and verify docs this change touched. Do not re-survey every CONTEXT and ADR.
 
 1. Grep `docs/` (including `docs/trackers/`) for **this ticket number**, the spec number, and `umbrella:<slug>`. Also grep house encyclopedias the ticket names (`ADVENTURE_CONTRACTS_BOARD`, admin guides, `WAYFINDER_NOW`, `WAYFINDER_MAPS`, module-intent).
 2. For each hit that still reads as open / **Do now** / unchecked work: mark it shipped (strikethrough, SHA, or leftover-lane). Point a now-list at the next **open product** child, not this leftover card.
@@ -250,4 +250,4 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 3. **Labels match the lane.** Drop `ready-for-agent` on Parked, a leftover lane, and Done. Keep it on Unclaimed, In Progress, Live Beta, and GoLive. A `parked:*` label belongs on Parked or a leftover lane, not on GoLive.
 4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
 5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `npm run db:migrate:all` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
-6. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. After they merge, set those tickets to the lane that is actually left and walk the list again.
+6. **Merge prompt (Ship mode PR only).** One message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. After they merge, set those tickets to the lane that is actually left and walk the list again.

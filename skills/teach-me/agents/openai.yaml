@@ -1,0 +1,5 @@
+interface:
+  display_name: "Teach Me"
+  short_description: "Multi-session course workspace; former Matt /teach"
+policy:
+  allow_implicit_invocation: true

@@ -1,5 +1,5 @@
 interface:
   display_name: "To Tickets"
-  short_description: "Split a plan into tracer-bullet tickets"
+  short_description: "Map a locked spec to tracer-bullet tickets; no approval wait"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

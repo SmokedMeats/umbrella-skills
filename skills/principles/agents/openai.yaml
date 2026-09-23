@@ -1,0 +1,5 @@
+interface:
+  display_name: "Principles"
+  short_description: "Mid-task redirects; one index, not a second conductor"
+policy:
+  allow_implicit_invocation: true

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents, reports them side by side, then returns in-scope findings to the implement build loop on the same tickets. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
+description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes. Standards: does the code follow this repo's documented coding standards? Spec: does the code match the originating issue, spec, and grill lock? The Spec axis includes blast-radius (prove the one safety fact by running code). Runs both reviews in parallel sub-agents, reports them side by side, then returns in-scope findings to the implement build loop on the same tickets. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to review since X."
 ---
 
 Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `code-review`. Adds **Close the loop** after the two-axis report.
@@ -101,7 +101,17 @@ Present the two reports under `## Standards` and `## Spec` headings, verbatim or
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
 
-Then **Close the loop**. A report without a remaining-AC verdict is an unfinished review.
+### Blast radius (Spec axis)
+
+Before Close the loop, read [blast-radius](../blast-radius/SKILL.md) and follow it on this diff. Put the result under `## Spec` as `### Blast radius`. The one safety fact is proven by running code, or marked **unproven**. A review without that subsection is unfinished.
+
+If that skill cannot be loaded, inline the rule here. Find the one fact the change is safe because of. Prove it by running the real code. Saying so is not proof.
+
+### Adversarial notes (optional annex)
+
+Under `## Spec`, add `### Adversarial notes` when a hostile reading would change the verdict. Three short questions, each answered from the diff or marked unknown. One pass in this session. Do not require a second model or an interrogate product.
+
+Then **Close the loop**. A report without a remaining-AC verdict is an unfinished review. An unproven safety fact that the ship depends on is a Spec miss and returns to `/implement`.
 
 ### 7. Close the loop
 
