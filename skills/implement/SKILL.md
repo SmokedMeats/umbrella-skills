@@ -50,6 +50,26 @@ Gap check, **Comment cleanup**, and `/code-review` feed the **same** tickets unt
 
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
+**Ready comment.** A pull is not ready, and must not be merged, until **this ticket** has one comment with these headings, in this order:
+
+1. `## Gap check`
+2. `## Living docs`
+3. `## Standards`
+4. `## Spec`
+5. `## Cycles`
+6. `## Effect-TS check`
+
+An open pull with no ready comment is still in the build loop. “The pull is open” is not done.
+
+- **Gap check.** Every acceptance row is PASS, or the open row is named as a leftover lane (desk, field, operator). A code row that is PARTIAL or FAIL keeps the pull open.
+- **Living docs.** One row per docs hit. Phone-visible ships name the **P\*** leaf. Say so when grep found none.
+- **Standards** and **Spec.** The two-axis `/code-review`, including blast radius. Hard pins stay on this ticket.
+- **Cycles.** Paste `check-cycles` stdout when `backend/src` or mobile `src` is in the diff. Otherwise write `not run` and which trees were absent.
+- **Effect-TS check.** Write `Skip` and the reason when there is no untrusted `JSON.parse`, webhook bag, native dict, untyped `res.json`, and no one-off HTTP retry next to the walking-way clients. Silence is not a skip. A new bag names its inventory row in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md`. A new `backend/drizzle/0xxx_*.sql` names the `db:migrate:all` result, including “no database URL.” A new router, screen, service, or write path names the **merged** map pull. A draft map is not done.
+- **TDD.** The comment says the failing seam test landed before the code. One commit that contains both is not that record.
+
+The conductor does not merge, and does not call the pull ready, while any heading is missing.
+
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
