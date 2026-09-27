@@ -200,7 +200,7 @@ Short index first. Detail for the fat overlays is under the headings.
 | `grilling` | Sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend. Loads `/domain-modeling` with the interview. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
 | `grill-me` | Load the map's grilling siblings. Question shape stays in `/grilling`. Refuse a lock with open gaps. Do not ask "next grill?" |
 | `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Prototype tickets read Matt `/prototype`. Non-trivial UI uses DESIGN-IT-TWICE. Auto-invoked. |
-| `to-spec` | Spec the whole locked batch. Cite gap resolutions. No approval wait. Next is `/to-tickets`. |
+| `to-spec` | Spec the whole locked batch. Cite gap resolutions. Label it `spec`. No approval wait. Next is `/to-tickets`. |
 | `to-tickets` | 1:1 with the spec. Waves + exclusive paths. No approval wait. Next is `/implement`. |
 | `implement` | Count table, spawn gate, crawl, Build loop. Comment cleanup before review. DESIGN-IT-TWICE when a prototype ticket is in the wave. Empty loop sets the lane from what is left. Lock gap check, living-doc verify, blast-radius before that lane. Window full includes the recall brief. |
 | `code-review` | Two-axis report, Spec-axis blast-radius, optional adversarial notes, narrative comments in-scope on Standards, then remaining ACs on the same tickets. |
@@ -245,7 +245,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/to-spec` · `/to-tickets`
 
-- **to-spec** — spec the whole locked batch and cite every gap resolution. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or walking-way HTTP. Open gaps → back to grill. Do not publish.
+- **to-spec** — spec the whole locked batch and cite every gap resolution. The spec issue wears the `spec` label. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or walking-way HTTP. Open gaps → back to grill. Do not publish.
 - **to-tickets** — 1:1 with that spec. No approval quiz. Waves + exclusive paths. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. Effect-TS acceptance only on tickets that own a bag or walking-way HTTP. Next is `/implement`.
 
 ### `/implement`
