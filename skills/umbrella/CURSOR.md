@@ -15,6 +15,7 @@ This is the **step** pointer. GitHub labels still win for **phase**.
 | **Phase** | Step label. GitHub labels win when this is stale |
 | **Ticket** / **Now on** | Live ticket numbers, or Qs on hold |
 | **Step** / **Next** | Current skill and why |
+| **Close gate** | Short per-ticket line rewritten **before** close or leftover-lane. Example: `Close gate (#N): AC all PASS \| BV pass \| code-review empty \| Living docs \| migrate N/A\|done \| lane=<lane>` |
 | **Decisions** | On a long crawl: path to `decisions.tsv`, or short bullets. Default on for multi-ticket work and a **House queue** |
 
 **House queue** is a short ordered list:
@@ -59,9 +60,18 @@ Overwrite the file when any of these happen. Same change as the work when you ar
 | This house's coding crawl is done, and the queue has a next house | Drop the finished slug. **House** is the new head. **Next** is that house's skill. Do not clear **Ship mode** |
 | Ticket close / Window full | Remaining tickets on **this** house, or the next queued house if this house's coding crawl is done. `idle` only when the queue has no next house and nothing is in flight |
 | Long crawl (multi-ticket, or a **House queue**) | Decision trail: path to `decisions.tsv` in the house notes, or short bullets here. Default on. Do not wait on the founder |
+| About to close ticket or move to leftover lane | Rewrite **Close gate** for that ticket. Parent refuses close/lane if the line is incomplete (AC / BV / code-review empty / Living docs / migrate when applicable) |
 | Window full / session end / next agent | **Recall** brief: **House queue**, **Ship mode**, now-on tickets, decisions trail path, blockers. Follow `/handoff` when that skill is installed. The brief does not start the next house |
 
 Keep it short. No chat dump. No secrets.
+
+**Close gate protocol.** On the event *about to close a ticket or move it to a leftover lane*, rewrite that ticket’s **Close gate** line first. Shape:
+
+```text
+Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migrate N/A|done | lane=<lane>
+```
+
+Parent refuses close and leftover-lane until the line is complete. Parent alone closes or lanes after Close gate complete **and** build-verifier Pass.
 
 **Resume brief.** On Window full, session end, or the next agent, the file carries **House queue** (keep later houses), **Ship mode**, now-on tickets, the decisions trail path, and blockers. If `handoff/SKILL.md` is in the parent skills directory, follow `/handoff` and include that brief. Do not add a `/recall` skill.
 

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Umbrella Mode"
+  short_description: "Sticky conductor mode for /umbrella; kids never load full umbrella"
+policy:
+  allow_implicit_invocation: true

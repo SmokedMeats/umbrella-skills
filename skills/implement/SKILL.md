@@ -17,17 +17,22 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Finish the errors.** A type error, a warning, or an error you hit while building is fixed in this change. Do not file it as a leftover. At the end of the user reply, summarize what you fixed, in plain language.
 
-**Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Ship notes in the user reply follow `/simple-english` when that skill is installed. Follow [Build standing law](../umbrella/SKILL.md#build-standing-law).
+**Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Ship notes in the user reply follow `/simple-english` when that skill is installed. Follow [Build standing law](../umbrella/BUILD-STANDING.md).
 
 **DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See `/umbrella` **DESIGN-IT-TWICE**.
 
 **Per ticket, before close or a terminal lane:** gap check on **that** ticket, then **Comment cleanup**, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
 
+
+## Acceptance criteria gate (before product code)
+
+On each **live** ticket this session will build: if the body lacks `## Acceptance criteria` with **≥1** real `- [ ]` / `- [x]` checkbox (not placeholder “Criterion 1” / TBD), **stop**. Repair the body (edit issue) or escalate to parent / `/to-tickets`. **Do not invent ACs from chat.** Empty AC is `needs_parent`, not a cue to freestyle done-looks-like.
+
 ## Gap check
 
 After product code is in the tree, **before** you close a ticket, move it to a leftover lane, or say ACs hold. Run this **on each ticket**, not once for the wave.
 
-1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment), the spec, **and** the grill lock that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner. This check is against that lock. It is not a second pre-grill survey of every doc.
+1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment), the spec, **and** the grill lock that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner. This check is against that lock. It is not a second pre-grill survey of every doc. **Missing `## Acceptance criteria` section (or zero checkboxes) is remaining work — do not close and do not leftover-lane; repair or escalate first.**
 2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path. Code that disagrees with the locked page is FAIL. Do not invent a softer reading of a line that is already decided.
 3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. Read `/simple-english` when that skill is installed. The parent says which part is the phone and which part is the leftover.
 4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
@@ -50,30 +55,10 @@ Gap check, **Comment cleanup**, and `/code-review` feed the **same** tickets unt
 
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
-**Ready comment.** A pull is not ready, and must not be merged, until **this ticket** has one comment with these headings, in this order:
-
-1. `## Gap check`
-2. `## Living docs`
-3. `## Standards`
-4. `## Spec`
-5. `## Cycles`
-6. `## Effect-TS check`
-
-An open pull with no ready comment is still in the build loop. “The pull is open” is not done.
-
-- **Gap check.** Every acceptance row is PASS, or the open row is named as a leftover lane (desk, field, operator). A code row that is PARTIAL or FAIL keeps the pull open.
-- **Living docs.** One row per docs hit. Phone-visible ships name the **P\*** leaf. Say so when grep found none.
-- **Standards** and **Spec.** The two-axis `/code-review`, including blast radius. Hard pins stay on this ticket.
-- **Cycles.** Paste `check-cycles` stdout when `backend/src` or mobile `src` is in the diff. Otherwise write `not run` and which trees were absent.
-- **Effect-TS check.** Write `Skip` and the reason when there is no untrusted `JSON.parse`, webhook bag, native dict, untyped `res.json`, and no one-off HTTP retry next to the walking-way clients. Silence is not a skip. A new bag names its inventory row in `docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md`. A new `backend/drizzle/0xxx_*.sql` names the `db:migrate:all` result, including “no database URL.” A new router, screen, service, or write path names the **merged** map pull. A draft map is not done.
-- **TDD.** The comment says the failing seam test landed before the code. One commit that contains both is not that record.
-
-The conductor does not merge, and does not call the pull ready, while any heading is missing.
-
 1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
 2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session.
-4. When this ticket’s list is empty, set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
+4. When this ticket’s list is empty, write **Close gate** for this ticket into `docs/agents/UMBRELLA_CURSOR.md` (refuse if incomplete), then set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
 5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. **Ready to merge** holds dependents until merge.
 6. Stop **this house's** coding crawl when no unblocked coding ticket remains (live tickets on their real lanes, or held by a Ready-to-merge blocker in this house), **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. **Ready to merge** holds dependents in this house until Jacob merges. It does not block the next house when `/umbrella` **House queue** has one — finish **End of house**, then return to `/umbrella` and start that house. Do not interleave tickets across houses. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets in this house. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
@@ -82,6 +67,17 @@ A leftover lane is **not** Window full. Keep crawling.
 `Later:` is grill / spec **not this pack** only ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). Remainder that still belongs to this ship stays on the live tickets.
 
 Completion: no in-scope remainder on the wave tickets, or Window full with that remainder on the spec.
+
+
+## Close gate
+
+Before GitHub **close** or a **leftover-lane** move on a ticket, rewrite that ticket’s **Close gate** line into `docs/agents/UMBRELLA_CURSOR.md` (and optionally the conductor comment). Shape:
+
+```text
+Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migrate N/A|done | lane=<lane>
+```
+
+**Refuse** close and leftover-lane if any of AC / build-verifier / code-review empty / Living docs is incomplete, or migrate is neither `N/A` nor `done` when this ticket added a new `backend/drizzle/0xxx_*.sql`. Parent alone closes or lanes after Close gate is complete **and** build-verifier Pass ([CURSOR.md](../umbrella/CURSOR.md), [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md)).
 
 ## Count first
 
@@ -116,7 +112,7 @@ Shared overlap (one View, one controller, one board) goes on the **conductor exc
 
 Completion: the first reply contains the count table, and the spawn gate is met.
 
-Rewrite `docs/agents/UMBRELLA_CURSOR.md` after the count table / claim, after each close, after each leftover-lane move, and on Window full ([CURSOR.md](../umbrella/CURSOR.md)). Do not rely on the spec comment alone as the step cursor.
+Rewrite `docs/agents/UMBRELLA_CURSOR.md` after the count table / claim, **before** each close or leftover-lane (**Close gate** line), after each close, after each leftover-lane move, and on Window full ([CURSOR.md](../umbrella/CURSOR.md)). Do not rely on the spec comment alone as the step cursor.
 
 After any leftover-lane move: **post the count table again in the same session** and start the next wave. Do not wait for the user.
 
