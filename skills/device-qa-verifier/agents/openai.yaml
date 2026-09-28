@@ -1,0 +1,5 @@
+interface:
+  display_name: "Device QA Verifier"
+  short_description: "Readonly Device QA run-folder audit; never re-tap the phone"
+policy:
+  allow_implicit_invocation: false

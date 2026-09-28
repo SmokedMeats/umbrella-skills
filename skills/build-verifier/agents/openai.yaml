@@ -1,0 +1,5 @@
+interface:
+  display_name: "Build Verifier"
+  short_description: "Readonly ticket receipt audit after implement; not Device QA"
+policy:
+  allow_implicit_invocation: false

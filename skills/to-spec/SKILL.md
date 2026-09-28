@@ -9,7 +9,19 @@ This skill takes the current conversation context and codebase understanding and
 
 If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfinder tickets), the spec is the **whole batch**: every grilling sibling that locked in this session plus already-closed siblings on that map. Name them in Further Notes. Do not spec only the last ticket you talked about. Parked / later tickets stay out of this spec unless the user pulled them in. After publish, every `Later:` that belongs to that park must already exist as a map child with **When to do this** ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). If **Out of Scope** is actually later work and there is no ticket, file `Later:` now — do not leave it as a spec-only bullet.
 
-Ingest the locked grill and the gap list. Further Notes cites every gap as **answered**, **deferred** (owner + ticket), or **cut** (reason). If the doc/gap pass was skipped, or any gap is still open or vague, do not publish. Return to `/grill-me`. A one-off `/to-spec` the user asked for on an already-settled design still publishes without an approval wait, and cites the decisions it ingested.
+Ingest the locked grill and the gap list. Further Notes cites every **locked grill decision** and **closed gap** as **answered**, **deferred** (owner + ticket), or **cut** (reason). If the doc/gap pass was skipped, or any gap is still open or vague, do not publish. Return to `/grill-me`. A one-off `/to-spec` the user asked for on an already-settled design still publishes without an approval wait, and cites the decisions it ingested.
+
+## Carry checklist (grill lock → spec)
+
+Before publish, every locked grill decision / closed gap from the ingest **must** appear in the spec cite list (Further Notes, and Implementation Decisions when they change behavior) as one of:
+
+- **answered** — covered in the spec body
+- **deferred** (+ ticket) — parked or deferred with owner + ticket pointer
+- **cut** (+ reason) — explicitly out with why
+
+**Refuse to publish** if any locked decision is missing from that cite list. Fix the cite list (or return to `/grill-me` only if still open/vague) — do not drop locks silently.
+
+**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). Parent refuses next spawn if this field is empty.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
@@ -25,7 +37,7 @@ If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native
 
 Seams come from the locked grill. Do not stop to ask the user to approve them. If a seam is still an open gap, return to `/grill-me`.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`) - no need for additional triage. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
 4. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
 
@@ -81,6 +93,6 @@ A description of the things that are out of scope for this spec.
 
 ## Further Notes
 
-Any further notes about the feature.
+Cite list: every locked grill decision / closed gap as **answered** | **deferred** (+ticket) | **cut** (+reason). Any further notes about the feature.
 
 </spec-template>

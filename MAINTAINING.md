@@ -15,7 +15,7 @@ Then sync this clone into every IDE and every XyberRun workspace repo that sits 
 node scripts/sync-workspace.mjs
 ```
 
-That overwrites only the overlay skill folders listed in `scripts/sync-workspace.mjs` (the original planning overlays plus `how`, `why`, `teach`, `teach-me`, `principles`, and `blast-radius`). It writes user-global `~/.grok`, `~/.cursor`, `~/.claude`, and `~/.agents`, plus each sibling repo’s `.cursor/skills`. It does not touch XyberRun product skills under `.grok/skills`.
+That overwrites only the overlay skill folders listed in `scripts/sync-workspace.mjs` (planning overlays, `umbrella-mode`, `build-verifier`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, and `blast-radius`). It writes user-global `~/.grok`, `~/.cursor`, `~/.claude`, and `~/.agents`, plus each sibling repo’s `.cursor/skills`. It does not touch XyberRun product skills under `.grok/skills`.
 
 After you add or edit one of those folders, run the sync script in the same change before you call the pack installed.
 

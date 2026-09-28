@@ -10,6 +10,8 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. **
 
 Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not copy Matt skill bodies into this overlay. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`, and these when the playbook says so: `/domain-modeling` with `/grilling`; `/prototype` for fog or a cheap artifact (see **DESIGN-IT-TWICE**); `/codebase-design` for structure and module boundaries; `/improve-codebase-architecture` for architecture debt when asked, or when the build loop is idle and that work is in scope; `/zero-tech-debt` and `/pit-of-success` only when installed; `/diagnosing-bugs` and `/tdd`; `/simple-english` for user-facing copy and runner language (grill leftover questions, ship notes, Device QA wait comments); `/wait-what` when the user is confused or rejects jargon; `/writing-for-agents` when writing or editing agent-facing docs or skill-ish notes in-repo; `/handoff` at session end, Window full, or the next agent (include the **Recall** brief). `/umbrella` is the only front door. Do not start a second conductor.
 
+When running under **umbrella-mode**, prefer Task/bot delegation per [DELEGATION.md](DELEGATION.md). Mode does not invent a second conductor.
+
 After any of those skills **creates** issues, check parked children (`Later:` / `Leftover:`). Each must have **When to do this** — why it missed the rest of the pack, and the unpark gate. Template: [PARKED-TICKETS.md](PARKED-TICKETS.md). Missing block → write it before naming the next phase. Every new issue also gets a **GitHub milestone** in the same create (see **Milestones**) and is **added to this repo’s Project** (see [PROJECTS.md](PROJECTS.md)). After any of those skills **closes** an issue, [CLOSE-PARENTS.md](CLOSE-PARENTS.md). After product-done Device QA, [DEVICE-QA.md](DEVICE-QA.md).
 
 **Cursor file** (step, not phase): read and rewrite `docs/agents/UMBRELLA_CURSOR.md` per [CURSOR.md](CURSOR.md). After the catch, if that file names a house and the user did not name another, resume it — do not wait on the picker. Keep its **House queue**. If this house's coding crawl is already done and that queue has a next house, start that house. GitHub labels win when the file’s phase is stale.
@@ -165,7 +167,7 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
 | fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
-| device-qa | product-done, phone-visible, crawl not done | [DEVICE-QA.md](DEVICE-QA.md) — exactly one `adb` device, this runner can see that USB, and no other actor owns the phone → `/device-qa-agent`; else **Desk device**, do not close, then **stay on `/implement`** and crawl the next unblocked coding ticket | ownership conflict pauses Device QA only |
+| device-qa | product-done, phone-visible, crawl not done | Parent Probe → on PASS spawn `/device-qa-agent` (packet); on return spawn `device-qa-verifier`; parent applies `STATUS_MOVES` only on verifier Pass. Probe FAIL → **Desk device**, do not close, stay on `/implement` crawl | ownership conflict pauses Device QA only; Status advance never skips verifier without CoS |
 
 A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
 
@@ -364,27 +366,7 @@ On create: `item-add` after the milestone. On claim: Status **In Progress** (**N
 
 ## Build standing law
 
-`/implement` and `/code-review` follow this on every house. Chat to the user is what a runner sees on a run. A ticket comment may name files.
-
-**The locked page wins.** The gap check and the Spec review read the kit or grill page the ticket names, not only the ticket bullets. If the code disagrees with that page, the check fails and the build loop continues. Do not invent a softer reading of a line that is already decided.
-
-**Finish what you can.** Type errors, warnings, and errors hit while building are fixed in this change. Summarize them at the end of the user reply in plain language. Do not leave them as a leftover.
-
-**Database migrate.** When this change adds a new `backend/drizzle/0xxx_*.sql`, run `npm run db:migrate:all` from `backend/` in that same session, after the file is on disk. Do not run it before the file exists. Do not edit a migration that has already been applied. Do not run it again when no new file was added. A missed migrate is not a leftover.
-
-**A leftover is only an unknown.** File one when the code cannot see a fact and you cannot invent the store, the clock, or the amount. If you can finish it without the user, finish it. Do not file a leftover for a decision already written, or for a typecheck, a lint, or a warning. Any question that leftover still needs is written on that ticket in runner language. Filing it is inside the loop. Same session, crawl the next unblocked ticket. Do not end the turn on the leftover.
-
-**A half-done card stays in progress.** "Keep going" does not move a partial ticket to Desk device or any leftover lane. The parent ticket says which part is the phone and which part is the leftover.
-
-**Words.** Do not say "judgement" to the user. A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Leave those notes off the chat summary. User-facing copy, grill leftover questions, ship notes, and Device QA wait comments are runner language: read `/simple-english` when that skill is installed. If the user says the reply is unclear or too jargony, read `/wait-what`. Do not reimplement those skills.
-
-**Subagents.** Two or more unblocked tickets is a wave. Spawn one implement subagent per extra ticket before the conductor writes product code. The conductor does not write those extras. Shared files stay with the conductor. A ticket whose blocker is still open is not in the wave.
-
-**Dependencies.** If a ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull it while the blocker is open, unless that blocker is on a leftover lane. Ready to merge still holds dependents. A later production switch stays on **GoLive**. Do not park it to keep the build from pulling it.
-
-**Lanes when a Build loop empties.** Set that ticket’s Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. A production switch is GoLive. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until Jacob merges. Phone-visible work this pass cannot run (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) stays **Desk device** ([DEVICE-QA.md](DEVICE-QA.md)). Then crawl the next unblocked coding ticket. At the end of the house, walk every open ticket and correct any lane that still disagrees.
-
-**Merge prompt.** Ship mode PR, after that lane walk: run the **soft-queue overlap** check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until Jacob says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. A **House queue** with a next house does not wait on that answer.
+Authoritative copy: [BUILD-STANDING.md](BUILD-STANDING.md). `/implement` and `/code-review` follow that companion.
 
 ## Done
 

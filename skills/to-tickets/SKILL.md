@@ -54,6 +54,16 @@ Show the breakdown in the reply (title, blocked by, wave, exclusive, what it del
 
 If there is no spec, stop and name `/to-spec`. Do not invent tickets from a foggy chat.
 
+### 4b. Carry checklist (spec → tickets)
+
+Before publish, every **spec user-story** / **locked decision** that is **in-scope for this pack** must map to **≥1 live ticket AC** **or** an explicit `Later:` / parked line with **When to do this**.
+
+**Refuse to publish** if a locked in-scope decision has neither an AC nor a parked/deferred pointer. Do not drop locks into the void between spec and tickets.
+
+**Receipt Out:** `CARRY_FROM_SPEC` — each in-scope decision → `ticket#(s)+AC` or `parked#` (+ When). Parent refuses next spawn if this field is empty.
+
+Keep the existing **≥2 AC hard rule** on every live `ready-for-agent` ticket (see below).
+
 ### 5. Publish the tickets to the configured tracker
 
 Publish those tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured — the tickets are the same either way, only the shape of the blocking edges changes:
@@ -66,6 +76,21 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 Do NOT close or modify any parent issue.
 
 Do not wait after publish. **Next is `/implement`** — the skill, not ad-hoc coding (`/tdd`, `/code-review` including `/blast-radius`, conductor waves). If `/umbrella` is driving this session, load `/implement` in this session. Do not ask the user to approve the breakdown.
+
+
+<acceptance-criteria-hard-rule>
+
+**Acceptance criteria are mandatory on every live implement ticket** (any ticket with `ready-for-agent`, not titled `Later:` / parked).
+
+- Every **live** ticket body MUST include a `## Acceptance criteria` section with **≥2** checkable `- [ ]` boxes.
+- Each box is a **done-looks-like** criterion a Build Verifier / agent can PASS/FAIL against **product behavior** (user-observable outcome or receipt-backed fact). Not chat memory.
+- **Refuse to publish** (or fix the body before create) when ACs are: missing; placeholder-only (“Criterion 1”, “TBD”, “as discussed”); or only implementation tasks (“add file X”, “wire Y”) with no done-behavior.
+- Each AC must be **independently checkable** without prior chat context (cite the observable / receipt).
+- **Optional but recommended** when the slice touches UI: one bullet naming **phone-visible** vs **desk-only** so Device QA / Desk-device routing is clear. Do **not** paste the Device QA phased checklist onto the ticket — that stays on `DEVICE_QA_PHASED_CHECKLIST.md`. Optionally one AC may say a **P\*** leaf is named / Living docs updated when phone-visible.
+- **Parked** `Later:` tickets may omit AC or keep thin AC. Live `ready-for-agent` tickets may not.
+- **Receipt out / completion:** confirm every published live ticket has a real `## Acceptance criteria` section (≥2 checkboxes). Missing → STATUS=needs_parent / fix before claiming publish done. Also emit `CARRY_FROM_SPEC` (every in-scope locked decision → ticket AC(s) or parked#); empty carry → STATUS=needs_parent.
+
+</acceptance-criteria-hard-rule>
 
 <local-ticket-template>
 
@@ -83,8 +108,11 @@ Do not wait after publish. **Next is `/implement`** — the skill, not ad-hoc co
 
 **Status:** ready-for-agent
 
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
+## Acceptance criteria
+
+- [ ] Runner sees <observable outcome> after <trigger> (PASS/FAIL from product, not chat)
+- [ ] Receipt/command evidence: <named check or path> stays green / present
+- [ ] (UI slices) Phone-visible on device | desk-only — Device QA **P\*** leaf named if phone-visible
 
 </local-ticket-template>
 
@@ -103,8 +131,9 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 
 ## Acceptance criteria
 
-- [ ] Criterion 1
-- [ ] Criterion 2
+- [ ] Runner sees <observable outcome> after <trigger> (PASS/FAIL from product, not chat)
+- [ ] Receipt/command evidence: <named check or path> stays green / present
+- [ ] (UI slices) Phone-visible on device | desk-only — Device QA **P\*** leaf named if phone-visible
 
 ## Blocked by
 
@@ -122,7 +151,7 @@ Path globs this ticket may edit. Required on a parallel wave. Disjoint from sibl
 
 Files this wave consumes but does not rewrite. Conductor may append (barrels, re-exports).
 
-Parked (`Later:`) tickets omit Exclusive / Wave / `ready-for-agent`. They include **When to do this** from `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) instead.
+Parked (`Later:`) tickets omit Exclusive / Wave / `ready-for-agent`. They include **When to do this** from `/umbrella` [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md) instead. Parked tickets may omit or thin `## Acceptance criteria`; live `ready-for-agent` tickets must not.
 
 </issue-template>
 
