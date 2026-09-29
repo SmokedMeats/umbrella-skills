@@ -117,7 +117,7 @@ SIBLINGS       grilling siblings in this batch (whole-house spec)
 
 **Out (extra):**
 ```text
-SPEC_ISSUE         # + URL
+SPEC_ISSUE         # + URL (must wear labels `spec` + `ready-for-agent`)
 CITE_LIST          every locked decision / closed gap → answered|deferred(+ticket)|cut(+reason)
 CARRY_FROM_GRILL   locked_count=N; deferred=[…]; cut=[…]; missing=none   (required)
 PARKED_CHECK       Later: children exist with When-to-do-this (or none)

@@ -37,7 +37,7 @@ If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native
 
 Seams come from the locked grill. Do not stop to ask the user to approve them. If a seam is still an open gap, return to `/grill-me`.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`). No extra triage. Do **not** apply `needs-triage`. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
 4. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
 
