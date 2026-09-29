@@ -60,6 +60,7 @@ Three different jobs — do not collapse them:
 | --- | --- | --- |
 | **`/triage`** | Labels **inbound** (category, state, every `domain:*`, creatable `umbrella:*`). House-name pass: a `wayfinder:map`, or **two or more like issues** in the same pack, get an `umbrella:<slug>` | Unlabeled, `needs-triage`, or already-labeled but **unhoused** (no `umbrella:*`) |
 | **`/wayfinder`** (and `/to-tickets`) | Labels **on create** (`wayfinder:*` or `ready-for-agent`, plus the house `domain:*` / `umbrella:*`) | This session is filing the map or a child. No `needs-triage`. Do not invoke `/triage` |
+| **`/to-spec`** | Labels **on create** (`spec` + `ready-for-agent`; create `spec` if missing) | Spec issue only. No `needs-triage`. Do not invoke `/triage` |
 | **`/umbrella`** | **Catch.** Every run, feed the inbox to **`/triage`** and let it label | Router. Does not stamp `umbrella:*` itself |
 
 A **loose idea** or a house with no map still goes to **`/wayfinder`** after the inbox catch. That is how you figure out the destination. **figure-it-out** is only when that map shape does not fit. One competing-planner pass, then back to this spine. Do not start a second conductor.
@@ -161,15 +162,15 @@ Re-run the `/triage` check. Then detect the chosen house's phase. **Claim** the 
 | chart | no `wayfinder:map` | `/wayfinder` (chart) | — |
 | parked | open children are only `parked:<slug>` / `Later:` / `Leftover:` | stay — do not pull | user explicitly unparks (see [PARKED-TICKETS.md](PARKED-TICKETS.md)) |
 | grill | open **live** `wayfinder:grilling` siblings (have `umbrella:*`, not `parked:*`) | pre-grill, then `/grill-me` | user confirms the lock only after every gap is closed |
-| spec | grill locked (gaps closed) and no spec | `/to-spec` | — (no spec approval) |
-| tickets | spec published from that lock, no implement tickets | `/to-tickets` | — (no ticket approval) |
+| spec | grill locked (gaps closed) and no house child with label `spec` (fallback: no Problem Statement / User Stories issue) | `/to-spec` | — (no spec approval) |
+| tickets | house has a `spec`-labeled issue from that lock, no implement tickets | `/to-tickets` | — (no ticket approval) |
 | build | one unblocked implement ticket | `/implement` (this session) | — |
 | build | **two or more** unblocked implement tickets | `/implement` **wave** — spawn extras, write the conductor ticket, then crawl the next unlocked wave | — |
 | build loop | gap check PARTIAL/FAIL, or `/code-review` still has in-scope findings | `/implement` on the **same** tickets, then `/code-review` again | — |
 | fog | map still has **live** research / prototype / task (not `parked:*`) | `/wayfinder` (work the map) | — |
 | device-qa | product-done, phone-visible, crawl not done | Parent Probe → on PASS spawn `/device-qa-agent` (packet); on return spawn `device-qa-verifier`; parent applies `STATUS_MOVES` only on verifier Pass. Probe FAIL → **Desk device**, do not close, stay on `/implement` crawl | ownership conflict pauses Device QA only; Status advance never skips verifier without CoS |
 
-A **spec** is the issue `/to-spec` published (Problem Statement / User Stories). Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets.
+A **spec** is the issue `/to-spec` published: it wears label `spec` (plus `ready-for-agent`) and has Problem Statement / User Stories. Prefer `label:spec` when detecting phase. Implement tickets are `/to-tickets` children (`What to build`), not grilling tickets — they do **not** wear `spec`.
 
 If they ask to implement, code, or "just build it" while the phase is grill and the lock is not confirmed: **stop**. Name `/grill-me`. Do not write product code. If the grill is already locked, do not stop for a spec or ticket approval. Load `/to-spec`.
 

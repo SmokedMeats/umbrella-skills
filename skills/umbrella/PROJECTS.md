@@ -42,7 +42,7 @@ Phone board **1** already has these. Satellites **2–4** have the same Status c
 
 | View | Layout | Filter / group | Job |
 | --- | --- | --- | --- |
-| **Kanban** | board | Status columns. Hide locked: `-label:locked` | Live + parked left-to-right |
+| **Kanban** | board | Status columns. Hide locked and specs: `-label:locked -label:spec` | Live + parked left-to-right |
 | **Roadmap** | roadmap | Same live filter. Uses Start / Target date | Calendar only when a date is set — do not invent dates |
 | **Houses** | table | Group by **Milestone** | Pack timeline without fake due dates. GraphQL cannot set group-by — founder one-click: **Group → Milestone** |
 | **Now** | table | `assignee:@me OR label:ready-for-agent -label:parked:* -label:locked` | What this session can pull |
