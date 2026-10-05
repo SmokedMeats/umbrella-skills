@@ -234,6 +234,10 @@ When the work is a measured slowdown, a speedup claim, or a choice between optio
 
 Hillclimb and a separate perf playbook are not standing slashes. Do not install `benchmark-checklist` as its own skill.
 
+### Agent cost
+
+"Review, fix, review again" means the spec was loose. Tighten the spec; do not add rounds. The **Rule card** (`/to-spec`) is the build and review SSOT, and its harness runs before handoff. Each fix or review round is a fresh child with a brief near 2 KB ([BUILD-STANDING.md](BUILD-STANDING.md) §10). Do not resume a long child. Each ticket gets two review rounds; a hard finding after round 2 is a grill question. PR bodies stay under 8 KB; the verification receipt stays in the body, review history does not.
+
 ### Asks outside the grill
 
 Grill questions stay on the locked Context, Choices, and Recommend shape in `/grilling`. Any other question to the user says the alternative in plain words. Do not offer a one-word token to type back.
@@ -301,7 +305,7 @@ Record the list on the map or the live grilling ticket, and in `project.yml` `pa
 
 The user's lock confirm is the only planning gate. Immediately:
 
-1. `/to-spec`. Cite each gap resolution in the spec.
+1. `/to-spec`. Cite each gap resolution in the spec. Write its **Rule card**: 5–15 user-language rules tied to fixtures, plus the numeric bar. That card is the build and review SSOT for the change.
 2. `/to-tickets`. 1:1 with the spec. Group a story only with the reason written on the ticket.
 3. `/implement`, and keep the house crawl in this session.
 

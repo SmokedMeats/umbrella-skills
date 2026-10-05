@@ -39,6 +39,8 @@ Look for the originating spec, in this order:
 3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
 4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
 
+When the spec has a **Rule card** (`/to-spec`), the card is the Spec axis. Review against its rules and **The bar**, and start from the harness output the card names (the builder's summary line; run the harness if that line is missing or stale). Link background docs instead of pasting them.
+
 ### 3. Identify the standards sources
 
 Anything in the repo that documents how code should be written, such as `CODING_STANDARDS.md` or `CONTRIBUTING.md`.
@@ -95,7 +97,7 @@ Also note for Standards (do not invent; just state facts):
 **Spec sub-agent prompt** — include:
 
 - The diff command and commit list.
-- The path or fetched contents of the spec.
+- The path or fetched contents of the spec. When the spec has a **Rule card**, paste the card and the harness output in place of the whole spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Also read the kit or grill page the ticket names. If the code disagrees with that locked page, that is a Spec miss even when the ticket bullets are thinner. Do not invent a softer reading of a decided line. Quote the spec or locked-page line for each finding. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
@@ -139,7 +141,7 @@ A type error, a warning, or an error in this diff is **Build now**, not a skip a
 
 **Park** only a grill / spec **not this pack** lock — `Later:` per [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
 
-After the implement pass: gap-check, then this skill again on the new commits.
+After the implement pass: gap-check, then this skill again on the new commits. **Two rounds per ticket.** On round 2, a hard finding still open is a missing rule on the card. It becomes one grill question, not round 3 (`/implement` **Build loop**). A child puts it in ESCALATE; the parent asks it. Nits and code-shape notes go to a follow-up ticket. Each round is a fresh reviewer with a short brief.
 
 Completion: every in-scope finding is PASS in current code, or **Window full** with remaining ACs on the same tickets.
 

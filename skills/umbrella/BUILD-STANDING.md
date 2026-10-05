@@ -30,8 +30,9 @@ This file is the **authoritative** Build standing companion. Kids load it as a n
 8. **Status off Desk device.** Parent alone advances Project Status off **Desk device**, and **only after device-qa-verifier Pass** (or explicit CoS skip-verify for that run). Default verify-on. Do not advance from chat memory without RUN_FOLDER receipts.
 9. **Close / lane.** Parent/conductor closes or sets leftover lane only when **build-verifier** Pass **and** the Build loop’s `/code-review` findings are empty, **and** the **Close gate** line for that ticket is complete in `project.yml` `paths.umbrella_cursor` ([CURSOR.md](CURSOR.md)).
 
-10. **Fresh child by default.** The next phase, a fix round, a retry, and the next ticket are a new child. The packet includes the original brief, later directives, and the prior receipt. Resume the same child only when the next step needs its checkout, its uncommitted edits, or a process it still runs (dev server, simulator, adb session). Device QA on a borrowed phone is that case.
+10. **Fresh child by default.** The next phase, a fix round, a retry, and the next ticket are a new child. The packet includes the original brief, later directives, and the prior receipt. Resume the same child only when the next step needs its checkout, its uncommitted edits, or a process it still runs (dev server, simulator, adb session). Device QA on a borrowed phone is that case. **Keep the brief near 2 KB.** Fixed opening first: standing rules, then the spec's **Rule card** (or its link); changing part last (goal, ticket ACs, prior receipt's open findings, exclusive paths, commands) so briefs within the hour share a cached prefix. Link background docs; do not paste them, and do not tell the child to read them end to end. Do not resume a long child to save setup. A resumed child re-reads its whole context on every turn, so it costs more than a fresh one.
 11. **Respawn once.** A verifier or review child whose receipt omits a field its brief required is respawned once. A second miss is a gap, not a pass.
+12. **Two review rounds per ticket.** A hard finding still open after round 2 becomes a grill question for the founder, not round 3 (`/implement` **Build loop**). A child or coordinator puts that question in ESCALATE; the parent asks it.
 
 Nesting: phase child may spawn explore/bash; it must not spawn another umbrella conductor. device-qa must not spawn device-qa-verifier (parent does). One build-verifier truth per ticket return.
 
@@ -48,7 +49,7 @@ Nesting: phase child may spawn explore/bash; it must not spawn another umbrella 
 - `## Blast Radius` — one or two sentences on who or what the change touches, and why that is safe or risky.
 - `## Verification` — one to three bullets. Each names a real run and its outcome. A performance change reports one primary number with its unit as `before → after`. Put runs, range, and the limiter in a linked note. Do not report a number that skipped **explain-the-number**.
 
-Do not use `## Summary` or `## Test plan`. Open the PR ready, not draft. Do not merge from this section.
+Do not use `## Summary` or `## Test plan`. Keep the body under 8 KB. The one verification receipt stays under `## Verification`. Review-round history and raw harness output go in comments or linked notes, not the body. Open the PR ready, not draft. Do not merge from this section.
 
 **Push the unit (Ship mode PR).** After each verifiable unit on that ticket, push the PR branch with hooks on. A WIP commit on that branch is allowed. Do not force-push a shared branch. Do not push `<dev-branch>`, Preview, or `master`.
 

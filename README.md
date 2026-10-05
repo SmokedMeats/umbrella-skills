@@ -1,5 +1,7 @@
 # umbrella-skills
 
+> **Public snapshot:** [github.com/SmokedMeats/umbrella-skills](https://github.com/SmokedMeats/umbrella-skills). Publish by rebuilding a fresh single commit, never pushing private history.
+
 This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) (**v1.3.1**). Install Matt's pack first. Install this overlay second. `/umbrella` is the only front door.
 
 It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. This overlay does not install poteto-mode or the full pstack plugin.
@@ -54,6 +56,8 @@ git clone https://github.com/SmokedMeats/umbrella-skills.git
 cd umbrella-skills
 # optional private overlay (project.yml + standing rules):
 # git clone <private-overlay-url> ../<overlay_pack>
+# optional swarm companion (installed by the same command):
+# git clone https://github.com/SmokedMeats/umbrella-swarm.git ../umbrella-swarm
 node scripts/sync-workspace.mjs
 ```
 
@@ -67,6 +71,7 @@ Every skills root sync writes ends up with the same three config files: `project
 | Each product repo's `.cursor/skills` + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
 | Grok Bot box skills root `/home/box/agent-data/workflows` | `--box` (skipped when that folder's parent is missing; override with `UMBRELLA_BOX_SKILLS_ROOT`) |
 | Any other skills root | `--dest <dir>` (repeatable) |
+| umbrella-swarm skills (every `skills/*` folder of the sibling that ships `skills/swarm` + `skills/swarm-mode`) into the user roots and `--box` / `--dest` roots | automatic when that sibling clone exists (`UMBRELLA_SWARM=<folder>` picks one; `--no-swarm` skips; a name shared with an overlay skill is skipped) |
 
 `sync-workspace.mjs` (project.yml) and `check-public-safe.mjs` (denylist, allowlist, git output) normalize CRLF to LF on read, so Windows clones checked out with CRLF (`core.autocrlf=true`) sync every `skill_targets` repo, not just the first. This pack's `.gitattributes` also pins LF on checkout.
 
@@ -224,17 +229,17 @@ Short index first. Detail for the fat overlays is under the headings.
 
 | Skill | What changed |
 | --- | --- |
-| `umbrella` | Only conductor. Auto-invoked. One house at a time. A named queue starts the next house after this coding crawl. Auto-routes Matt playbook skills. Thin conventions: DESIGN-IT-TWICE, agent-shaped design, repeated corrections (`/correct` alias), measured slowness, asks outside the grill, decision trail, figure-it-out, comment cleanup, recall brief. Optional overnight `/loop 1h` (no `/goal`). Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. Companions: [DELEGATION.md](skills/umbrella/DELEGATION.md), [BUILD-STANDING.md](skills/umbrella/BUILD-STANDING.md), [CURSOR.md](skills/umbrella/CURSOR.md) (**Close gate** before close/lane). |
+| `umbrella` | Only conductor. Auto-invoked. One house at a time. A named queue starts the next house after this coding crawl. Auto-routes Matt playbook skills. Thin conventions: DESIGN-IT-TWICE, agent-shaped design, repeated corrections (`/correct` alias), measured slowness, agent cost, asks outside the grill, decision trail, figure-it-out, comment cleanup, recall brief. Optional overnight `/loop 1h` (no `/goal`). Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. Companions: [DELEGATION.md](skills/umbrella/DELEGATION.md), [BUILD-STANDING.md](skills/umbrella/BUILD-STANDING.md), [CURSOR.md](skills/umbrella/CURSOR.md) (**Close gate** before close/lane). |
 | `umbrella-mode` | Sticky conductor mode. Parent owns grill, phase detect, claim, CURSOR, Founder gates, Close gate + close/lane. Fresh child by default. Respawn a thin receipt once. Kids never load `umbrella/SKILL.md`. No poteto install. |
 | `build-verifier` | Readonly receipt audit after implement. Gap-check grill+spec+ticket ACs; fail-closed if AC checklist missing. Not Device QA. Not `/code-review`. |
 | `device-qa-verifier` | Readonly audit after Device QA. Checklist vs run folder; Fail→one issue; never re-tap the phone. |
 | `grilling` | Sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend. Loads `/domain-modeling` with the interview. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
 | `grill-me` | Load the map's grilling siblings. Question shape stays in `/grilling`. Refuse a lock with open gaps. Do not ask "next grill?" |
 | `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Prototype tickets read Matt `/prototype`. Non-trivial UI uses DESIGN-IT-TWICE. Auto-invoked. |
-| `to-spec` | Spec the whole locked batch. Cite gap resolutions. **Carry checklist** (`CARRY_FROM_GRILL`): every locked decision answered, deferred, or cut; refuse publish if missing. Label it `spec`. No approval wait. Next is `/to-tickets`. |
+| `to-spec` | Spec the whole locked batch. Cite gap resolutions. **Rule card**: 5–15 user-language rules tied to fixtures, plus the numeric bar; the only build and review SSOT (`RULE_CARD`). **Carry checklist** (`CARRY_FROM_GRILL`): every locked decision answered, deferred, or cut; refuse publish if missing. Label it `spec`. No approval wait. Next is `/to-tickets`. |
 | `to-tickets` | 1:1 with the spec. Waves + exclusive paths. Live tickets need **≥2** checkable Acceptance criteria. **Carry** (`CARRY_FROM_SPEC`): each in-scope decision → ticket AC(s) or parked#. No approval wait. Next is `/implement`. |
-| `implement` | Count table, spawn gate, crawl, Build loop. Follow [BUILD-STANDING.md](skills/umbrella/BUILD-STANDING.md) (not full umbrella). Pre-code AC gate. Ship mode PR: push the PR branch after each verifiable unit and use the `##` PR briefing. Before Ready to merge: rebase or merge current <dev-branch>, run `commands.pr_ready`, paste its PASS line (`commands.pr_ready_pass`) in the PR body. Before close/lane: write **Close gate** on `paths.umbrella_cursor` and refuse if incomplete. Comment cleanup before review. Empty loop sets the lane from what is left. |
-| `code-review` | Two-axis report, Spec-axis blast-radius, optional adversarial notes, narrative comments in-scope on Standards, then remaining ACs on the same tickets. |
+| `implement` | Count table, spawn gate, crawl, Build loop. Follow [BUILD-STANDING.md](skills/umbrella/BUILD-STANDING.md) (not full umbrella). Pre-code AC gate. Ship mode PR: push the PR branch after each verifiable unit and use the `##` PR briefing. Before Ready to merge: rebase or merge current <dev-branch>, run `commands.pr_ready`, paste its PASS line (`commands.pr_ready_pass`) in the PR body. Before close/lane: write **Close gate** on `paths.umbrella_cursor` and refuse if incomplete. Comment cleanup before review. Build to the **Rule card**; run its harness before handoff. Two review rounds per ticket, then a grill question. Fresh child per round, brief near 2 KB. PR body under 8 KB. Empty loop sets the lane from what is left. |
+| `code-review` | Two-axis report, Spec-axis blast-radius, optional adversarial notes, narrative comments in-scope on Standards, then remaining ACs on the same tickets. Spec axis reviews against the **Rule card** + harness output. Round 2 is the last round. |
 | `triage` | Every fitting `domain:…`. Names `umbrella:…` for a map or two+ like issues. Hard bugs name `/diagnosing-bugs`. |
 | `how` | Subsystem walkthrough. Auto-invoked. |
 | `why` | Why the code is shaped that way. Git and PRs first. Widen only when the question needs it. |
@@ -245,7 +250,7 @@ Short index first. Detail for the fat overlays is under the headings.
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.
 
-**Phase B wiring.** The Matt skills this pack does not overlay stay Matt installs. `/umbrella` auto-routes them. Thin conventions are DESIGN-IT-TWICE, agent-shaped design, repeated corrections, measured slowness, asks outside the grill, the decision trail, figure-it-out, comment cleanup, and the recall brief. Swarm and arena are not standing slashes and not an always-on fan-out. `/automate-me` is maintainer-only, not an always-on pack writer. There is no `typescript-best-practices` always-on overlay.
+**Phase B wiring.** The Matt skills this pack does not overlay stay Matt installs. `/umbrella` auto-routes them. Thin conventions are DESIGN-IT-TWICE, agent-shaped design, repeated corrections, measured slowness, agent cost, asks outside the grill, the decision trail, figure-it-out, comment cleanup, and the recall brief. Swarm and arena are not standing slashes and not an always-on fan-out. `/automate-me` is maintainer-only, not an always-on pack writer. There is no `typescript-best-practices` always-on overlay.
 
 ### `/umbrella`
 
@@ -276,7 +281,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/to-spec` · `/to-tickets`
 
-- **to-spec** — spec the whole locked batch and cite every gap resolution. Emit **`CARRY_FROM_GRILL`** (locked decisions covered / deferred / cut; `missing=none`). Refuse publish if a locked decision is missing from the cite list. The spec issue wears the `spec` label. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or flaky outbound HTTP. Open gaps → back to grill. Do not publish.
+- **to-spec** — spec the whole locked batch and cite every gap resolution. Write the **Rule card**: 5–15 rules in user language, each naming the fixture or test that proves it, plus **The bar** (the numbers a build must hit, and the harness command) when the change grades, scores, times, or prices. The card is the only build and review SSOT; long design docs stay background. Emit **`RULE_CARD`** and **`CARRY_FROM_GRILL`** (locked decisions covered / deferred / cut; `missing=none`). Refuse publish if a locked decision is missing from the cite list. The spec issue wears the `spec` label. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or flaky outbound HTTP. Open gaps → back to grill. Do not publish.
 - **to-tickets** — 1:1 with that spec. No approval quiz. Waves + exclusive paths. Every **live** ticket needs `## Acceptance criteria` with **≥2** checkable done-looks-like boxes (refuse placeholder/task-only). Emit **`CARRY_FROM_SPEC`**: each in-scope locked decision → ticket AC(s) or an explicit parked ticket. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. Effect-TS acceptance only on tickets that own a bag or flaky outbound HTTP. Next is `/implement`.
 
 ### `/implement`
@@ -284,6 +289,8 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 - Follow [BUILD-STANDING.md](skills/umbrella/BUILD-STANDING.md). Do not load full `umbrella/SKILL.md` as a kid.
 - Read the sticky **Ship mode** pin. Do not re-pick.
 - Before product code: live tickets need a real Acceptance criteria checklist (≥1 checkbox). Empty AC → repair or escalate; do not invent from chat.
+- Build to the spec's **Rule card**. Run the harness it names before handoff and put the summary line in the receipt and PR `## Verification`. A rule the build needs that is not on the card is a grill question.
+- **Two review rounds per ticket.** A hard finding after round 2 becomes one grill question, and the card is amended; there is no round 3. Nits go to a follow-up ticket. Each round is a fresh child with a brief near 2 KB (card, ACs, open findings, paths, commands). Do not resume a long child. PR bodies stay under 8 KB.
 - Before close or leftover-lane: rewrite **Close gate** on `project.yml` `paths.umbrella_cursor` ([CURSOR.md](skills/umbrella/CURSOR.md)). Shape: `Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migrate N/A|done | lane=<lane>`. Refuse if incomplete. Prefer **`/build-verifier`** Pass before that lane.
 - Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**.
 - Window full → conductor comment on the spec + recall brief (house queue, ship mode, now-on tickets, decisions trail path, blockers) + `Next: /implement #<n>` (2+ frontier = next session is conductor). If this house's coding crawl is already done, the last line names the next queued house and does not start it. Follow `/handoff` when that skill is installed.
@@ -298,6 +305,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/code-review`
 
+- When the spec has a **Rule card**, the Spec axis reviews against the card and its bar, starting from the harness output. Two rounds per ticket; a hard finding after round 2 is a grill question.
 - Spec axis includes **blast-radius**: prove the one safety fact by running code, or mark it unproven. Optional adversarial notes are a short annex. No multi-model product.
 - Standards flags leftover narrative or noise comments from this change as in-scope. Keep intentional API and docs comments. Do not require a comment-cleanup subagent.
 - After the two-axis report, **Close the loop**: each Standards hard violation and Spec missing/partial/wrong (including an unproven safety fact the ship depends on) becomes remaining ACs on the **same** tickets, then `/implement` again.
@@ -356,7 +364,7 @@ Role names **Board**, **Dispatch**, and **Chief of Staff** are generic process r
 
 ## Before pushing
 
-This repo is (or will be) public. Every push runs a local `check:public-safe` gate (no CI minutes): [gitleaks](https://github.com/gitleaks/gitleaks) over the commits being pushed, then a private denylist over every added line, new file path, and commit message in those commits.
+Every push runs a local `check:public-safe` gate (no CI minutes) so private-shaped content cannot land in a public snapshot: [gitleaks](https://github.com/gitleaks/gitleaks) over the commits being pushed, then a private denylist over every added line, new file path, and commit message in those commits.
 
 One-time setup per clone:
 

@@ -2,6 +2,12 @@
 
 For people who edit this repo. Installers can ignore this file.
 
+## Private remote vs public snapshot
+
+Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
+
+Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
+
 ## When an overlay rule changes
 
 Update both in the same change:
@@ -25,7 +31,7 @@ Optional extra (same overlay, installer-managed paths):
 npx skills@latest add SmokedMeats/umbrella-skills -g -y --copy --full-depth -a grok -a cursor -a claude-code
 ```
 
-From a dirty local clone (before push), run `sync-workspace.mjs` from that folder. Do not point `npx skills add` at GitHub if the clone is ahead.
+That GitHub name is the **public** snapshot. From a dirty local (private) clone (before push), run `sync-workspace.mjs` from that folder. Do not point `npx skills add` at GitHub if the clone is ahead.
 
 Do **not** update or reopen a field-notes issue on `mattpocock/skills`. This repo is the SSOT.
 

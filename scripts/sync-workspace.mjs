@@ -9,6 +9,13 @@
  * ~/.agents/skills, ~/.copilot/skills (created when missing).
  *   node scripts/sync-workspace.mjs --box           # + Grok Bot box skills root (BOX_SKILLS_ROOT)
  *   node scripts/sync-workspace.mjs --dest <dir>    # + any extra skills root (repeatable)
+ *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
+ *
+ * Swarm companion (when a sibling clone ships skills/swarm/SKILL.md +
+ * skills/swarm-mode/SKILL.md, e.g. ../umbrella-swarm; UMBRELLA_SWARM=<folder>
+ * picks one explicitly): every skill folder under its skills/ is copied into the
+ * user roots and --box/--dest roots too, so one command installs both packs.
+ * A swarm skill that shares a name with an overlay skill is skipped (v1 wins).
  *
  * Every skills root it writes gets the overlay skill folders (umbrella/ carries
  * PROJECT-CONFIG.md) and, with the private overlay present, project.yml +
@@ -63,15 +70,19 @@ const BOX_SKILLS_ROOT = '/home/box/agent-data/workflows';
 
 const argv = process.argv.slice(2);
 const EXTRA_DESTS = []; // { dir, box }
+let SYNC_SWARM = true;
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
   else if (a === '--dest' && argv[i + 1]) EXTRA_DESTS.push({ dir: path.resolve(argv[++i]), box: false });
   else if (a.startsWith('--dest=')) EXTRA_DESTS.push({ dir: path.resolve(a.slice('--dest='.length)), box: false });
+  else if (a === '--no-swarm') SYNC_SWARM = false;
   else if (a === '-h' || a === '--help') {
-    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]...');
+    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]... [--no-swarm]');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
+    console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');
+    console.log('  UMBRELLA_SWARM=<folder>    pick the swarm companion sibling explicitly');
     console.log('  UMBRELLA_OVERLAY=<folder>  pick the private overlay sibling explicitly');
     process.exit(0);
   } else {
@@ -108,6 +119,44 @@ function findOverlaySibling() {
 }
 
 const overlaySibling = findOverlaySibling();
+
+// The swarm companion pack is a sibling clone that ships skills/swarm and
+// skills/swarm-mode. UMBRELLA_SWARM=<dir name or path> picks one explicitly;
+// otherwise a folder named umbrella-swarm wins, then the first match by name.
+function isSwarmPack(dir) {
+  return ['swarm', 'swarm-mode'].every((n) => existsSync(path.join(dir, 'skills', n, 'SKILL.md')));
+}
+
+function findSwarmSibling() {
+  if (process.env.UMBRELLA_SWARM) {
+    const dir = path.resolve(workspaceRoot, process.env.UMBRELLA_SWARM);
+    if (!isSwarmPack(dir)) throw new Error(`UMBRELLA_SWARM=${process.env.UMBRELLA_SWARM}: no skills/swarm + skills/swarm-mode in ${dir}`);
+    return dir;
+  }
+  const names = readdirSync(workspaceRoot, { withFileTypes: true })
+    .filter((ent) => ent.isDirectory() && path.join(workspaceRoot, ent.name) !== packRoot)
+    .map((ent) => ent.name)
+    .filter((name) => isSwarmPack(path.join(workspaceRoot, name)))
+    .sort((a, b) => (a === 'umbrella-swarm' ? -1 : b === 'umbrella-swarm' ? 1 : a.localeCompare(b)));
+  return names.length ? path.join(workspaceRoot, names[0]) : null;
+}
+
+function listSwarmSkills(swarmRoot) {
+  const skillsDir = path.join(swarmRoot, 'skills');
+  return readdirSync(skillsDir, { withFileTypes: true })
+    .filter((ent) => ent.isDirectory() && existsSync(path.join(skillsDir, ent.name, 'SKILL.md')))
+    .map((ent) => ent.name)
+    .sort();
+}
+
+function copySwarmInto(destRoot, swarmRoot, names) {
+  mkdirSync(destRoot, { recursive: true });
+  for (const name of names) {
+    const to = path.join(destRoot, name);
+    rmSync(to, { recursive: true, force: true });
+    cpSync(path.join(swarmRoot, 'skills', name), to, { recursive: true });
+  }
+}
 
 function loadProjectConfig() {
   const candidates = [
@@ -250,6 +299,29 @@ for (const { dir: dest, box } of EXTRA_DESTS) {
   console.log(`  extra ${label(dest)}`);
 }
 
+// Swarm companion: user roots + --box/--dest roots (not product repo skill_targets).
+// Runs before the private skills-overlay merge so the overlay can patch swarm skills too.
+const swarmRoot = SYNC_SWARM ? findSwarmSibling() : null;
+if (!SYNC_SWARM) {
+  console.log('Swarm pack: (skipped, --no-swarm)');
+} else if (!swarmRoot) {
+  console.log('Swarm pack: (none found; clone umbrella-swarm next to this pack to include it)');
+} else {
+  const all = listSwarmSkills(swarmRoot);
+  const clash = all.filter((n) => OVERLAY_SKILLS.includes(n));
+  const names = all.filter((n) => !OVERLAY_SKILLS.includes(n));
+  console.log(`Swarm pack: ${label(swarmRoot)} (${names.join(', ')})`);
+  if (clash.length) console.log(`  swarm WARNING: skipped ${clash.join(', ')} (same name as an overlay skill; v1 wins)`);
+  const swarmDests = [
+    ...USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel)),
+    ...skillDests.filter((d) => EXTRA_DESTS.some((e) => path.resolve(e.dir) === path.resolve(d))),
+  ];
+  for (const dest of swarmDests) {
+    copySwarmInto(dest, swarmRoot, names);
+    console.log(`  pack  ${label(dest)}: swarm skills`);
+  }
+}
+
 if (hasPrivate) {
   const privateProject = path.join(privateRoot, 'project.yml');
   const standing = path.join(privateRoot, 'docs', 'standing-product-rules.md');
@@ -346,7 +418,7 @@ if (publicSafeRepos.length > 0) {
   }
 }
 
-console.log('Done. Overlay copied; other skills were left in place.');
+console.log(`Done. Overlay${swarmRoot ? ' + swarm pack' : ''} copied; other skills were left in place.`);
 if (!hasPrivate) {
   console.log('Tip: clone your private overlay next to this pack to layer project.yml + standing rules.');
 }

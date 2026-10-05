@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: "Turn a locked grill and its closed gap list into a spec and publish it to the issue tracker. Use when a grill just locked, or the user asks for a spec from decisions already made. No interview. No spec-approval wait. Cite every gap resolution. Next is /to-tickets."
+description: "Turn a locked grill and its closed gap list into a spec and publish it to the issue tracker. Use when a grill just locked, or the user asks for a spec from decisions already made. No interview. No spec-approval wait. Cite every gap resolution. Write the rule card (the build and review SSOT). Next is /to-tickets."
 ---
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
@@ -23,7 +23,7 @@ Before publish, every locked grill decision / closed gap from the ingest **must*
 
 **Refuse to publish** if any locked decision is missing from that cite list. Fix the cite list (or return to `/grill-me` only if still open/vague) — do not drop locks silently.
 
-**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). Parent refuses next spawn if this field is empty.
+**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). `RULE_CARD` — rule count, bar present or `n/a`, harness command or `none` (required). Parent refuses next spawn if either field is empty.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
@@ -39,9 +39,11 @@ If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native
 
 Seams come from the locked grill. Do not stop to ask the user to approve them. If a seam is still an open gap, return to `/grill-me`.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`). No extra triage. Do **not** apply `needs-triage`. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+3. Write the **Rule card** (template below). It holds 5–15 numbered rules in user language. Each rule names the fixture or test that proves it. When the change grades, scores, times, or prices something, add **The bar**: the numbers a build must hit. Examples: never kinder than `<dev-branch>` on the change's fixed-seed harness; the share of honest cases a stricter change may cost; known-exception rows only shrink. Name the harness command. The card is the only build and review SSOT for this change. Long design docs, knob tables, and module notes stay background. The builder and the reviewer look things up there; they do not re-read them to find the rule. Every rule comes from the lock. A rule you cannot cite from the lock is an open gap: return to `/grill-me`. **Refuse publish without a card.**
 
-4. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
+4. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`). No extra triage. Do **not** apply `needs-triage`. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+
+5. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
 
 <spec-template>
 
@@ -52,6 +54,14 @@ The problem that the user is facing, from the user's perspective.
 ## Solution
 
 The solution to the problem, from the user's perspective.
+
+## Rule card
+
+The only build and review SSOT for this change. 5–15 numbered rules in user language. Each names its proof.
+
+1. <rule, as the user would say it> — Proof: <fixture or test>
+
+**The bar** (when the change grades, scores, times, or prices): the numbers a build must hit, and the harness command that measures them.
 
 ## User Stories
 

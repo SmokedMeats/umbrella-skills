@@ -44,6 +44,8 @@ CURSOR_PATCH   optional suggested fields for UMBRELLA_CURSOR (parent writes)
 
 **Fresh child.** New work is a new child: the next phase, a fix round, a retry, the next ticket. Put the original brief, later directives, and the prior receipt in that packet. Resume the same child only when the next step needs its checkout, its uncommitted edits, or a process it still runs. Device QA on a borrowed phone is that case. Do not resume a finished child because the thread is convenient.
 
+**Brief opening order.** Standing rules, then the rule card; the changing part (ticket, files, findings) last. Same opening every brief so briefs within the hour share a cached prefix.
+
 **Respawn once.** If a verifier or review receipt drops a field the brief required (SHAs, commands, AC pointers, RUN_FOLDER), respawn that child once with the same packet. A second miss is a gap. A gap is not a pass.
 
 **Kids must NOT load full umbrella.** Child reads `SKILL_PATH` + named `COMPANIONS` only. `SKILL_PATH` is never `umbrella/SKILL.md` (implement / code-review kids get `BUILD-STANDING.md` as a companion). Pasting `umbrella/SKILL.md` into a Task/bot prompt is an anti-pattern.
@@ -126,6 +128,7 @@ SIBLINGS       grilling siblings in this batch (whole-house spec)
 SPEC_ISSUE         # + URL (must wear labels `spec` + `ready-for-agent`)
 CITE_LIST          every locked decision / closed gap → answered|deferred(+ticket)|cut(+reason)
 CARRY_FROM_GRILL   locked_count=N; deferred=[…]; cut=[…]; missing=none   (required)
+RULE_CARD          rules=N (5–15); bar=present|n/a; harness=<command>|none   (required)
 PARKED_CHECK       Later: children exist with When-to-do-this (or none)
 ```
 
@@ -175,6 +178,7 @@ BLOCKED_BY             GitHub blocked-by links set (receipts)
 **In (extra):**
 ```text
 TICKET         # + body + ACs
+RULE_CARD      the spec's rule card (or its link) + harness command; brief stays near 2 KB
 EXCLUSIVES     file globs this kid may touch
 FROZEN_SHARED  paths kid must not edit (conductor owns)
 CHILD_RULES    no git; no merge; seam test; no type workarounds; Ship mode read-only
@@ -189,6 +193,7 @@ COMPANIONS     BUILD-STANDING.md (named companion; never umbrella/SKILL.md as SK
 FILES_TOUCHED  exclusive-only list
 VERIFY         typecheck/test summary (pointer)
 SEAM_TEST      path or N/A reason
+HARNESS        the card's harness summary line, or none
 BUILD_RECEIPT  optional embedded VERDICT if inline build-verifier
 NO_GIT         confirmed
 ```
@@ -208,6 +213,7 @@ NO_GIT         confirmed
 ```text
 DIFF_BASE      commit/branch/merge-base
 ISSUE_SPEC_GRILL  ticket + spec + grill pointers
+RULE_CARD      the spec's rule card + harness output; ROUND=1|2 (no round 3)
 STANDARDS_PATHS  repo coding-standards docs
 COMPANIONS     BUILD-STANDING.md (named companion; never umbrella/SKILL.md as SKILL_PATH)
 ```
