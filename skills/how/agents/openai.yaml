@@ -1,0 +1,5 @@
+interface:
+  display_name: "How"
+  short_description: "Walk through how a subsystem works and where a change should live"
+policy:
+  allow_implicit_invocation: true

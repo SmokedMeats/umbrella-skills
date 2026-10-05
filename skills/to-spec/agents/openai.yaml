@@ -1,0 +1,5 @@
+interface:
+  display_name: "To Spec"
+  short_description: "Publish a spec from a locked grill; no approval wait"
+policy:
+  allow_implicit_invocation: true

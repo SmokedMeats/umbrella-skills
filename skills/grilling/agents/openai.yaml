@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grilling"
+  short_description: "Stress-test thinking a round at a time; refuse an open-gap lock"
+policy:
+  allow_implicit_invocation: true

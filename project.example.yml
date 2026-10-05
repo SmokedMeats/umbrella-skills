@@ -1,0 +1,77 @@
+# Copy to project.yml (or docs/agents/project.yml in each app repo) and fill in.
+# Public packs read this for board ids, branch names, commands, and ship-mode hosts.
+# Keep the real file in a private overlay (see README "Project config").
+
+version: 1
+org: <github-org>
+founder: <founder-name>          # irreversible merges / promotes
+
+roles:
+  cos: Chief of Staff            # parent gate for irreversible steps
+  board: Board                   # triage / intake role
+  dispatch: Dispatch             # merge-path role
+
+branches:
+  dev: Development               # or main
+  held: [master, Preview]        # promote only on founder say-so
+
+commands:
+  pr_ready: "pnpm run check:pr-ready"       # Mode B gate; paste PASS line in PR body
+  pr_ready_pass: "check:pr-ready PASS"      # literal PASS line Dispatch looks for (names the dev tip)
+  db_migrate: "cd backend && npm run db:migrate:all"  # when a new migration file is added; carries its own cd
+  preflight_master: "npm run preflight:master"        # master bar (runs cycles; verify does not)
+  preflight_cycles: "npm run preflight:governance:cycles"
+  effect_schema_inventory: "npm run check:effect-schema-inventory"
+  cycles_backend: "cd backend && npm run check-cycles"
+  cycles_mobile: "cd <mobile-pkg> && npm run check-cycles"
+  governance: "npm run check:governance"
+
+paths:
+  mobile_src: <mobile-pkg>/src
+  mobile_services: <mobile-pkg>/src/services
+  backend_src: backend/src
+  drizzle_glob: backend/drizzle/0xxx_*.sql
+  device_qa_checklist: docs/operations/DEVICE_QA_PHASED_CHECKLIST.md
+  effect_schema_inventory: docs/engineering/EFFECT_SCHEMA_TRUST_BOUNDARIES.md
+  umbrella_cursor: docs/agents/UMBRELLA_CURSOR.md
+  wayfinder_now: docs/trackers/WAYFINDER_NOW.md
+  wayfinder_maps: docs/trackers/WAYFINDER_MAPS.md
+  house_boards: []                  # house encyclopedia docs living-docs grep should include
+  map_build: <docs-or-website-repo>/map-build/
+
+ship_mode:
+  local_hosts: [<local-dev-host>]   # USB / desk machine name(s)
+  local_mode: Development           # Ship mode pin on those hosts
+  cloud_mode: PR                    # Grok Bot / Cursor cloud
+
+product:
+  end_user: user                    # e.g. runner, customer
+  apply_end_user_stories_in: []     # repo names where grill Context uses end_user language
+  standing_rules_doc: docs/agents/standing-product-rules.md  # optional private locks
+
+repos:
+  - name: <primary-repo>
+    kind: primary
+    project_number: 1
+    project_url: https://github.com/users/<github-org>/projects/1
+    project_node: PVT_...
+    status_field: PVTSSF_...
+    live_beta_milestone: <n>
+    go_live_milestone: <n>
+    status_options:
+      Unclaimed: <id>
+      In Progress: <id>
+      Done: <id>
+      Ready to merge: <id>
+      Live Beta: <id>
+      GoLive: <id>
+      Parked: <id>
+      Operator: <id>
+      Desk device: <id>
+      Field: <id>
+  # Add satellite repos (website, watch, …) the same way. One board per repo.
+
+workspace:
+  overlay_pack: <private-overlay-repo-name>   # sibling clone; sync layers it on top
+  skill_targets:
+    - { name: <primary-repo>, dirs: [.cursor/skills] }

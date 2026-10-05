@@ -1,0 +1,5 @@
+interface:
+  display_name: "Triage"
+  short_description: "Triage roles; hard bugs go to diagnosing-bugs"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Teach"
+  short_description: "Explain code by weaving how it works and why it is that way"
+policy:
+  allow_implicit_invocation: true

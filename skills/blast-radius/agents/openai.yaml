@@ -1,0 +1,5 @@
+interface:
+  display_name: "Blast Radius"
+  short_description: "What else a change breaks, proven by running the one safety fact"
+policy:
+  allow_implicit_invocation: true

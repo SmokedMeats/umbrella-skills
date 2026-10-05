@@ -1,0 +1,18 @@
+#!/bin/sh
+# check:public-safe pre-push gate (gitleaks + private denylist on the pushed commits).
+# Enable once per clone:  git config core.hooksPath .githooks
+# Bypass is not allowed for public repos; fix the content instead.
+top=$(git rev-parse --show-toplevel) || exit 1
+input=$(cat)
+
+# Chain a pre-existing .git/hooks/pre-push (core.hooksPath hides it).
+legacy="$(git rev-parse --git-common-dir)/hooks/pre-push"
+if [ -x "$legacy" ]; then
+  printf '%s\n' "$input" | "$legacy" "$@" || exit 1
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "check:public-safe FAIL: node not found on PATH (fail closed)." >&2
+  exit 1
+fi
+printf '%s\n' "$input" | node "$top/scripts/check-public-safe.mjs" --pre-push "$@"

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Umbrella"
+  short_description: "Auto-conductor: grill lock, then spec, tickets, and implement"
+policy:
+  allow_implicit_invocation: true

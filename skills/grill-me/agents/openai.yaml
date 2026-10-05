@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill Me"
+  short_description: "Grill an umbrella in one session; lock only when gaps are closed"
+policy:
+  allow_implicit_invocation: true

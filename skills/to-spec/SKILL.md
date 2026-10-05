@@ -1,0 +1,100 @@
+---
+name: to-spec
+description: "Turn a locked grill and its closed gap list into a spec and publish it to the issue tracker. Use when a grill just locked, or the user asks for a spec from decisions already made. No interview. No spec-approval wait. Cite every gap resolution. Next is /to-tickets."
+---
+
+Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
+
+Overlay on [mattpocock/skills](https://github.com/mattpocock/skills) `to-spec`.
+
+This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
+
+If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfinder tickets), the spec is the **whole batch**: every grilling sibling that locked in this session plus already-closed siblings on that map. Name them in Further Notes. Do not spec only the last ticket you talked about. Parked / later tickets stay out of this spec unless the user pulled them in. After publish, every `Later:` that belongs to that park must already exist as a map child with **When to do this** ([PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md)). If **Out of Scope** is actually later work and there is no ticket, file `Later:` now — do not leave it as a spec-only bullet.
+
+Ingest the locked grill and the gap list. Further Notes cites every **locked grill decision** and **closed gap** as **answered**, **deferred** (owner + ticket), or **cut** (reason). If the doc/gap pass was skipped, or any gap is still open or vague, do not publish. Return to `/grill-me`. A one-off `/to-spec` the user asked for on an already-settled design still publishes without an approval wait, and cites the decisions it ingested.
+
+## Carry checklist (grill lock → spec)
+
+Before publish, every locked grill decision / closed gap from the ingest **must** appear in the spec cite list (Further Notes, and Implementation Decisions when they change behavior) as one of:
+
+- **answered** — covered in the spec body
+- **deferred** (+ ticket) — parked or deferred with owner + ticket pointer
+- **cut** (+ reason) — explicitly out with why
+
+**Refuse to publish** if any locked decision is missing from that cite list. Fix the cite list (or return to `/grill-me` only if still open/vague) — do not drop locks silently.
+
+**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). Parent refuses next spawn if this field is empty.
+
+The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
+
+Rewrite `project.yml` `paths.umbrella_cursor` when you start and after the spec is published ([CURSOR.md](../umbrella/CURSOR.md)).
+
+## Process
+
+1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the spec, and respect any ADRs in the area you're touching.
+
+2. Sketch out the seams at which you're going to test the feature. Existing seams should be preferred to new ones. Use the highest seam possible. If new seams are needed, propose them at the highest point you can. The fewer seams across the codebase, the better - the ideal number is one.
+
+If any seam is an untrusted `unknown` bag (`JSON.parse`, webhook payload, native dict, untyped `res.json`), name it in Implementation Decisions and say it must be listed in `project.yml` `paths.effect_schema_inventory` (Effect Schema inventory) and decoded with `Schema`/`Either` the way sibling bags already are. Do not leave a new bag off the census. If the seam is flaky outbound HTTP next to existing outbound HTTP clients, name `Effect`+`Schedule` retry. Do not dual-schema tRPC Zod. Do not pull Effect onto companion/watch native code. Skip this paragraph when the spec has no such seam.
+
+Seams come from the locked grill. Do not stop to ask the user to approve them. If a seam is still an open gap, return to `/grill-me`.
+
+3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`). No extra triage. Do **not** apply `needs-triage`. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
+
+4. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
+
+<spec-template>
+
+## Problem Statement
+
+The problem that the user is facing, from the user's perspective.
+
+## Solution
+
+The solution to the problem, from the user's perspective.
+
+## User Stories
+
+A LONG, numbered list of user stories. Each user story should be in the format of:
+
+1. As an <actor>, I want a <feature>, so that <benefit>
+
+<user-story-example>
+1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+</user-story-example>
+
+This list of user stories should be extremely extensive and cover all aspects of the feature.
+
+## Implementation Decisions
+
+A list of implementation decisions that were made. This can include:
+
+- The modules that will be built/modified
+- The interfaces of those modules that will be modified
+- Technical clarifications from the developer
+- Architectural decisions
+- Schema changes
+- API contracts
+- Specific interactions
+
+Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
+
+Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it within the relevant decision and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
+
+## Testing Decisions
+
+A list of testing decisions that were made. Include:
+
+- A description of what makes a good test (only test external behavior, not implementation details)
+- Which modules will be tested
+- Prior art for the tests (i.e. similar types of tests in the codebase)
+
+## Out of Scope
+
+A description of the things that are out of scope for this spec.
+
+## Further Notes
+
+Cite list: every locked grill decision / closed gap as **answered** | **deferred** (+ticket) | **cut** (+reason). Any further notes about the feature.
+
+</spec-template>
