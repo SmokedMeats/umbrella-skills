@@ -6,6 +6,18 @@ Companion to [SKILL.md](SKILL.md). Thin house rules any agent may read: the `/um
 
 House rules. Not new skill folders. Not a second conductor. Matt skills stay Matt installs. Read `SKILL.md` from the parent skills directory. Do not copy those bodies here. Missing file → do not invent the body. Swarm and arena are not standing slashes. `/automate-me` stays maintainer-only. Do not add a `typescript-best-practices` overlay.
 
+### Steps
+
+Every phase skill opens with a `## Steps` list: at most 8 numbered lines, each ending in **proof:**, the evidence that step is done. The sections below the list hold the detail. The list holds the order.
+
+1. When a phase starts (yours, or a child's), copy that skill's Steps into your todo list word for word, before any other todo. The parent also copies them into the child packet as `STEPS` ([DELEGATION.md](DELEGATION.md)).
+2. A step you do not do stays on the list as `skip: <reason>`. Never delete it.
+3. Mark a step done only when its proof exists (a URL, a SHA, a command's pass line, a posted table). The model saying it finished is not proof.
+4. The receipt carries `STEPS_DONE`: each step number with its proof or its skip reason. A missing step makes the receipt `partial`.
+5. On every phase change, replace the todo list with the new skill's Steps. Reload them after a compaction or a resume.
+
+The Steps never reorder the spine. Phase detection, claim, grill, and the Founder gates stay with the parent.
+
 ### DESIGN-IT-TWICE
 
 Only when the user asks, or when `/prototype` is loaded for a non-trivial UI or flow. Write two short competing sketches, then lock one. A trivial stub skips it. Do not require this for every feature. `/implement` uses the same rule when a prototype ticket is in the wave. Screen both sketches with **Agent-shaped design** before the lock.

@@ -327,6 +327,10 @@ const missing = OVERLAY_SKILLS.filter((name) => !present.has(name));
 if (missing.length > 0) {
   throw new Error(`Pack is missing overlay folders: ${missing.join(', ')}`);
 }
+{
+  const { checkSteps, reportSteps } = await import('./check-steps.mjs');
+  if (!reportSteps(checkSteps(packRoot))) process.exit(1);
+}
 
 const cfg = loadProjectConfig();
 const cfgRaw = cfg ? cfg.raw : '';

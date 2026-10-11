@@ -22,6 +22,18 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 Checklist SSOT: `paths.device_qa_checklist` (Process + standing OTA smoke at the top). Issue labels: [FILE-ISSUES.md](FILE-ISSUES.md) + repo `docs/agents/triage-labels.md`. Skip blocked dependents: [SKIP-BLOCKED.md](SKIP-BLOCKED.md). Phone probe and the Desk emulator: [DEVICE-QA.md](../umbrella/DEVICE-QA.md).
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. **Leaves** (desk, no `adb`): append a **P\*** leaf for each uncovered phone-visible ship. proof: the leaf ids, or `none`.
+2. **Probe**: exactly one `adb` device, accounts loaded, emails named. proof: the serial and the emails.
+3. **Borrow** the phone. proof: `borrowed` and the snapshot file.
+4. **Sign in** to the leaf's start screen. proof: the start screen is visible.
+5. **Crawl** each asked agent leaf to Pass, Fail, N/A or Skip, pulling fail evidence as you go. proof: the checklist ticks and `FAILS.md`.
+6. **Return** the phone and revert schedules. proof: `returned`, and the schedules are back to normal.
+7. **Summarize** into `REPORT.md`, then propose `STATUS_MOVES` without applying them. proof: the report path and the proposed moves.
+
 ## Hard gates
 
 - **Leaves** is desk-only. From **Probe** on: exactly **one** `adb` device (a USB phone, or `device_qa.desk_emulator` for a Desk crawl). Missing or more than one → stop (Leaves already finished).

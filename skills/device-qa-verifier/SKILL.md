@@ -13,6 +13,14 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 You audit **crawl receipts**. You do **not** walk the phone.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. Check the packet: `RUN_FOLDER`, `FAIL_URLS`, `RETURN_CLAIM`, `STATUS_MOVES`. proof: the run folder path.
+2. Run checks 1 to 5. proof: a PASS or FAIL line per check.
+3. Emit the receipt: VERDICT, `BLOCK_STATUS_MOVES`, `STEPS_DONE`. proof: the receipt.
+
 ## When
 
 After `device-qa-agent` (or the `roles.device_qa` lane) returns a run folder + proposed `STATUS_MOVES`,
@@ -48,6 +56,7 @@ FINDINGS[]
 BLOCK_STATUS_MOVES   true | false
 ARTIFACTS            RUN_FOLDER + checklist pointers
 RECEIPTS             what was checked
+STEPS_DONE           each Steps number → its proof, or `skip: <reason>`
 ESCALATE             []
 ```
 

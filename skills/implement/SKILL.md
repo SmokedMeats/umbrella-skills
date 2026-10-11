@@ -30,6 +30,19 @@ Run typechecking regularly, single test files regularly, and the full test suite
 **Per ticket, before close or a terminal lane:** gap check on **that** ticket, then **Comment cleanup**, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
 
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. **Count first**: post the unblocked table and pick the session shape (1 → build here, 2+ → conductor). proof: the table in the reply.
+2. **House** and claim each wave ticket (Parent, labels, map child, milestone, Project **In Progress**), then rewrite the cursor. proof: the assignees and the cursor rewrite.
+3. **Spawn gate**: every extra ticket has a live child, or is queued past the cap. proof: the child ids, or `skip: count 1`.
+4. **Acceptance criteria gate**: the ticket has real `## Acceptance criteria`; empty → `needs_parent`. proof: the AC count.
+5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, harness run. proof: the commits, the test file, and the harness line.
+6. **Gap check** on this ticket. PARTIAL or FAIL → back to step 5. proof: the PASS/PARTIAL/FAIL table on the ticket.
+7. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
+8. **Living docs** comment (and the **P\*** leaf when phone-visible), build-verifier Pass, the **Close gate** line, then the lane or close, and **Crawl** (recount). proof: the Living docs URL, the verdict, and the Close gate line.
+
 ## Acceptance criteria gate (before product code)
 
 On each **live** ticket this session will build: if the body lacks `## Acceptance criteria` with **≥1** real `- [ ]` / `- [x]` checkbox (not placeholder “Criterion 1” / TBD), **stop**. Repair the body (edit issue) or escalate to parent / `/to-tickets`. **Do not invent ACs from chat.** Empty AC is `needs_parent`, not a cue to freestyle done-looks-like.

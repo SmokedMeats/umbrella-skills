@@ -13,6 +13,17 @@ If this conversation was an **umbrella grill** (`/grill-me` across sibling wayfi
 
 Ingest the locked grill and the gap list. Further Notes cites every **locked grill decision** and **closed gap** as **answered**, **deferred** (owner + ticket), or **cut** (reason). If the doc/gap pass was skipped, or any gap is still open or vague, do not publish. Return to `/grill-me`. A one-off `/to-spec` the user asked for on an already-settled design still publishes without an approval wait, and cites the decisions it ingested.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. Rewrite the cursor, then ingest the locked grill and the gap list. Refuse while a gap is open. proof: the count of locks ingested.
+2. Explore the repo and sketch the test seams (highest, fewest). Name every untrusted bag. proof: the seam list.
+3. Write the **Rule card**: 5 to 15 rules, each with its proof, plus **The bar** and the harness command when the change grades. proof: `RULE_CARD`.
+4. Run the **Carry checklist**: every lock is answered, deferred or cut in Further Notes. proof: `CARRY_FROM_GRILL` with `missing=none`.
+5. Publish the spec with `spec` and `ready-for-agent`, the house milestone and a Project item. File any missing `Later:`. proof: the spec URL.
+6. Rewrite the cursor. Next is `/to-tickets`, with no approval wait. proof: `Next: /to-tickets`.
+
 ## Carry checklist (grill lock → spec)
 
 Before publish, every locked grill decision / closed gap from the ingest **must** appear in the spec cite list (Further Notes, and Implementation Decisions when they change behavior) as one of:

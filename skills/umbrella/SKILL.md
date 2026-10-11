@@ -10,6 +10,19 @@ Overlay on [mattpocock/skills](https://github.com/mattpocock/skills). Router. **
 
 Name the next skill, **read its SKILL.md, and follow it**. Do not reimplement those skills. Do not copy Matt skill bodies into this overlay. Do not write product code until `/implement` is the current phase. The invoke list is the spine plus `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, and `/blast-radius`, and these when the playbook says so: `/domain-modeling` with `/grilling`; `/prototype` for fog or a cheap artifact (see **DESIGN-IT-TWICE**); `/codebase-design` for structure and module boundaries; `/improve-codebase-architecture` for architecture debt when asked, or when the build loop is idle and that work is in scope; `/pit-of-success` for footgun seams in `/code-review` and the **Repeated corrections** lint; `/zero-tech-debt` only when installed; `/diagnosing-bugs` and `/tdd` (then `/retro` after a fix); `/retro` after `/code-review`; `/pr` when writing a PR body; `/implement-spec` only when the founder asks for that Matt skill (standalone, not a second conductor); `/simple-english` for user-facing copy and runner language (grill leftover questions, ship notes, Device QA wait comments); `/wait-what` when the user is confused or rejects jargon; `/writing-for-agents` when writing or editing agent-facing docs or skill-ish notes in-repo; `/handoff` at session end, Window full, or the next agent (include the **Recall** brief). `/umbrella` is the only front door. Do not start a second conductor.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. **Prerequisite**: Matt's pack and the repo mapping are installed (**0. Prerequisite**). proof: both paths exist, or setup is running.
+2. Read `paths.umbrella_cursor`, then pin **Ship mode** by actor force. proof: the cursor shows `Ship mode:` and **House queue**.
+3. Run the **`/triage` catch** (all 8 buckets). proof: hits handed to `/triage`, or one line saying the catch is clean.
+4. **Name the houses**, or resume the house the cursor or the user names. proof: the numbered house list, or the **House** line.
+5. Detect this house's phase from live GitHub labels (**Phase loop** table) and **Claim** its tickets. proof: the phase row, and the assignees.
+6. Say `Next: /<skill>`, rewrite the cursor, then load that skill and copy its Steps into the todo list (or into the child packet as `STEPS`). proof: the cursor rewrite, and the new todo list.
+7. On return, check the receipt (`STEPS_DONE`, RECEIPTS), run the parked check, [CLOSE-PARENTS.md](CLOSE-PARENTS.md) and [DEVICE-QA.md](DEVICE-QA.md) where they apply, then go back to step 5. proof: the receipt status and the new phase.
+8. Stop only as **House crawl** says (crawl done with no next house, **Window full** with the **Recall** brief, user stop, or a Founder pause that blocks the session). proof: the stop reason in the cursor.
+
 **Second correction → stop.** The second time the user corrects the same kind of thing in a session, stop and run **Repeated corrections** (`/correct`) before you continue. Fixing the instance again is not enough. Log the result in the **Recall** brief.
 
 ## Project config
@@ -210,7 +223,7 @@ Never-block on reversible work (a lookup, a test, a rename, a local commit in th
 
 ## Thin conventions
 
-House rules. Not new skill folders. Not a second conductor. The text lives in [CONVENTIONS.md](CONVENTIONS.md) so agents that never load this file (implement children, swarm area coordinators) read the same copy. Sections: **DESIGN-IT-TWICE**, **Agent-shaped design**, **Repeated corrections**, **Measured slowness**, **Agent cost**, **Asks outside the grill**, **Decision trail**, **figure-it-out**, **Comment cleanup**, **Recall**, **OVERFLOW_LOCAL (local mid-stop)**. A routing row above that names one means: read that section in CONVENTIONS.md.
+House rules. Not new skill folders. Not a second conductor. The text lives in [CONVENTIONS.md](CONVENTIONS.md) so agents that never load this file (implement children, swarm area coordinators) read the same copy. Sections: **Steps**, **DESIGN-IT-TWICE**, **Agent-shaped design**, **Repeated corrections**, **Measured slowness**, **Agent cost**, **Asks outside the grill**, **Decision trail**, **figure-it-out**, **Comment cleanup**, **Recall**, **OVERFLOW_LOCAL (local mid-stop)**. A routing row above that names one means: read that section in CONVENTIONS.md.
 
 ## Founder intervention
 

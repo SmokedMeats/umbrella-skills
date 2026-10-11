@@ -50,7 +50,7 @@ Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited
 
 Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
-Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
+Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` (sync runs it first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
 
 ### pstack ([cursor/plugins](https://github.com/cursor/plugins))
 
@@ -69,6 +69,7 @@ pstack ideas folded inline (no folder; diff these too when upstream changes):
 | `unslop` | house style in `teach` and the ported skills |
 | poteto-mode `opening-a-pr.md` | BUILD-STANDING **PR briefing (Ship mode PR)** |
 | poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; build-verifier **Which of the two** |
+| poteto-mode **Playbooks** (steps copied into the todo, `skip: <reason>`) | CONVENTIONS **Steps**: a `## Steps` list per phase skill, `STEPS` / `STEPS_DONE` in DELEGATION packets, `scripts/check-steps.mjs`. The spine stays fixed: no free playbook matcher |
 
 When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.17** (the snapshot); the next pull starts from there. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
 

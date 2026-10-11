@@ -20,6 +20,7 @@ PHASE          chart | fog | grill-prep | spec | tickets | build | build-verify 
 TICKETS        numbers + URLs (live only; parked listed separately if relevant)
 POINTERS       paths: `paths.umbrella_cursor`, map/spec URLs, gap list, exclusives, run folder
 SKILL_PATH     absolute or repo-relative path to THIS phase SKILL.md only
+STEPS          that skill's `## Steps`, copied word for word (CONVENTIONS.md **Steps**)
 COMPANIONS     only files that skill already names, always incl. PROJECT-CONFIG.md and `paths.agent_rules`
                (PROJECT-CONFIG **Repo agent rules**; local coding kids read it first) (never umbrella/SKILL.md)
 FORBIDDEN      always include: no umbrella/SKILL.md; no merge/promote/OTA/migrate;
@@ -35,13 +36,14 @@ DISPATCH       Cursor Task | Grok bot lane | inline receipt   (parent picks; see
 STATUS         done | blocked | needs_parent | partial
 ARTIFACTS      issue numbers, file paths, PR URLs (pointers, not dumps)
 RECEIPTS       exact gh/commands run (parent may re-verify)
+STEPS_DONE     each STEPS number → its proof, or `skip: <reason>`
 GAPS_OPEN      none expected after to-spec; else list
 ESCALATE       questions only user/parent can answer (no silent guess)
 NEXT_HINT      what child believes next skill is (parent re-detects; hint is NOT law)
 CURSOR_PATCH   optional suggested fields for UMBRELLA_CURSOR (parent writes)
 ```
 
-**Law:** Return packets are inputs. Parent always re-detects phase from GitHub labels. Missing RECEIPTS → treat as `partial` and re-verify. Refuse spawn if GOAL, SKILL_PATH, ACCEPTANCE, or FORBIDDEN are empty. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty (see role packets). For **to-spec** / **to-tickets**: parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or lists `missing≠none`.
+**Law:** Return packets are inputs. Parent always re-detects phase from GitHub labels. Missing RECEIPTS → treat as `partial` and re-verify. Refuse spawn if GOAL, SKILL_PATH, STEPS, ACCEPTANCE, or FORBIDDEN are empty. A receipt whose `STEPS_DONE` misses a step, or names one with no proof and no skip reason, is `partial`. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty (see role packets). For **to-spec** / **to-tickets**: parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or lists `missing≠none`.
 
 **Fresh child.** New work is a new child: the next phase, a fix round, a retry, the next ticket. Put the original brief, later directives, and the prior receipt in that packet. Resume the same child only when the next step needs its checkout, its uncommitted edits, or a process it still runs. Device QA on a borrowed phone is that case. Do not resume a finished child because the thread is convenient.
 

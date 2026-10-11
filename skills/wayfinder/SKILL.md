@@ -7,6 +7,26 @@ A loose idea has arrived — too big for one agent session, and wrapped in fog: 
 
 The destination varies per effort, and naming it is the first act of charting — it shapes every ticket. It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration. The map is domain-agnostic — engineering work, course content, whatever fits the shape.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+**Chart the map** (no map yet):
+
+1. **Name the destination** with `/grilling` and `/domain-modeling`. proof: the Destination text.
+2. **Map the frontier**, breadth-first. No fog → stop and ask how to proceed. proof: the open decisions and first steps.
+3. **Create the map**: labels, milestone and Project item on create. proof: the map URL.
+4. **Create the tickets you can specify now**, then wire blocking edges in a second pass. proof: child URLs and their edges.
+5. **Fire a `/research` subagent** per research ticket, then stop. proof: a `research/<name>` branch per ticket, or `skip: no research ticket`.
+
+**Work through the map** (map exists):
+
+1. Load the map (the low-res view). proof: the frontier list.
+2. Choose the ticket and **claim** it. proof: the assignee.
+3. Resolve it, zooming into related tickets as needed. proof: the decision.
+4. Record it: resolution comment, close, a pointer in Decisions-so-far, then [CLOSE-PARENTS.md](../umbrella/CLOSE-PARENTS.md). proof: the comment URL and the closed issue.
+5. Add new tickets, graduate fog, file `Later:` with **When to do this**, or rule out of scope. proof: the new URLs, or `skip: nothing surfaced`.
+
 ## Plan, don't do
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear — nothing left to decide before someone goes and does the thing. The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off. An effort can override this in its **Notes** — carrying execution into the map itself — but absent that, produce decisions, not deliverables.

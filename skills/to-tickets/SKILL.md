@@ -13,6 +13,19 @@ The issue tracker and triage label vocabulary should have been provided to you â
 
 Rewrite `project.yml` `paths.umbrella_cursor` when you start and after tickets are published ([CURSOR.md](../umbrella/CURSOR.md)).
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. Rewrite the cursor, then read the spec in full (body and comments). proof: the spec URL.
+2. Explore the codebase and note prefactors. proof: the prefactor list, or `skip: none`.
+3. Draft vertical slices with blocking edges and waves. A parallel wave gets exclusive and frozen-shared lists. proof: the breakdown table in the reply.
+4. **Map 1:1** to the spec. An open product choice â†’ refuse and return to `/grill-me`. proof: each story or decision maps to a ticket.
+5. **Carry checklist**: each in-scope lock maps to a ticket AC or a parked ticket. proof: `CARRY_FROM_SPEC`.
+6. Every live ticket has `## Acceptance criteria` with at least 2 real boxes. proof: the AC count per ticket.
+7. Publish in dependency order: labels, milestone, Project, `## Parent` (spec and map), blocking edges, and the conductor comment for a parallel wave. proof: the ticket URLs.
+8. Rewrite the cursor. Next is `/implement`. proof: `Next: /implement`.
+
 ## Process
 
 ### 1. Gather context

@@ -14,6 +14,16 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 You are a **mechanical receipt auditor**, not a judgment reviewer and not a phone crawler.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. Check the packet: `TICKET_ACS` present, `DEPTH` set (empty → `full`). No AC section → FAIL. proof: the AC list.
+2. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. proof: the pass lines.
+3. **Depth by risk**: red-on-old-code test(s) in a temp worktree at `BASE_SHA`, plus `/blast-radius` when `full`. proof: the test paths and their red and green runs.
+4. Run checks 1 to 7, each PASS or N/A with a reason. proof: the per-check lines.
+5. Emit the receipt: VERDICT, HEAD and BASE SHA, PATCH_ID, `STEPS_DONE`. proof: the receipt.
+
 ## When
 
 After implement product lands on a ticket, **before** parent closes or sets leftover lane.
@@ -79,6 +89,7 @@ PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (f
 DEPTH                full | light, with red-on-old-code test paths (and the blast-radius fact when full)
 ARTIFACTS            pointers only
 RECEIPTS             commands/paths checked
+STEPS_DONE           each Steps number → its proof, or `skip: <reason>`
 ESCALATE             []
 NEXT_HINT            (ignored by parent)
 ```

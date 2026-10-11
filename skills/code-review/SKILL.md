@@ -16,6 +16,18 @@ Both axes run as **parallel sub-agents** so they don't pollute each other's cont
 
 The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if `docs/agents/issue-tracker.md` is missing.
 
+## Steps
+
+Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
+
+1. **Pin the fixed point** and confirm the diff is not empty. proof: the resolved SHA and the commit list.
+2. Find the spec source (the **Rule card** when there is one) and the standards sources. proof: the paths.
+3. Run the **cycles probe** when the diff touches a configured tree. proof: its output, or `skip: no backend or mobile src in the diff`.
+4. Spawn the Standards and Spec sub-agents in parallel. proof: both reports.
+5. **Aggregate** under `## Standards` and `## Spec`, with no reranking, posted on the ticket. proof: the comment URL.
+6. **Blast radius**: the one safety fact, proven by running code, or marked unproven. proof: the command and its output.
+7. **Close the loop**: Build-now findings become remaining ACs on the same ticket and go back to `/implement`. On round 2, a hard finding becomes a grill question. proof: the remaining-AC list, or `none`.
+
 ## Process
 
 ### 1. Pin the fixed point

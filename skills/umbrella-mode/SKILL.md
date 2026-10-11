@@ -40,9 +40,9 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 - After `Next: /<skill>` (except grill-me, handoff, and conductor-owned implement work):
   1. Write `UMBRELLA_CURSOR` (parent).
-  2. Build context packet ([DELEGATION.md](../umbrella/DELEGATION.md) when installed; else design schema).
+  2. Build context packet ([DELEGATION.md](../umbrella/DELEGATION.md) when installed; else design schema). Copy that skill's `## Steps` into the packet as `STEPS`, and into your own todo list ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**).
   3. Spawn: **implement/coding** → local coding agent on `<local-dev-host>` (default; see **Hybrid**). Other phases → matching Grok bot lane, or Cursor Task (`generalPurpose` / `umbrella-phase`) only when no bot lane fits or the founder overrides for cloud.
-  4. On return: verify receipts; apply CLOSE-PARENTS / Project / cursor rewrite; re-detect.
+  4. On return: verify receipts, `STEPS_DONE` included (a missing step is `partial`); apply CLOSE-PARENTS / Project / cursor rewrite; re-detect.
 - Implement wave 2+: one child per extra ticket; parent owns shared + git. **Child shape by runtime** ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**): Cursor runs a Task or cloud agent per ticket (own VM). Claude Code runs an in-process `Agent` child only while the memory check passes, else a sibling session (`create_session`, own container), else queues. One child cap for both runtimes (`limits.max_children`); a human "as many as needed" never exceeds the cap or the memory check.
 - **Verify each ticket on its own.** One build-verifier per ticket, from a child that did not write it. No combined pre-merge check over the wave. The child runs package `verify` + its own tests; the verifier runs `verify` + `commands.pr_ready` at the verdict SHA, at the `DEPTH` the packet names (full for locked areas and grant/money writes, light otherwise). Recheck at merge only if `<dev-branch>` moved: bring it in, run `commands.pr_ready` once, push with `HUSKY=0`; the patch-id rule keeps a verdict valid. No batch-level heavy gate in the pack ([DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**).
 - **Bots off.** When the founder runs without Grok bot lanes (rate limits, or none on this host), every child runs as a local subagent of this session (Grok Build or IDE agent on `<local-dev-host>`) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. Same packets, same verifiers; escalations that name CoS go to the founder.
@@ -54,7 +54,7 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 - **Device QA:** parent Probe first. On PASS → `device-qa-agent` packet. On return →
   `device-qa-verifier` (readonly, no phone). Parent applies `STATUS_MOVES` only when
   verify Pass (or CoS skip-verify). On probe FAIL → Desk device Waiting; keep coding.
-- Refuse spawn if GOAL, SKILL_PATH, ACCEPTANCE, or FORBIDDEN are empty. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty.
+- Refuse spawn if GOAL, SKILL_PATH, STEPS, ACCEPTANCE, or FORBIDDEN are empty. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty.
 - **Carry:** Spec Writer (`to-spec`) then Ticket Filers (`to-tickets`) own grill→spec→ticket carry. Parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or `missing≠none` on those receipts.
 - **Fresh child by default.** A new phase, a fix round, a retry, and the next ticket go to a fresh child. The packet carries the original brief, later directives, and the prior receipt. Resume the same child only when the next step needs state that is costly to move: its checkout, its uncommitted edits, or a process it still runs (dev server, simulator, adb session). Device QA on a borrowed phone is that case. A stop is not reuse. A role outlives the child. The next round is a new child. Do not spawn `poteto-agent`.
 - **Respawn once.** A verifier or review child whose receipt omits a field its brief required is respawned once with the same packet. A second miss is a gap, not a pass. Do not paste the raw dump as the verdict.
@@ -88,5 +88,5 @@ Parent runs Recall brief + `/handoff`. Do not ask a child to compact this chat.
 
 ## Return contract
 
-Child final message must include STATUS, ARTIFACTS, RECEIPTS, ESCALATE[], NEXT_HINT.
+Child final message must include STATUS, ARTIFACTS, RECEIPTS, STEPS_DONE, ESCALATE[], NEXT_HINT.
 Parent ignores NEXT_HINT for routing. Missing RECEIPTS → partial; re-verify.
