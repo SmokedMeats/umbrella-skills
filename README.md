@@ -102,6 +102,26 @@ Every skills root sync writes ends up with the same three config files: `project
 
 `sync-workspace.mjs` (project.yml) and `check-public-safe.mjs` (denylist, allowlist, git output) normalize CRLF to LF on read, so Windows clones checked out with CRLF (`core.autocrlf=true`) sync every `skill_targets` repo, not just the first. This pack's `.gitattributes` also pins LF on checkout.
 
+### Check the original sources for updates
+
+Sync itself works offline: it copies from the clones and folders on this machine and never looks upstream. To compare with the newest releases:
+
+```bash
+node scripts/sync-workspace.mjs --check-updates   # report + one diff per source; installs nothing
+node scripts/sync-workspace.mjs --update          # same report, installs the auto sources, then syncs
+# add --print to show every diff in full (default: diffs up to 300 lines; all land in updates/)
+```
+
+From a product repo the same flags pass through: `npm run sync -- --check-updates`.
+
+| Source | Kind | Compared with | On `--update` |
+| --- | --- | --- | --- |
+| Matt's pack, SimpleEnglish, pstack (`vendor/pins.json`) | review | newest Matt tag; SimpleEnglish and cursor/plugins `HEAD` | nothing; read the diff, then bump by hand ([vendor/README.md](vendor/README.md) **Bump a pin**) |
+| Every skill in a product repo's `skills-lock.json` (`npx skills`: Stripe, Neon, ...) | auto | what the source publishes now | `npx skills add` for that skill, then the sync spreads it |
+| graphify (an original folder with `.graphify_version` in a product repo) | auto | newest `graphifyy` on PyPI (builds that version in a scratch venv for the diff; needs Python 3) | `graphify install` output for that agent (`.claude/skills` gets the Claude version) |
+
+Each diff reads `current/` (what we have) to `latest/` (upstream now) and is saved as `updates/<source>.diff` (gitignored). Behind a proxy, run with `NODE_USE_ENV_PROXY=1`. The umbrella-skills, umbrella-swarm and overlay clones update with `git pull`.
+
 Sync also turns on the local `check:public-safe` pre-push gate in every sibling clone that ships `.githooks/pre-push` + `scripts/check-public-safe.mjs` (`git config core.hooksPath .githooks`, and `publicsafe.denylist` pointing at the overlay's `public-safe/denylist.txt`). The gate needs [gitleaks](https://github.com/gitleaks/gitleaks) on PATH: `brew install gitleaks` (macOS), `winget install gitleaks` or `scoop install gitleaks` (Windows), or a [release binary](https://github.com/gitleaks/gitleaks/releases) (Linux). Without gitleaks or the denylist, pushes from those clones fail closed. See [Before pushing](#before-pushing).
 
 

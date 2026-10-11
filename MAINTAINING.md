@@ -77,7 +77,7 @@ Owned here. They were moved in from a product repo's `.claude/skills`, where the
 
 ### Cadence
 
-On notice, or on a periodic review. Open a PR with the cherry-picks. A human (or Chief of Staff) merges.
+On notice, or on a periodic review: `node scripts/sync-workspace.mjs --check-updates` lists every source that moved and writes its diff to `updates/`. Open a PR with the cherry-picks. A human (or Chief of Staff) merges.
 
 ## Shared with umbrella-swarm
 
