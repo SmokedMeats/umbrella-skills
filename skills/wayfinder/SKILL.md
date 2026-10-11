@@ -101,6 +101,8 @@ Ruling something out of scope is a scoping act, not a step on the route. When a 
 
 ## Invocation
 
+**Orient (optional, non-blocking).** Only when `commands.graph_freshness` is set: run it from the repo root. Exit 0 means the local code graph is fresh; then answer "where does this live / what touches it" questions while charting or resolving with `graphify query "<q>" --budget 1500` before grepping. Key unset, non-zero exit, or no `graphify` CLI → skip silently and use `rg` / Read. Never build or rebuild the graph inside a task.
+
 Two modes. **Never resolve more than one ticket per session**, with two exceptions: research tickets (AFK, parallel), and an **umbrella grill** — `/grill-me` on a map or any child may resolve every sibling `wayfinder:grilling` ticket in that same session (see `/grill-me`). Prototype and task tickets stay one-per-session.
 
 ### Chart the map

@@ -272,6 +272,10 @@ Do not add a `/recall` skill. Do not confuse this brief with Matt `/retro` (envi
 
 If `handoff/SKILL.md` exists in the parent skills directory, read it and follow `/handoff`, and include that brief. The brief is still required when `/handoff` is not installed. The brief does not start the next house. **House queue** still decides when that house starts.
 
+### OVERFLOW_LOCAL (local mid-stop)
+
+When this session stops mid-ticket on `<local-dev-host>` (Window full, handoff, Stop, crash, or a cloud park that continues locally), every in-flight ticket gets the `OVERFLOW_LOCAL` receipt (`/implement` **Window full** step 6; canonical wording in `paths.agent_rules` when present), plus the swarm area brief when the area is Active. Keep In Progress + `overflow:local`. During a coding crawl `/implement` owns the ticket comment; the conductor still makes sure it lands before going quiet.
+
 ## Founder intervention
 
 PAUSE and wait:
@@ -327,7 +331,7 @@ Behavior the lock did not ask for is invented scope. Park it as new fog (`Later:
 
 This is how `/umbrella` runs a house. It is the session after a locked grill. It is not a separate overnight automation to arm.
 
-After a locked grill with every gap closed: `/to-spec` → `/to-tickets` → keep the `/implement` **Build loop** crawling in this session. Do not stop after filing tickets. `/loop` is optional. The crawl continues in this session without it. If the operator arms an overnight loop on a long crawl, arm `/loop 1h`. The tick re-reads this House crawl and `project.yml` `paths.umbrella_cursor`, counts only side effects (commits, pushes, issue or check deltas), replaces a lane that errors or sits past its expected time with no side effect, and posts a status only when something tracked changed since the last status. Do not arm `/goal`. Do not leave the cadence to memory. The tick does not merge, Preview fast-forward, migrate, OTA, or master promote.
+After a locked grill with every gap closed: `/to-spec` → `/to-tickets` → keep the `/implement` **Build loop** crawling in this session. Do not stop after filing tickets. `/loop` is optional. The crawl continues in this session without it. If the operator arms an overnight loop on a long crawl, arm `/loop 1h`. Bots off, the parent arms it at session start without the operator ([umbrella-mode](../umbrella-mode/SKILL.md) **Bots off: auto-loop**). The tick re-reads this House crawl and `project.yml` `paths.umbrella_cursor`, counts only side effects (commits, pushes, issue or check deltas), replaces a lane that errors or sits past its expected time with no side effect, and posts a status only when something tracked changed since the last status. Do not arm `/goal`. Do not leave the cadence to memory. The tick does not merge, Preview fast-forward, migrate, OTA, or master promote.
 
 When a ticket’s Build loop is empty, set Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes, and in Mode B it needs the `commands.pr_ready` PASS line (`commands.pr_ready_pass`) in the PR body (`/implement` Mode B). Matt `/pr` (model-invoked) shapes the PR body; it does not drop that pass line. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until the founder merges.
 

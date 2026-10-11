@@ -17,8 +17,10 @@ You are a **mechanical receipt auditor**, not a judgment reviewer and not a phon
 ## When
 
 After implement product lands on a ticket, **before** parent closes or sets leftover lane.
-May run as: (1) end-of-ticket receipt block inside the implement kid, or (2) separate
-readonly Task / Grok **Build Verifier**. One truth per ticket — do not run both and pick the softer verdict.
+May run as: (1) an inline receipt in a session that did not write the ticket (the conductor for a child's ticket), or (2) separate
+readonly Task / Grok **Build Verifier**. Never the session that wrote the ticket. One verifier per ticket, never one pass over the wave's combined diff. One truth per ticket — do not run both and pick the softer verdict.
+
+Again at merge: if the branch was merged or rebased onto a newer `<dev-branch>` since this verdict, the parent compares patch-id. Same patch-id → the verdict holds. Different → a fresh verifier run on the new head.
 
 ## Packet in (required)
 
@@ -32,6 +34,7 @@ SHIP_MODE      <dev-branch> | PR
 SEAMS          untrusted bag? flaky outbound HTTP? JSON.parse/webhook/native dict?
 PHONE_VISIBLE  yes|no
 DIFF_BASE      ticket first-ship SHA or exclusive file list
+HEAD           commit or branch to audit
 FORBIDDEN      no product edits; no Maestro/adb; no Project Status; no code-review essay
 ```
 
@@ -47,13 +50,18 @@ All must **PASS** or **N/A with reason**:
 6. **No type workarounds** — no new `as any` / `@ts-expect-error` / `as unknown as` covering the change without ticket-named exception.
 7. **Carry light (optional)** — if packet includes GRILL_LOCK / SPEC pointers, flag **FAIL** or **FINDING** when the ticket AC set ignores an obvious locked decision named on the ticket’s grill page (cite the decision text). Mechanical only — do **not** invent a second full carry pass. N/A if grill/spec pointers absent.
 
+Run each check to the end. Exit 137 or 143 is a kill (out of memory, or stopped), not FAIL: re-run it under the heavy lock ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks**). A second kill in a row → STATUS `blocked`, the killed command in ESCALATE, no VERDICT. The parent re-runs the verifier when the container has room.
+
 ## Receipt out
 
 ```text
-STATUS               done
+STATUS               done | blocked   (blocked only for a check killed twice)
 VERDICT              pass | fail
 FINDINGS[]           mechanical misses only; cite each AC id/text with PASS/FAIL (or FAIL: missing AC section)
 BLOCK_CLOSE_OR_LANE  true | false
+HEAD_SHA             commit audited
+BASE_SHA             DIFF_BASE as a SHA (Mode B: merge-base with <dev-branch>; Mode A: the ticket commit's parent)
+PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field)
 ARTIFACTS            pointers only
 RECEIPTS             commands/paths checked
 ESCALATE             []
