@@ -118,7 +118,7 @@ for (let i = 0; i < argv.length; i++) {
     console.log('Usage: node scripts/sync-workspace.mjs [--check-updates | --update [--print]] [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
     console.log('  --check-updates  compare every upstream source with its newest release, write updates/<source>.diff; install nothing');
     console.log('  --update         same report, then install the auto sources (npx skills lock, graphify) and run the sync');
-    console.log('  --print          print every diff in full (default: diffs up to 300 lines)');
+    console.log('  --print          also print every full diff (default: a summary per source; diffs saved in updates/)');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');

@@ -6,7 +6,11 @@
  *   node scripts/sync-workspace.mjs --check-updates   # report + diffs, install nothing
  *   node scripts/sync-workspace.mjs --update          # report + diffs, update the auto
  *                                                     # sources, then the normal sync
- *   add --print to stream every diff to the terminal (default: diffs up to 300 lines)
+ *   add --print to also stream every full diff to the terminal
+ *
+ * Output: per source, new skills (with what they do), removed skills, and per changed
+ * skill a changelog: upstream commit subjects (git sources) plus the sections that
+ * changed. Also saved as updates/SUMMARY.md; full diffs stay in updates/<source>.diff.
  *
  * Sources:
  *   review (report only; bump by hand, vendor/README.md "Bump a pin"):
@@ -18,12 +22,11 @@
  * Diffs land in updates/<source>.diff (gitignored); each run replaces them.
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg|ico)$/i;
-const PRINT_LIMIT = 300; // diff lines printed per source without --print
 
 function run(cmd, args, opts = {}) {
   const r = spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32', ...opts });
@@ -74,6 +77,128 @@ async function getBytes(url) {
   return Buffer.from(await res.arrayBuffer());
 }
 
+// Full history without file contents up front: cheap, and `git log -- <path>` works.
+function cloneHistory(repo, dir, { branch, sparse } = {}) {
+  const args = ['clone', '-q', '--filter=blob:none'];
+  if (branch) args.push('--branch', branch);
+  if (sparse) args.push('--sparse');
+  run('git', [...args, repo, dir]);
+  if (sparse) run('git', ['-C', dir, 'sparse-checkout', 'set', ...sparse]);
+  return run('git', ['-C', dir, 'rev-parse', 'HEAD']).trim();
+}
+
+function frontmatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const fm = {};
+  let key = null;
+  for (const line of m ? m[1].split(/\r?\n/) : []) {
+    const km = line.match(/^([A-Za-z_-]+):\s*(.*)$/);
+    if (km) {
+      key = km[1];
+      fm[key] = km[2].replace(/^[>|][-+]?\s*$/, '').replace(/^["']|["']$/g, '').trim();
+    } else if (key && /^\s+\S/.test(line)) {
+      fm[key] = `${fm[key]} ${line.trim()}`.trim();
+    }
+  }
+  return fm;
+}
+
+// Markdown body split by heading (outside code fences): heading -> text.
+function sections(text) {
+  const out = new Map();
+  let head = 'the opening';
+  let fence = false;
+  for (const line of text.replace(/^---\r?\n[\s\S]*?\r?\n---/, '').split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) fence = !fence;
+    const h = !fence && line.match(/^#{1,4}\s+(.+?)\s*#*\s*$/);
+    if (h) head = h[1];
+    else out.set(head, `${out.get(head) || ''}${line}\n`);
+  }
+  return out;
+}
+
+function listFiles(root, rel = '') {
+  if (!existsSync(root)) return [];
+  return readdirSync(path.join(root, rel), { withFileTypes: true }).flatMap((e) => {
+    const r = rel ? `${rel}/${e.name}` : e.name;
+    if (e.name === '.git') return [];
+    return e.isDirectory() ? listFiles(root, r) : [r];
+  });
+}
+
+// Skill folders under a source root: name -> path relative to the root ('' = the root itself).
+function findSkills(root) {
+  const out = new Map();
+  for (const f of listFiles(root)) {
+    if (path.basename(f) !== 'SKILL.md') continue;
+    const rel = path.dirname(f) === '.' ? '' : path.dirname(f);
+    const name = frontmatter(readFileSync(path.join(root, f), 'utf8')).name || path.basename(rel || root);
+    if (!out.has(name)) out.set(name, rel);
+  }
+  return out;
+}
+
+const clip = (s, n = 180) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+
+// What changed, skill by skill: added (with what it does), removed, and per changed
+// skill the upstream commit subjects (git sources) plus the sections that moved.
+function summarize(currentDir, latestDir, history) {
+  const cur = findSkills(currentDir);
+  const lat = findSkills(latestDir);
+  const sum = { added: [], removed: [], changed: [], other: [] };
+  const read = (root, rel, f) => readFileSync(path.join(root, rel, f), 'utf8');
+  for (const [name, rel] of lat) {
+    if (cur.has(name)) continue;
+    sum.added.push({ name, does: clip(frontmatter(read(latestDir, rel, 'SKILL.md')).description || '(no description)') });
+  }
+  for (const name of cur.keys()) if (!lat.has(name)) sum.removed.push(name);
+  for (const [name, latRel] of lat) {
+    if (!cur.has(name)) continue;
+    const curRel = cur.get(name);
+    const a = new Set(listFiles(path.join(currentDir, curRel)));
+    const b = new Set(listFiles(path.join(latestDir, latRel)));
+    const notes = [];
+    for (const f of b) if (!a.has(f)) notes.push(`new file ${f}`);
+    for (const f of a) if (!b.has(f)) notes.push(`removed file ${f}`);
+    for (const f of b) {
+      if (!a.has(f)) continue;
+      const x = read(currentDir, curRel, f);
+      const y = read(latestDir, latRel, f);
+      if (x === y) continue;
+      if (!f.endsWith('.md')) { notes.push(`${f} changed`); continue; }
+      const where = f === 'SKILL.md' ? '' : `${f}: `;
+      if (f === 'SKILL.md' && frontmatter(x).description !== frontmatter(y).description) notes.push('description changed');
+      const sx = sections(x);
+      const sy = sections(y);
+      const add = [...sy.keys()].filter((h) => !sx.has(h));
+      const del = [...sx.keys()].filter((h) => !sy.has(h));
+      const mod = [...sy.keys()].filter((h) => sx.has(h) && sx.get(h) !== sy.get(h));
+      const fmt = (verb, list) =>
+        list.length ? `${verb} ${list.slice(0, 3).map((h) => (h === 'the opening' ? h : `"${h}"`)).join(', ')}${list.length > 3 ? ` +${list.length - 3} more` : ''}` : null;
+      const parts = [fmt('added', add), fmt('removed', del), fmt('changed', mod)].filter(Boolean);
+      notes.push(`${where}${parts.length ? parts.join('; ') : 'wording'}`);
+    }
+    if (!notes.length) continue;
+    let commits = [];
+    if (history) {
+      const upstreamPath = history.pathFor(latRel, name);
+      const log = spawnSync('git', ['-C', history.dir, 'log', '--no-merges', '--format=%s', `${history.from}..HEAD`, '--', upstreamPath], { encoding: 'utf8' });
+      if (log.status === 0) commits = [...new Set(log.stdout.trim().split('\n').filter(Boolean))];
+    }
+    sum.changed.push({ name, notes, commits });
+  }
+  // Files outside any skill folder (manifests, licenses, docs).
+  const inSkill = (f, skills) => [...skills.values()].some((rel) => rel === '' || f === rel || f.startsWith(`${rel}/`));
+  const fa = new Set(listFiles(currentDir).filter((f) => !inSkill(f, cur)));
+  const fb = new Set(listFiles(latestDir).filter((f) => !inSkill(f, lat)));
+  for (const f of new Set([...fa, ...fb])) {
+    if (!fa.has(f)) sum.other.push(`new ${f}`);
+    else if (!fb.has(f)) sum.other.push(`removed ${f}`);
+    else if (readFileSync(path.join(currentDir, f), 'utf8') !== readFileSync(path.join(latestDir, f), 'utf8')) sum.other.push(`${f} changed`);
+  }
+  return sum;
+}
+
 export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = false, print = false, label = (p) => p }) {
   const work = mkdtempSync(path.join(tmpdir(), 'umbrella-updates-'));
   const outDir = path.join(packRoot, 'updates');
@@ -82,7 +207,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
   const results = [];
 
   // Compare two folders as current/ and latest/ so the diff reads cleanly.
-  function diff(name, currentDir, latestDir) {
+  function diff(name, currentDir, latestDir, history = null) {
     const cmp = path.join(work, 'cmp', name);
     mkdirSync(cmp, { recursive: true });
     copyFiltered(currentDir, path.join(cmp, 'current'));
@@ -94,7 +219,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
     const stat = spawnSync('git', [...args, '--shortstat', 'current', 'latest'], { cwd: cmp, encoding: 'utf8' }).stdout.trim();
     const file = path.join(outDir, `${name}.diff`);
     writeFileSync(file, full.stdout);
-    return { file, stat, text: full.stdout };
+    return { file, stat, text: full.stdout, summary: summarize(currentDir, latestDir, history) };
   }
 
   // name: shown in the report; key: the diff file name (updates/<key>.diff).
@@ -128,13 +253,16 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       r.latest = tags.at(-1) || pin.tag;
       if (r.latest === pin.tag) return;
       const src = path.join(work, 'matt');
-      cloneShallow(pin.repo, src, { branch: r.latest });
+      cloneHistory(pin.repo, src, { branch: r.latest });
       const manifest = JSON.parse(readFileSync(path.join(src, '.claude-plugin', 'plugin.json'), 'utf8'));
       const latest = path.join(work, 'matt-latest');
       for (const rel of manifest.skills) copyFiltered(path.join(src, rel), path.join(latest, 'skills', path.basename(rel)));
       copyFiltered(path.join(src, '.claude-plugin', 'plugin.json'), path.join(latest, 'plugin.json'));
       copyFiltered(path.join(src, 'LICENSE'), path.join(latest, 'LICENSE'));
-      r.diff = diff('mattpocock-skills', path.join(vendorRoot, 'mattpocock-skills'), latest);
+      const upstreamOf = (name) => (manifest.skills.find((p) => path.basename(p) === name) || `skills/${name}`).replace(/^\.\//, '');
+      r.diff = diff('mattpocock-skills', path.join(vendorRoot, 'mattpocock-skills'), latest, {
+        dir: src, from: pin.commit, pathFor: (rel) => upstreamOf(path.basename(rel)),
+      });
       r.status = r.diff ? 'behind' : 'current';
     });
   }
@@ -147,11 +275,11 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       r.latest = head.slice(0, 7);
       if (head === pin.commit) return;
       const src = path.join(work, 'simple-english');
-      cloneShallow(pin.repo, src);
+      cloneHistory(pin.repo, src);
       const latest = path.join(work, 'simple-english-latest');
       copyFiltered(path.join(src, 'skills', 'simple-english'), path.join(latest, 'skills', 'simple-english'));
       copyFiltered(path.join(src, 'LICENSE'), path.join(latest, 'LICENSE'));
-      r.diff = diff('simple-english', path.join(vendorRoot, 'simple-english'), latest);
+      r.diff = diff('simple-english', path.join(vendorRoot, 'simple-english'), latest, { dir: src, from: pin.commit, pathFor: (rel) => rel });
       r.status = r.diff ? 'behind' : 'current';
     });
   }
@@ -164,13 +292,15 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       r.latest = pin.version;
       if (head === pin.commit) return;
       const src = path.join(work, 'pstack');
-      cloneShallow(pin.repo, src, { sparse: [pin.path] });
+      cloneHistory(pin.repo, src, { sparse: [pin.path] });
       const upstream = path.join(src, pin.path);
       const manifest = path.join(upstream, '.cursor-plugin', 'plugin.json');
       if (existsSync(manifest)) r.latest = JSON.parse(readFileSync(manifest, 'utf8')).version || r.latest;
       const latest = path.join(work, 'pstack-latest');
       copyFiltered(upstream, latest, (p) => IMAGE_EXT.test(p));
-      r.diff = diff('pstack-reference', path.join(vendorRoot, 'pstack-reference', 'source'), latest);
+      r.diff = diff('pstack-reference', path.join(vendorRoot, 'pstack-reference', 'source'), latest, {
+        dir: src, from: pin.commit, pathFor: (rel) => `${pin.path}/${rel}`,
+      });
       r.status = r.diff ? 'behind' : 'current';
       if (!r.diff) r.note = `cursor/plugins moved (${head.slice(0, 7)}), pstack unchanged; bump pins.json commit when convenient`;
     });
@@ -281,27 +411,47 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
     }
   }
 
-  // ---- report ----
-  console.log(`\nUpstream check (${apply ? 'auto sources updated' : 'nothing installed'}; diffs: ${label(outDir)})`);
+  // ---- report: one line per source, then a summary per source that moved ----
+  const out = [];
+  const say = (line = '') => { console.log(line); out.push(line); };
+  say(`Upstream check (${apply ? 'auto sources updated' : 'nothing installed'}; full diffs in ${label(outDir)})`);
   const width = Math.max(...results.map((r) => r.name.length), 10);
   for (const r of results) {
     const ver = r.current || r.latest ? `${r.current} -> ${r.latest}` : '';
-    const tail = r.diff ? `  ${r.diff.stat}  ${label(r.diff.file)}` : '';
-    console.log(`  ${r.name.padEnd(width)}  ${r.kind.padEnd(6)}  ${r.status.padEnd(7)}  ${ver}${tail}${r.note ? `  (${r.note})` : ''}`);
+    say(`  ${r.name.padEnd(width)}  ${r.kind.padEnd(6)}  ${r.status.padEnd(7)}  ${ver}${r.note ? `  (${r.note})` : ''}`);
+  }
+  for (const r of results.filter((x) => x.diff)) {
+    const { added, removed, changed, other } = r.diff.summary;
+    say('');
+    say(`${r.name}: ${r.current} -> ${r.latest}  [${r.kind === 'review' ? 'review, bump by hand' : r.status === 'updated' ? 'updated' : 'auto, --update installs it'}]`);
+    if (added.length) {
+      say('  New skills:');
+      for (const a of added) say(`    + ${a.name}: ${a.does}`);
+    }
+    if (removed.length) say(`  Removed skills: ${removed.join(', ')}`);
+    if (changed.length) {
+      say('  Changed:');
+      for (const c of changed) {
+        say(`    ~ ${c.name}`);
+        for (const m of c.commits.slice(0, 5)) say(`        - ${m}`);
+        if (c.commits.length > 5) say(`        - … ${c.commits.length - 5} more commit${c.commits.length - 5 > 1 ? 's' : ''}`);
+        for (const n of c.notes.slice(0, 4)) say(`        · ${n}`);
+        if (c.notes.length > 4) say(`        · … ${c.notes.length - 4} more file${c.notes.length - 4 > 1 ? 's' : ''}`);
+      }
+    }
+    if (other.length) say(`  Other files: ${other.join(', ')}`);
+    say(`  Full diff (${r.diff.stat}): ${label(r.diff.file)}`);
   }
   const behindReview = results.filter((r) => r.kind === 'review' && r.status === 'behind');
   const behindAuto = results.filter((r) => r.kind === 'auto' && r.status === 'behind');
-  if (behindReview.length) console.log('  review: read the diff, then bump by hand (vendor/README.md "Bump a pin", update vendor/pins.json).');
-  if (behindAuto.length) console.log('  auto: run sync with --update to install them, then commit the repo folders.');
-  if (!behindReview.length && !behindAuto.length && !results.some((r) => r.status === 'error')) console.log('  everything is current.');
+  say('');
+  if (behindReview.length) say('Review sources: read the summary (and the diff if needed), then bump by hand (vendor/README.md "Bump a pin", vendor/pins.json).');
+  if (behindAuto.length) say('Auto sources: run sync with --update to install them, then commit the repo folders.');
+  if (!behindReview.length && !behindAuto.length && !results.some((r) => r.status === 'error')) say('Everything is current.');
+  writeFileSync(path.join(outDir, 'SUMMARY.md'), `${out.join('\n')}\n`);
 
-  for (const r of results.filter((x) => x.diff)) {
-    const lines = r.diff.text.split('\n').length;
-    if (print || lines <= PRINT_LIMIT) {
-      console.log(`\n===== ${r.name}: ${r.current} -> ${r.latest} =====\n${r.diff.text}`);
-    } else {
-      console.log(`\n===== ${r.name}: ${lines} diff lines; open ${label(r.diff.file)} (or rerun with --print) =====`);
-    }
+  if (print) {
+    for (const r of results.filter((x) => x.diff)) console.log(`\n===== ${r.name}: full diff =====\n${r.diff.text}`);
   }
 
   rmSync(work, { recursive: true, force: true });
