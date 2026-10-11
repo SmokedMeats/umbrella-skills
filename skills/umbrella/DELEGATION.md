@@ -183,8 +183,10 @@ RULE_CARD      the spec's rule card (or its link) + harness command; brief stays
 EXCLUSIVES     file globs this kid may touch
 FROZEN_SHARED  paths kid must not edit (conductor owns)
 CHILD_RULES    no git; no merge; seam test; no type workarounds; Ship mode read-only;
-               heavy checks under the shared lock; run checks to the end; 137/143 = re-run
-               (BUILD-STANDING **Heavy checks**)
+               self-proof = package `verify` for each touched package + tests for touched files and
+               their direct callers, one file at a time, no directory sweep (not `commands.pr_ready`);
+               heavy checks through the slotted gate; run checks to the end; 137/143 = re-run
+               (BUILD-STANDING **Heavy checks through the gate**, **Tests**)
 SHARED_HELPERS existing helpers for this wave's kind of change (retry, decode, client, fixture)
                + any the conductor wrote first for this wave; use them, never write a second copy
 BUILD_VERIFIER separate          (a child that did not write this ticket; the writer's own block is not the verdict)
@@ -197,7 +199,7 @@ COMPANIONS     BUILD-STANDING.md (named companion; never umbrella/SKILL.md as SK
 **Out (extra):**
 ```text
 FILES_TOUCHED  exclusive-only list
-VERIFY         typecheck/test summary (pointer)
+VERIFY         package `verify` per touched package + own tests: summary (pointer)
 SEAM_TEST      path or N/A reason
 HARNESS        the card's harness summary line, or none
 NEW_SHARED     new files under shared folders, or none (a second copy of a SHARED_HELPERS helper is a finding)
@@ -252,6 +254,7 @@ SPEC           spec issue # / Problem Statement pointer
 SEAMS          untrusted bag? flaky outbound HTTP? JSON.parse/webhook/native dict?
 PHONE_VISIBLE  yes|no
 DIFF_BASE      first-ship SHA or exclusive file list
+DEPTH          full | light   (parent picks; see build-verifier **Depth by risk**)
 ```
 
 **Missing ACs:** if ticket body has no checkable AC list → VERDICT=`fail`, BLOCK_CLOSE_OR_LANE=`true` (mechanical miss — cannot audit).
@@ -273,7 +276,7 @@ HEAD_SHA BASE_SHA    the commits the verdict read
 PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field)
 ```
 
-**Killed check:** exit 137 or 143 is a kill (out of memory, or stopped), not a red gate. Re-run it under the heavy lock. It is never a failed AC. A second kill in a row → STATUS `blocked`, no VERDICT.
+**Killed check:** exit 137 or 143 is a kill (out of memory, or stopped), not a red gate. Re-run it through the heavy gate. It is never a failed AC. A second kill in a row → STATUS `blocked`, no VERDICT.
 
 **FORBIDDEN extras:** no product edits; no Maestro/adb; no Project Status; no Standards/Spec judgment essay; **not** Device QA.
 
@@ -406,8 +409,15 @@ A sibling session has no shared filesystem and cannot message the parent back.
 
 ### Recheck at merge
 
-Each ticket is verified on its own and rechecked before it lands.
+Each ticket is verified on its own and rechecked before it lands. Who runs which gate:
+
+| Who | Runs | When |
+| --- | --- | --- |
+| Implement child (the writer) | package `verify` for each touched package + its own tests | before it reports done (self-proof). Not `commands.pr_ready` |
+| build-verifier | package `verify` for touched packages + `commands.pr_ready` | at the verdict SHA; records `HEAD_SHA`, `BASE_SHA`, `PATCH_ID` |
+| Parent at merge | `commands.pr_ready`, once | only if `<dev-branch>` moved since the verdict |
 
 - **One verifier per ticket**, from a child that did not write it. No combined pre-merge check over the wave.
-- **Mode B, land one at a time.** When the founder says merge, take the Ready-to-merge PRs in order. For each: merge or rebase current `<dev-branch>`, re-run `commands.pr_ready` and the card's harness, then compare patch-id with the build-verifier receipt. Same patch-id → the verdict holds. Different → respawn build-verifier on the new head before that merge. Then the next PR, on the new trunk.
+- **Mode B, land one at a time.** When the founder says merge, take the Ready-to-merge PRs in order. For each: if `<dev-branch>` has not moved since the verdict, merge it. If it moved, bring it in (merge or rebase), run `commands.pr_ready` once on the new head, and push with the pre-push hook off (`HUSKY=0`; the hook would repeat the same check). Then compare patch-id with the build-verifier receipt. Same patch-id → the verdict holds; merge. Different → respawn build-verifier on the new head before that merge. Then the next PR, on the new trunk.
+- **No batch-level heavy gate in this pack.** The consuming repo's own scheduled gate covers the merged tip.
 - **Mode A.** Each ticket's commit already lands on the current tree, one at a time, and its verifier reads that commit (`BASE_SHA` = its parent). Recheck only if that commit is later amended or rebased; then the patch-id rule applies.

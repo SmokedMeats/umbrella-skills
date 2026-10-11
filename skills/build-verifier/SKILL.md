@@ -35,10 +35,22 @@ SEAMS          untrusted bag? flaky outbound HTTP? JSON.parse/webhook/native dic
 PHONE_VISIBLE  yes|no
 DIFF_BASE      ticket first-ship SHA or exclusive file list
 HEAD           commit or branch to audit
+DEPTH          full | light   (see Depth by risk)
 FORBIDDEN      no product edits; no Maestro/adb; no Project Status; no code-review essay
 ```
 
 ## Checks
+
+**Gates at the verdict SHA.** First run the package `verify` for each package the diff touches, then `project.yml` `commands.pr_ready` (when set), at `HEAD_SHA`, through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A red gate is FAIL with its failing line. Its PASS line goes in RECEIPTS; the conductor pastes the `commands.pr_ready_pass` line in the PR body. Tests: only those for touched files and their direct callers, one file at a time, never a directory sweep.
+
+**Depth by risk.** The packet names `DEPTH`; empty → `full`.
+
+| Depth | When the parent picks it | Adds to the gates and checks below |
+| --- | --- | --- |
+| **full** | The diff touches an area `standing-product-rules.md` locks, or writes grants, entitlements, or money | A `/blast-radius` probe (the one fact it is safe because of, proven by running code) and **2+ red-on-old-code** tests |
+| **light** | Every other ticket | **1 red-on-old-code** test; the ticket's own `/code-review` covers the rest |
+
+**Red on old code** = a test from this diff that fails on `BASE_SHA` and passes on `HEAD_SHA`. Check it in a temp worktree at `BASE_SHA` with only the test file copied in (`git worktree add`; remove it after). That worktree is not a product edit. Fewer red-on-old-code tests than the depth needs is FAIL.
 
 All must **PASS** or **N/A with reason**:
 
@@ -50,7 +62,7 @@ All must **PASS** or **N/A with reason**:
 6. **No type workarounds** — no new `as any` / `@ts-expect-error` / `as unknown as` covering the change without ticket-named exception.
 7. **Carry light (optional)** — if packet includes GRILL_LOCK / SPEC pointers, flag **FAIL** or **FINDING** when the ticket AC set ignores an obvious locked decision named on the ticket’s grill page (cite the decision text). Mechanical only — do **not** invent a second full carry pass. N/A if grill/spec pointers absent.
 
-Run each check to the end. Exit 137 or 143 is a kill (out of memory, or stopped), not FAIL: re-run it under the heavy lock ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks**). A second kill in a row → STATUS `blocked`, the killed command in ESCALATE, no VERDICT. The parent re-runs the verifier when the container has room.
+Run each check to the end. Exit 137 or 143 is a kill (out of memory, or stopped), not FAIL: re-run it through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A second kill in a row → STATUS `blocked`, the killed command in ESCALATE, no VERDICT. The parent re-runs the verifier when the container has room.
 
 ## Receipt out
 
@@ -62,6 +74,7 @@ BLOCK_CLOSE_OR_LANE  true | false
 HEAD_SHA             commit audited
 BASE_SHA             DIFF_BASE as a SHA (Mode B: merge-base with <dev-branch>; Mode A: the ticket commit's parent)
 PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field)
+DEPTH                full | light, with red-on-old-code test paths (and the blast-radius fact when full)
 ARTIFACTS            pointers only
 RECEIPTS             commands/paths checked
 ESCALATE             []

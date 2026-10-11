@@ -16,6 +16,7 @@ limits:
   max_children: 8      # one child cap for both runtimes (Cursor runs 8 agents in parallel); unset → 8
   child_mem_gb: 3      # Claude Code in-process child needs this much free memory; unset → 3
   mem_reserve_gb: 2    # kept free for the parent; unset → 2. See DELEGATION "Child shape by runtime"
+  heavy_gate_slots: 3  # max heavy checks at once per container; a new one starts only if 2 GB fits after the reserve at that moment; unset → 3
 
 device_qa:
   # desk_emulator: emulator-5554  # optional; a Desk crawl may run on this emulator serial (Field / iPhone stay manual). Unset → USB phone only

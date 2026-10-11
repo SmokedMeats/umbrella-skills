@@ -12,9 +12,30 @@ This file is the **authoritative** Build standing companion. Kids load it as a n
 
 **Database migrate.** When this change adds a new `backend/drizzle/0xxx_*.sql`, run `project.yml` `commands.db_migrate` (the command carries its own `cd`) in that same session, after the file is on disk. Do not run it before the file exists. Do not edit a migration that has already been applied. Do not run it again when no new file was added. A missed migrate is not a leftover.
 
-**Heavy checks, one at a time.** Several agents in one container share its memory. A type check, package `verify`, `commands.pr_ready`, or a multi-suite test run takes the container's shared lock: on Linux, `flock /tmp/umbrella-heavy.lock <command>`. A single file's test does not need it. A single local agent with no children may skip it.
+**Heavy checks through the gate.** Several agents in one container share its memory. A type check, package `verify`, `commands.pr_ready`, or a multi-test run goes through the container's heavy gate. Up to `limits.heavy_gate_slots` checks run at once (unset → 3). A new check starts when a slot is free **and**, at that moment, `available − limits.mem_reserve_gb ≥ 2 GB`. Do not derive a slot count from free memory: running checks already lower it, so that would count them twice and block a start that fits. When the memory check fails, only slot 1 is open, so one check still runs when nothing else does. A single lock left 12 GB idle while five checks queued. On Linux the gate is the function below. If `/tmp/umbrella-heavy.sh` is missing, write it from this block; then run `. /tmp/umbrella-heavy.sh && heavy <command>` (wrap a compound command in `sh -c '…'`). Export `MEM_RESERVE_GB` / `HEAVY_GATE_SLOTS` when `project.yml` sets them. A single test file does not need the gate. A single local agent with no children may skip it.
 
-**Run checks to the end.** Run gates in the foreground and read their exit. Never end a turn "waiting" on a check. Exit 137 or 143 is a kill (out of memory, or stopped), not a red gate: re-run it under the lock. It is never a failed AC. A second kill in a row is a capacity blocker; report it in ESCALATE.
+```sh
+heavy() {  # heavy <command...>: start when a slot is free and memory fits now
+  while :; do
+    a=$(awk '/MemAvailable/{print int($2/1048576)}' /proc/meminfo)
+    if [ -r /sys/fs/cgroup/memory.max ] && [ "$(cat /sys/fs/cgroup/memory.max)" != max ]; then
+      c=$(( ($(cat /sys/fs/cgroup/memory.max) - $(cat /sys/fs/cgroup/memory.current)) / 1073741824 ))
+      [ "$c" -lt "$a" ] && a=$c
+    fi
+    n=${HEAVY_GATE_SLOTS:-3}; [ $(( a - ${MEM_RESERVE_GB:-2} )) -lt 2 ] && n=1
+    i=1; while [ "$i" -le "$n" ]; do
+      flock -n -E 75 "/tmp/umbrella-heavy.$i.lock" "$@"; r=$?
+      [ "$r" -ne 75 ] && return "$r"
+      i=$((i+1))
+    done
+    sleep 5
+  done
+}
+```
+
+**Tests: touched files and direct callers.** An implement child and `build-verifier` run only the tests for the files the ticket touched and for their direct callers, one file at a time. Never a whole-directory or whole-suite sweep: one sweep held the gate for 12+ minutes.
+
+**Run checks to the end.** Run gates in the foreground and read their exit. Never end a turn "waiting" on a check. Exit 137 or 143 is a kill (out of memory, or stopped), not a red gate: re-run it through the gate. It is never a failed AC. A second kill in a row is a capacity blocker; report it in ESCALATE.
 
 **Use the shared helper.** Before writing a retry, decode, client, or fixture helper, use the one the packet names in `SHARED_HELPERS` or the one already in the repo. Do not write a second copy in your exclusive files. If the wave needs a new shared helper, the conductor writes it once before spawning.
 
@@ -59,6 +80,6 @@ Nesting: phase child may spawn explore/bash; it must not spawn another umbrella 
 
 Do not use `## Summary` or `## Test plan`. Keep the body under 8 KB. The one verification receipt stays under `## Verification`. Review-round history and raw harness output go in comments or linked notes, not the body. Open the PR ready, not draft. Do not merge from this section.
 
-**Push the unit (Ship mode PR).** After each verifiable unit on that ticket, push the PR branch with hooks on. A WIP commit on that branch is allowed. Do not force-push a shared branch. Do not push `<dev-branch>`, Preview, or `master`.
+**Push the unit (Ship mode PR).** After each verifiable unit on that ticket, push the PR branch with hooks on. Exception: the merge-time recheck push goes with the pre-push hook off (`HUSKY=0`), because `commands.pr_ready` just passed on that head ([DELEGATION.md](DELEGATION.md) **Recheck at merge**). A WIP commit on that branch is allowed. Do not force-push a shared branch. Do not push `<dev-branch>`, Preview, or `master`.
 
 **Merge prompt.** Ship mode PR, after that lane walk: run the **soft-queue overlap** check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until the founder says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. A **House queue** with a next house does not wait on that answer.
