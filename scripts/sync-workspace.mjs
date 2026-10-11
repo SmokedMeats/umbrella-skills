@@ -16,7 +16,9 @@
  *
  * One command for every agent (Claude, Cursor, VS Code / Copilot, Grok, Codex, ...):
  *   1. pack skills (vendored + this overlay + swarm) -> user roots + each repo's skill dirs
- *   2. each repo's own skills (skill_targets `own: [...]`) -> that repo's other skill dirs
+ *   2. each repo's own skills (skill_targets `own: [...]`) -> that repo's other skill dirs,
+ *      then a skill only some repos have -> every other repo (a repo's own version wins;
+ *      an agent-specific original, like graphify's .claude/skills copy, feeds that folder)
  *   3. personal skills (in a user root, not from a pack) -> the other user roots and every
  *      repo skill dir, so a cloud session with no home folder still has them
  *   4. each repo's rules generator (skill_targets `rules: "<command>"`, run in that repo)
@@ -501,6 +503,49 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
     }
   }
   console.log(`  own   ${repo}: ${copied.length} copied from ${own.join(', ')}${kept.length ? `; left alone (another installer): ${kept.join(', ')}` : ''}`);
+}
+
+// 2b. A skill only some repos have -> every other repo too. An original is any skill
+//     folder in a repo's own or skill dirs that is neither a pack skill nor a copy.
+//     A repo that has its own original keeps it. Per folder, an original in that same
+//     folder elsewhere wins (graphify's Claude-specific .claude/skills copy goes to
+//     .claude/skills); otherwise the first repo's first own source (targets order).
+const repoOriginals = new Map(); // repo -> Map(name -> Map(rel -> dir))
+for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
+  const repoRoot = path.join(workspaceRoot, repo);
+  if (!existsSync(repoRoot)) continue;
+  const found = new Map();
+  for (const rel of [...new Set([...own, ...dirs])]) {
+    for (const name of skillNames(path.join(repoRoot, rel))) {
+      const dir = path.join(repoRoot, rel, name);
+      if (packOwned.has(name) || mirrorExclude.has(name) || isMirrorCopy(dir)) continue;
+      if (!found.has(name)) found.set(name, new Map());
+      found.get(name).set(path.normalize(rel), dir);
+    }
+  }
+  repoOriginals.set(repo, found);
+}
+const shared = new Map(); // name -> { first, byRel: Map(rel -> dir) }
+for (const found of repoOriginals.values()) {
+  for (const [name, byRel] of found) {
+    if (!shared.has(name)) shared.set(name, { first: [...byRel.values()][0], byRel: new Map() });
+    for (const [rel, dir] of byRel) if (!shared.get(name).byRel.has(rel)) shared.get(name).byRel.set(rel, dir);
+  }
+}
+for (const { repo, dirs } of WORKSPACE_TARGETS) {
+  const found = repoOriginals.get(repo);
+  if (!found) continue;
+  const copied = [];
+  for (const [name, { first, byRel }] of shared) {
+    if (found.has(name)) continue; // this repo's own version wins
+    for (const rel of dirs) {
+      const from = byRel.get(path.normalize(rel)) || first;
+      const to = path.join(workspaceRoot, repo, rel, name);
+      if (mirrorSkill(from, to, label(from))) { copied.push(name); refreshed.add(path.resolve(to)); }
+    }
+  }
+  const names = [...new Set(copied)];
+  if (names.length) console.log(`  share ${repo}: ${names.length} skill(s) from other repos (${names.join(', ')})`);
 }
 
 // 3. Personal skills: any original skill in a user root (not a pack skill, not a copy)
