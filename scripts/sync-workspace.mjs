@@ -53,6 +53,7 @@ const OVERLAY_SKILLS = [
   'umbrella',
   'umbrella-mode',
   'build-verifier',
+  'device-qa-agent',
   'device-qa-verifier',
   'wayfinder',
   'how',

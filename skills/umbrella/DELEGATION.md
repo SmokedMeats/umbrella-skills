@@ -2,7 +2,7 @@
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](PROJECT-CONFIG.md).
 
-**Date:** 2026-09-28 (America/Chicago). Dispatch refresh 2026-10-03 (pstack 0.15.9, fresh child + respawn once).  
+**Date:** 2026-09-28 (America/Chicago). Dispatch refresh 2026-10-03 (pstack 0.15.9, fresh child + respawn once). Child shape by runtime 2026-10-11.  
 **Status:** Live — `workflows/umbrella/DELEGATION.md` (sibling of `SKILL.md`)  
 **Sources:** `umbrella-mode-design-2026-09-28.md` §3–§3b; live spine skills; CoS rooms Verify / Umbrella / Implement
 
@@ -20,7 +20,8 @@ PHASE          chart | fog | grill-prep | spec | tickets | build | build-verify 
 TICKETS        numbers + URLs (live only; parked listed separately if relevant)
 POINTERS       paths: `paths.umbrella_cursor`, map/spec URLs, gap list, exclusives, run folder
 SKILL_PATH     absolute or repo-relative path to THIS phase SKILL.md only
-COMPANIONS     only files that skill already names, always incl. PROJECT-CONFIG.md (never umbrella/SKILL.md)
+COMPANIONS     only files that skill already names, always incl. PROJECT-CONFIG.md and `paths.agent_rules`
+               (PROJECT-CONFIG **Repo agent rules**; local coding kids read it first) (never umbrella/SKILL.md)
 FORBIDDEN      always include: no umbrella/SKILL.md; no merge/promote/OTA/migrate;
                no AskQuestion to user (escalate); no Ship mode rewrite; no Claim rewrite
 ACCEPTANCE     checkable exit criteria for this phase
@@ -173,7 +174,7 @@ BLOCKED_BY             GitHub blocked-by links set (receipts)
 | | |
 | --- | --- |
 | **Delegate?** | Yes — one Task per extra ticket; conductor ticket + shared stays parent |
-| **Dispatch** | **Cursor Task** (default for code). Grok **Implement Worker** only when durable room lane needed; still no git from kid |
+| **Dispatch** | **Local coding agent** on `<local-dev-host>` (Grok Build / IDE; default for code). Grok **Implement Worker** only when durable room lane needed. Cursor Task / cloud only on founder override for that house. Shape and cap per **Child shape by runtime**. Still no git from kid (a sibling session pushes only its own ticket branch) |
 
 **In (extra):**
 ```text
@@ -181,8 +182,13 @@ TICKET         # + body + ACs
 RULE_CARD      the spec's rule card (or its link) + harness command; brief stays near 2 KB
 EXCLUSIVES     file globs this kid may touch
 FROZEN_SHARED  paths kid must not edit (conductor owns)
-CHILD_RULES    no git; no merge; seam test; no type workarounds; Ship mode read-only
-BUILD_VERIFIER inline|separate   (if inline: emit build-verifier receipt block at end)
+CHILD_RULES    no git; no merge; seam test; no type workarounds; Ship mode read-only;
+               heavy checks under the shared lock; run checks to the end; 137/143 = re-run
+               (BUILD-STANDING **Heavy checks**)
+SHARED_HELPERS existing helpers for this wave's kind of change (retry, decode, client, fixture)
+               + any the conductor wrote first for this wave; use them, never write a second copy
+BUILD_VERIFIER separate          (a child that did not write this ticket; the writer's own block is not the verdict)
+SHAPE          in-process | sibling   (sibling: + TICKET_BRANCH and the full context; see Sibling contract)
 COMPANIONS     BUILD-STANDING.md (named companion; never umbrella/SKILL.md as SKILL_PATH)
 ```
 
@@ -194,8 +200,8 @@ FILES_TOUCHED  exclusive-only list
 VERIFY         typecheck/test summary (pointer)
 SEAM_TEST      path or N/A reason
 HARNESS        the card's harness summary line, or none
-BUILD_RECEIPT  optional embedded VERDICT if inline build-verifier
-NO_GIT         confirmed
+NEW_SHARED     new files under shared folders, or none (a second copy of a SHARED_HELPERS helper is a finding)
+NO_GIT         confirmed (sibling: TICKET_BRANCH + head SHA pushed, nothing else)
 ```
 
 **FORBIDDEN extras:** no git; no shared-file edits; no Project Status; no Device QA; no close/lane (parent after build-verifier + code-review empty).
@@ -235,7 +241,7 @@ OUT_OF_SCOPE   noted, not blocking
 | | |
 | --- | --- |
 | **Delegate?** | Yes — after implement product lands, **before** close/lane |
-| **Dispatch** | Cursor Task `build-verifier` (`readonly`) **or** inline end-of-ticket receipt; Grok **Build Verifier** in Verify room for standing auditor pings |
+| **Dispatch** | Cursor Task `build-verifier` (`readonly`) **or** inline receipt in a session that did not write the ticket; Grok **Build Verifier** in Verify room for standing auditor pings. One verifier per ticket. Never the writer, never one pass over the wave's combined diff |
 
 **In (extra):**
 ```text
@@ -263,7 +269,11 @@ DIFF_BASE      first-ship SHA or exclusive file list
 VERDICT              pass | fail
 FINDINGS[]           mechanical receipt misses only
 BLOCK_CLOSE_OR_LANE  true | false
+HEAD_SHA BASE_SHA    the commits the verdict read
+PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field)
 ```
+
+**Killed check:** exit 137 or 143 is a kill (out of memory, or stopped), not a red gate. Re-run it under the heavy lock. It is never a failed AC. A second kill in a row → STATUS `blocked`, no VERDICT.
 
 **FORBIDDEN extras:** no product edits; no Maestro/adb; no Project Status; no Standards/Spec judgment essay; **not** Device QA.
 
@@ -276,7 +286,7 @@ BLOCK_CLOSE_OR_LANE  true | false
 | | |
 | --- | --- |
 | **Delegate?** | Yes — specialized loop **after parent Probe PASS** |
-| **Dispatch** | Local Cursor Task / custom `device-qa-agent` **or** Grok **Mobile QA Engineer** (Ship/Verify). **Never cloud** |
+| **Dispatch** | Local Cursor Task / custom `device-qa-agent` **or** Grok `roles.device_qa` lane (Ship/Verify). **Never cloud** |
 
 **In (extra):**
 ```text
@@ -301,7 +311,7 @@ STATUS_MOVES   proposed ticket → Field|Operator|Live Beta|GoLive|Done (+ why)
                *** UNAPPLIED — parent applies after device-qa-verifier Pass ***
 ```
 
-**FORBIDDEN extras:** no `umbrella/SKILL.md`; no `src/` / `backend/src/` edits; no git; **no Project Status writes**; no `gh issue close`; no second Borrow if lock held; no AskQuestion.
+**FORBIDDEN extras:** no `umbrella/SKILL.md`; no `src/` / `backend/src/` edits; no git; **no Project Status writes** except a Fail sending its ticket (or its one new issue) to **In Progress**; no `gh issue close`; no second Borrow if lock held; no AskQuestion.
 
 ---
 
@@ -309,7 +319,7 @@ STATUS_MOVES   proposed ticket → Field|Operator|Live Beta|GoLive|Done (+ why)
 
 | | |
 | --- | --- |
-| **Delegate?** | Yes — after device-qa returns, **before** Desk-device Status advance |
+| **Delegate?** | Yes — after device-qa returns, **before** a Status advance off Desk device or Field |
 | **Dispatch** | Cursor Task `device-qa-verifier` (`readonly`) **or** Grok **Device QA Verifier** in Verify room |
 
 **In (extra):**
@@ -337,7 +347,7 @@ BLOCK_STATUS_MOVES  true | false
 
 **FORBIDDEN extras:** **never re-tap** (no Maestro, Borrow, `adb shell input`); no gap-check grill/spec (that is build-verifier); no Status apply.
 
-**Parent gate:** Project Status off Desk device **only** when VERDICT=pass (or CoS explicit skip-verify for that run). Default verify-on.
+**Parent gate:** Project Status off Desk device or Field **only** when VERDICT=pass (or CoS explicit skip-verify for that run). Default verify-on.
 
 ---
 
@@ -350,9 +360,9 @@ BLOCK_STATUS_MOVES  true | false
 | Write `## Acceptance criteria` on live tickets | **to-tickets** at publish (Ticket Filers / Spec Tickets face); implement repairs only if missing before code |
 | Carry grill→spec→tickets (locked decisions) | **Spec Writer** (`to-spec` / `CARRY_FROM_GRILL`) then **Ticket Filers** (`to-tickets` / `CARRY_FROM_SPEC`); parent refuses spawn if those CARRY fields empty / missing≠none |
 | Probe adb / USB / phone ownership | Parent |
-| Apply `STATUS_MOVES` off Desk device | Parent after device-qa-verifier Pass |
+| Apply `STATUS_MOVES` off Desk device or Field | Parent after device-qa-verifier Pass |
 | Close / leftover lane after Build loop | Parent alone, after Close gate complete + build-verifier Pass + code-review empty |
-| Merge / FF / migrate / OTA / master | CoS / the founder only |
+| Merge / FF / migrate / OTA / master | The founder only (CoS relays when bots are on) |
 
 ---
 
@@ -360,9 +370,44 @@ BLOCK_STATUS_MOVES  true | false
 
 | Work | Prefer |
 | --- | --- |
-| Code / implement extras / code-review axes / one-shot phase publish | **Cursor Task** kids |
+| Code / implement extras | **Local coding agent** on `<local-dev-host>` (Cursor cloud only on founder override; cloud is reserved for swarm Active areas) |
+| Code-review axes / one-shot phase publish | **Cursor Task** kids |
 | Durable lanes that need rooms (Verify, Umbrella, Investigate) | **Grok bots** |
-| Phone crawl | Local Task **or** Mobile QA Grok — never cloud |
+| Phone crawl | Local Task **or** `roles.device_qa` Grok lane — never cloud |
 | Verifiers | Cursor readonly Task **or** Verify-room Grok bots (already created) — same packet either way |
 
 Do **not** dual-truth: one implement return gets **one** build-verifier verdict (inline **or** Task/bot, not both competing).
+
+**Bots off.** With no Grok bot lanes this run, every role packet above runs as a local subagent on `<local-dev-host>` (Grok Build or IDE agent) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. On Claude Code the memory check still picks in-process or sibling.
+
+---
+
+## Child shape by runtime
+
+One child per ticket holds on both runtimes. What a child *is* differs.
+
+- **Cursor.** A Task or cloud agent per ticket. Each runs in its own VM, so children do not share memory.
+- **Claude Code.** An in-process `Agent` child shares the parent's container: its memory, its CPU, its `/tmp`. Run it in-process only while the memory check passes. Past that, spawn a sibling session (`create_session`), each in its own container. No `create_session` in this harness → queue the ticket until a child returns.
+
+**Cap.** One child cap for both runtimes: `limits.max_children` (unset → 8, the number of agents Cursor runs in parallel). Count every live child, in-process and sibling. There is no separate sibling max. A human "as many as needed" means up to the cap.
+
+**Memory check (Claude Code, in-process only).** Before each in-process spawn, read available memory: the smaller of `MemAvailable` in `/proc/meminfo` and the cgroup's `memory.max − memory.current` (`/sys/fs/cgroup/`; `max` or a missing file means no cgroup limit). Spawn in-process only if `available − limits.mem_reserve_gb ≥ limits.child_mem_gb` (unset → 2 GB reserve, 3 GB per child). Otherwise go sibling, or queue. No human override skips this check. Siblings and Cursor children skip it; they have their own machine.
+
+Why: 12 in-process children in one 15 GB container ran about 5 type checks at once and were OOM-killed 7 times (exit 137) with no PR in an hour.
+
+### Sibling contract
+
+A sibling session has no shared filesystem and cannot message the parent back.
+
+1. **Packet carries the full context.** Ticket body and ACs, the rule card text, exclusives, frozen shared, SHARED_HELPERS, child rules, and the commands. Link a file only when it is in the repo at the commit the sibling checks out. Paste anything else.
+2. **The sibling pushes its own ticket branch** (`TICKET_BRANCH`, one per ticket). Never the PR branch, never `<dev-branch>`, Preview, or `master`. That push is its only git write.
+3. **The parent reads the result on a scheduled check-in** (`send_later`), via `get_session` and `list_events`. It does not wait in the turn. A finished sibling's last message is its receipt.
+4. **The parent fetches `TICKET_BRANCH`** and lands only that ticket's exclusive files, the same as a local child's report (one commit per ticket on `<dev-branch>` or that ticket's PR branch).
+
+### Recheck at merge
+
+Each ticket is verified on its own and rechecked before it lands.
+
+- **One verifier per ticket**, from a child that did not write it. No combined pre-merge check over the wave.
+- **Mode B, land one at a time.** When the founder says merge, take the Ready-to-merge PRs in order. For each: merge or rebase current `<dev-branch>`, re-run `commands.pr_ready` and the card's harness, then compare patch-id with the build-verifier receipt. Same patch-id → the verdict holds. Different → respawn build-verifier on the new head before that merge. Then the next PR, on the new trunk.
+- **Mode A.** Each ticket's commit already lands on the current tree, one at a time, and its verifier reads that commit (`BASE_SHA` = its parent). Recheck only if that commit is later amended or rebased; then the patch-id rule applies.

@@ -12,7 +12,7 @@ Phone-visible ship, checklist exists (`project.yml` `paths.device_qa_checklist`)
 
 **Leaves** (desk catch-up) can run with **no** phone. That is still `/device-qa-agent` § Leaves only.
 
-The **crawl** (Probe → Borrow → Maestro) needs exactly **one** USB `adb` device, **this** runner must be the one that sees it, and no other actor may own that phone this pass.
+The **crawl** (Probe → Borrow → Maestro) needs exactly **one** USB `adb` device (or the **Desk emulator** below, for a Desk crawl), **this** runner must be the one that sees it, and no other actor may own that phone this pass.
 
 ## Probe
 
@@ -20,7 +20,7 @@ The **crawl** (Probe → Borrow → Maestro) needs exactly **one** USB `adb` dev
 adb devices
 ```
 
-Count lines that end in `device` (ignore `unauthorized`, `offline`, `emulator-*` unless the founder said use an emulator).
+Count lines that end in `device` (ignore `unauthorized`, `offline`, and `emulator-*`). Exception: the Desk emulator serial in `project.yml` `device_qa.desk_emulator` counts for a **Desk** crawl (see **Desk emulator**). Unset → ignore every emulator unless the founder said use one.
 
 | Devices | Do this |
 | --- | --- |
@@ -28,6 +28,10 @@ Count lines that end in `device` (ignore `unauthorized`, `offline`, `emulator-*`
 | **Not exactly 1**, this runner cannot see USB, or another actor owns the phone | Do **not** crawl. Do **not** close. **Desk device** (below). Then crawl the next unblocked coding ticket |
 
 Not exactly one includes 0 and 2+. Two or more phones: do not guess which one. Note the count. A Cursor cloud VM cannot see the phone even if a handset is plugged in somewhere else.
+
+## Desk emulator
+
+When `device_qa.desk_emulator` is set (for example `emulator-5554`), a **Desk** crawl may run on that emulator on `<local-dev-host>` when no USB phone qualifies or the founder picked it. Boot and kill it per `paths.desk_avd_runbook` when set. It must be the only `adb` device for Borrow; target the serial explicitly (`adb -s <serial>`, Maestro `--device <serial>`). Kill the emulator after the crawl. Field outdoor and iPhone leaves never pass on the emulator; they stay **Field** or N/A, run by hand.
 
 ## Who may run the crawl
 

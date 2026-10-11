@@ -1,9 +1,9 @@
 ---
 name: device-qa-verifier
 description: >
-  Lane-2 readonly audit after device-qa-agent returns (not build-verifier, not
-  code-review). Checklist vs run folder, Fail back on its ticket or one new issue, Skipped blocked, Return
-  evidence, no src edits. Never re-tap the phone. Emit VERDICT + BLOCK_STATUS_MOVES.
+  Lane-2 readonly audit after device-qa-agent returns for Desk device or Field
+  (not build-verifier, not code-review). Checklist vs run folder, Fail back on its ticket or one new issue,
+  Skipped blocked, Return evidence, no src edits. Never re-tap the phone. Emit VERDICT + BLOCK_STATUS_MOVES.
 disable-model-invocation: true
 ---
 
@@ -15,8 +15,8 @@ You audit **crawl receipts**. You do **not** walk the phone.
 
 ## When
 
-After `device-qa-agent` (or Mobile QA) returns a run folder + proposed `STATUS_MOVES`,
-**before** parent advances Project Status off Desk device.
+After `device-qa-agent` (or the `roles.device_qa` lane) returns a run folder + proposed `STATUS_MOVES`,
+**before** parent advances Project Status off Desk device or Field.
 
 ## Packet in (required)
 
@@ -51,7 +51,7 @@ RECEIPTS             what was checked
 ESCALATE             []
 ```
 
-On **fail**: parent does **not** advance Desk device; may respawn device-qa for receipt repair (still no product fix) or escalate.
+On **fail**: parent does **not** advance Desk device or Field; may respawn device-qa for receipt repair (still no product fix) or escalate.
 
 ## Forbidden
 

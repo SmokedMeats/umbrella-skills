@@ -31,6 +31,8 @@ Step 4 is usually one small script that imports the same library the app ships a
 
 ## Steps
 
+**Orient (optional, non-blocking).** Only when `commands.graph_freshness` is set: run it from the repo root. Exit 0 means the local code graph is fresh; then run `graphify affected "<changed symbol>"` and `graphify query "<change>" --budget 1500` for a first map of reverse impact, and do step 3 anyway: the graph misses wire formats, DB columns, and flags just like grep does. Key unset, non-zero exit, or no `graphify` CLI → skip silently and use `rg` / Read. Never build or rebuild the graph inside a task.
+
 1. Read the change. The diff, the symbols it adds, changes, and deletes, and what it now does differently, including the part the diff does not spell out. Use `why` step 2 (git log and `gh`) for the PR and commits.
 2. Find the one fact it is safe because of. Most risky-looking changes are safe because of a single fact, such as "this call only drops already-dead cache entries and does nothing else". If that fact holds, most scary cases clear at once. Spend time here, not on a long list of maybes.
 3. Look where grep stops. Read the library source you call, and check its pinned version and any local patch. Work out when things run (microtasks, unmount, framework lifecycle). Follow what a symbol search misses: JSON an API returns, a DB column, a wire format, another language reading the same bytes, a feature flag, code three hops downstream.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Device QA agent"
+  short_description: "Crawl manual-agent Device QA on a plugged-in phone"
+policy:
+  allow_implicit_invocation: false

@@ -25,8 +25,9 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
    Child must **not** read `umbrella/SKILL.md`.
    Build standing lives in companion [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md).
 4. **Return packets are law inputs, not law.** Parent re-detects phase from GitHub labels.
-5. **No irreversible ship without CoS.** Merge / FF / migrate / OTA / master stay paused.
+5. **No irreversible ship without the founder.** Merge / FF / migrate / OTA / master stay paused. The in-loop `commands.db_migrate` for a new migration file in this change follows [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Database migrate**.
 6. **No poteto install.** Do not add poteto-mode / poteto-agent to this pack.
+7. **Repo agent rules ride every packet.** Parent reads `paths.agent_rules` at start ([PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md) **Repo agent rules**). Every child packet names it in `COMPANIONS`, and local coding children read it first.
 
 ## Spine (unchanged)
 
@@ -40,11 +41,15 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 - After `Next: /<skill>` (except grill-me, handoff, and conductor-owned implement work):
   1. Write `UMBRELLA_CURSOR` (parent).
   2. Build context packet ([DELEGATION.md](../umbrella/DELEGATION.md) when installed; else design schema).
-  3. Spawn: Cursor Task (`generalPurpose` / `umbrella-phase`) **or** matching Grok bot lane.
+  3. Spawn: **implement/coding** → local coding agent on `<local-dev-host>` (default; see **Hybrid**). Other phases → matching Grok bot lane, or Cursor Task (`generalPurpose` / `umbrella-phase`) only when no bot lane fits or the founder overrides for cloud.
   4. On return: verify receipts; apply CLOSE-PARENTS / Project / cursor rewrite; re-detect.
-- Implement wave 2+: one child per extra ticket; parent owns shared + git.
+- Implement wave 2+: one child per extra ticket; parent owns shared + git. **Child shape by runtime** ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**): Cursor runs a Task or cloud agent per ticket (own VM). Claude Code runs an in-process `Agent` child only while the memory check passes, else a sibling session (`create_session`, own container), else queues. One child cap for both runtimes (`limits.max_children`); a human "as many as needed" never exceeds the cap or the memory check.
+- **Verify each ticket on its own.** One build-verifier per ticket, from a child that did not write it. No combined pre-merge check over the wave. Recheck at merge: rebase or merge current `<dev-branch>` and re-run gates per PR; the patch-id rule keeps a verdict valid ([DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**).
+- **Bots off.** When the founder runs without Grok bot lanes (rate limits, or none on this host), every child runs as a local subagent of this session (Grok Build or IDE agent on `<local-dev-host>`) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. Same packets, same verifiers; escalations that name CoS go to the founder.
+- **Bots off: auto-continue.** After a slice or ticket passes full preflight and pushes to `<dev-branch>`, the parent starts the next queue item on its own. No "continue?" prompt. After each push it posts a 2-line note (what landed, what's next), not a question. It stops and asks the founder only at a founder gate: grill or `needs:founder`, an open product decision, a change to workflow files or deploy config (PR path), a new DB migration (stop before running it), a failing gate it can't fix, merge / OTA / promote, or spend.
+- **Bots off: auto-loop.** At session start the parent arms the `/loop 1h` House crawl tick itself (the founder does not type it), so the crawl keeps moving if a turn stalls. Same tick rules: it never merges, fast-forwards, migrates, OTAs, or promotes, and never arms `/goal`. It stops at the auto-continue founder gates and disarms when the queue is empty or the founder says stop.
 - **build-verifier:** after implement product lands, before close/lane — inline receipt
-  **or** Task/bot `build-verifier` (readonly). Not Device QA. Not code-review.
+  in a session that did not write the ticket, **or** Task/bot `build-verifier` (readonly). Never the writer's own verdict. Not Device QA. Not code-review.
 - **code-review:** own kid (judgment); findings re-enter Build loop. Do **not** merge into verifiers.
 - **Device QA:** parent Probe first. On PASS → `device-qa-agent` packet. On return →
   `device-qa-verifier` (readonly, no phone). Parent applies `STATUS_MOVES` only when
@@ -53,13 +58,15 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 - **Carry:** Spec Writer (`to-spec`) then Ticket Filers (`to-tickets`) own grill→spec→ticket carry. Parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or `missing≠none` on those receipts.
 - **Fresh child by default.** A new phase, a fix round, a retry, and the next ticket go to a fresh child. The packet carries the original brief, later directives, and the prior receipt. Resume the same child only when the next step needs state that is costly to move: its checkout, its uncommitted edits, or a process it still runs (dev server, simulator, adb session). Device QA on a borrowed phone is that case. A stop is not reuse. A role outlives the child. The next round is a new child. Do not spawn `poteto-agent`.
 - **Respawn once.** A verifier or review child whose receipt omits a field its brief required is respawned once with the same packet. A second miss is a gap, not a pass. Do not paste the raw dump as the verdict.
-- **Overnight loop.** If the operator arms one, it is `/loop 1h` as `/umbrella` **House crawl** says. Do not arm `/goal`. The tick does not merge or promote.
+- **Overnight loop.** If the operator arms one (bots off arms it at session start, above), it is `/loop 1h` as `/umbrella` **House crawl** says. Do not arm `/goal`. The tick does not merge or promote.
 
 ## Hybrid
 
-- **Cursor Task** for code/implement and one-shot phase publish.
-- **Grok bots** for durable room lanes (Umbrella / Verify / Investigate) that need standing presence.
+- **Coding / implement default: local** — Grok Build or an IDE agent on `<local-dev-host>` (Ship mode `<dev-branch>`). Cursor cloud agents are reserved for swarm Active areas. An umbrella house goes to cloud only on an explicit founder override for that house.
+- **Cursor Task** only for one-shot non-coding phase publish when no durable bot lane fits, or when the founder asks for cloud on that house.
+- **Grok bots** for durable room lanes (Umbrella / Verify / Investigate) that need standing presence. An observer lane may watch the local session.
 - Never dual-truth two verifier verdicts for the same return.
+- Why: shared Cursor usage is the swarm's fuel; classic `/umbrella` houses should not drain it.
 
 
 ## Acceptance criteria (conductor note)
