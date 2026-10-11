@@ -47,6 +47,16 @@ On a cluster of related grilling tickets, three gaps showed up for our pack:
 | Installed copies | What `sync-workspace.mjs` (or `npx skills add`) writes into each agent's skills folder: `~/.claude/skills`, `~/.cursor/skills`, `~/.grok/skills`, `~/.agents/skills`, `~/.copilot/skills`. VS Code (Copilot agent mode) reads `~/.copilot/skills`, `~/.claude/skills` and `~/.agents/skills` | No; re-run sync |
 | Product-repo copies | The same installed copies, written into each product repo's `workspace.skill_targets` folders (for example `.cursor/skills`, `.claude/skills`, `.grok/skills`) and **committed**, because a cloud agent only sees what its checkout has. VS Code also reads a repo's `.claude/skills`, `.agents/skills` and `.github/skills` | No; re-run sync and commit |
 
+Which folder each agent reads, so one source plus one copy covers them all:
+
+| Agent | Repo skills | User skills |
+| --- | --- | --- |
+| Claude Code | `.claude/skills` | `~/.claude/skills` |
+| Cursor | `.cursor/skills`, `.agents/skills`, and `.claude/skills` | `~/.cursor/skills`, `~/.agents/skills`, `~/.claude/skills` |
+| VS Code (Copilot) | `.github/skills`, `.claude/skills`, `.agents/skills` | `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills` |
+| Grok Build | `.grok/skills`, then `.claude`, then `.cursor` | `~/.grok/skills` |
+| Codex | `.agents/skills` | `~/.agents/skills` |
+
 An agent *references* a skill by name and reads that installed file when it needs it; a brief never pastes a skill's body (cloud exception: umbrella `DELEGATION.md` **Sibling contract**).
 
 ## Install
@@ -75,12 +85,15 @@ node scripts/sync-workspace.mjs
 
 That copies the overlay into `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, `~/.copilot` (each `<root>/skills`, created when missing), and each sibling product repo listed in `project.yml` `workspace.skill_targets` (defaults to none until you add a config). When a private overlay sibling is present, sync also layers `project.yml`, `skills-overlay/**`, and standing product rules.
 
-Every skills root sync writes ends up with the same three config files: `project.yml` and `standing-product-rules.md` at the root (from the private overlay) and `umbrella/PROJECT-CONFIG.md` (ships in this pack). Product repos also get `docs/agents/project.yml` + `docs/agents/standing-product-rules.md`; commit every `skill_targets` dir in the product repo (`.cursor/skills`, `.claude/skills`, …) + `docs/agents` so cloud clones get them too. Those folders are installed copies: re-run sync and commit after a pack changes; never edit them in the product repo.
+Every skills root sync writes ends up with the same three config files: `project.yml` and `standing-product-rules.md` at the root (from the private overlay) and `umbrella/PROJECT-CONFIG.md` (ships in this pack). Product repos also get `docs/agents/project.yml` + `docs/agents/standing-product-rules.md`; commit every `skill_targets` dir in the product repo (for example `.grok/skills` + `.claude/skills`) + `docs/agents` so cloud clones get them too. Those folders are installed copies: re-run sync and commit after a pack changes; never edit them in the product repo.
 
 | Target | How |
 | --- | --- |
 | User skill roots `~/.grok/skills`, `~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` (VS Code reads the last three) | always (Windows: `%USERPROFILE%\.copilot\skills`) |
-| Each product repo's `skill_targets` folders (`.cursor/skills`, `.claude/skills`, …) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| Each product repo's `skill_targets` folders (for example `.grok/skills` + `.claude/skills`) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| Each product repo's own skills (`own: [...]`) into that repo's other `skill_targets` folders | automatic when the row lists `own`; copies carry `.synced-by-sync-workspace`, and a folder another installer owns is left alone |
+| Personal skills (an original in one user root that no pack ships) into the other user roots and every repo `skill_targets` folder, so cloud sessions have them too | automatic; `--no-personal` skips; `workspace.mirror_exclude` lists names never copied; copies whose source is gone are listed, never deleted |
+| Each product repo's agent-rules generator (`rules: "<command>"`, run in that repo: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules`, Copilot instructions, …) | automatic when the row lists `rules`; `--no-rules` skips; a failure makes sync exit non-zero |
 | Pinned Matt v1.3.1 + SimpleEnglish (`vendor/`) into every root above, before the overlay so same-named overlay skills win | automatic in the private clone; `--no-vendor` skips; the public clone has no `vendor/` (use the npx lines in step 1) |
 | Grok Bot box skills root `/home/box/agent-data/workflows` | `--box` (skipped when that folder's parent is missing; override with `UMBRELLA_BOX_SKILLS_ROOT`) |
 | Any other skills root | `--dest <dir>` (repeatable) |
@@ -362,7 +375,7 @@ Packet law and role schemas: [DELEGATION.md](skills/umbrella/DELEGATION.md).
 
 Planning spine: [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files for that spine start from those skills. `/umbrella` is original to this repo.
 
-Understand and rigor: [Lauren Tan (poteto)](https://github.com/poteto). Skills stack: [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins) (integrated through pstack 0.15.9, 2026-10-03). `/how`, `/why`, `/teach`, the `/principles` index, and `/blast-radius` are adapted from pstack, with house unslop. Later pstack deltas land as thin conventions on `/umbrella`, not as poteto-mode.
+Understand and rigor: [Lauren Tan (poteto)](https://github.com/poteto). Skills stack: [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins) (integrated through pstack 0.15.17, 2026-10-11). `/how`, `/why`, `/teach`, the `/principles` index, and `/blast-radius` are adapted from pstack, with house unslop. Later pstack deltas land as thin conventions on `/umbrella`, not as poteto-mode.
 
 This pack is the SSOT — we do not keep a field-notes issue on Matt's repo.
 

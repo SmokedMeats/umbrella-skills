@@ -15,7 +15,7 @@ Update both in the same change:
 1. The skill file under `skills/`
 2. The "What this pack changes" index + skill headings in `README.md`
 
-Then sync this clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets`:
+Then sync this clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`):
 
 ```text
 node scripts/sync-workspace.mjs
@@ -62,9 +62,10 @@ pstack ideas folded inline (no folder; diff these too when upstream changes):
 | `figure-it-out` | CONVENTIONS **figure-it-out** |
 | `reflect` → `/correct` | CONVENTIONS **Repeated corrections** |
 | `unslop` | house style in `teach` and the ported skills |
+| poteto-mode `opening-a-pr.md` | BUILD-STANDING **PR briefing (Ship mode PR)** |
 | poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; build-verifier **Which of the two** |
 
-When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.9**; the snapshot is **0.15.17**, so those deltas are the next pull. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.17** (the snapshot); the next pull starts from there. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
 
 ### SimpleEnglish ([AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish))
 

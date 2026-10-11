@@ -21,6 +21,13 @@ Be careful about what you know and what you are inferring.
 
 Do not upgrade an inference to an observation. Do not invent a PR, a ticket, or a metric. A search that finds nothing is a finding. Record it.
 
+Phrasing follows the tier. "Because", "the reason is", "was designed to", "fixes", and "the team decided" need a citation in the same sentence. An inference says "appears", "likely", "suggests", or "is consistent with", and shows the chain: "Given A and B, C seems likely because D." Do not write "obviously", "clearly", "just", or "I think".
+
+- **The question's own guess is a candidate, not the answer.** "I assume it's for performance?" gets checked against the evidence like any other reading.
+- **Sources that disagree both go in the answer**, each cited. Do not pick the tidier one.
+- **Code is not evidence of its own intent.** A function name or a style choice shows what, not why.
+- **Do not retrofit a clean reason onto messy history.** A consistent pattern may be copy-paste. No mention of a concern is not proof there was none.
+
 ## 1. Understand the question
 
 The **target** is a chunk of code, a pattern, a feature, or a named decision. The **question** is rationale, a tradeoff, an edge case, an external constraint, dead code, or a history sweep.
@@ -34,7 +41,10 @@ Before any wider search, collect:
 - File paths and line ranges
 - Key symbols
 - The last commits that touched the target (`git blame`, `git log --follow`, `git log --oneline`)
-- PR numbers from merge subjects (`(#1234)`) and, for substantive commits, `gh pr view`
+- PR numbers from merge subjects (`(#1234)`; `git log -1 --format=%B <commit>` when the subject does not show one) and, for substantive commits, `gh pr view <n> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. Reviews and comments usually hold the real reason.
+- Ticket IDs named in commit messages and PR bodies. They are the way into the issue tracker if the question needs it.
+
+When blame lands on a move or a reformat, find the commit that introduced the text: `git log -S '<exact string>' -- <file>` (or `-G '<regex>'`). A squash-merged PR loses its branch commits; read the PR body and reviews instead. Bot commits (Dependabot, Renovate, backports) carry no motive; skip them. For a copied pattern, find where it first appeared and ask why there.
 
 Pass that anchor to every source you open.
 
@@ -66,6 +76,8 @@ Defensive code (null checks, retries, timeouts, rate limits, feature flags, egre
 ## 4. Synthesize
 
 Write the answer yourself from the evidence. Spot-check citations against the commit, the PR, or the tool output you actually retrieved.
+
+Before you answer, check every claim under what you found: it has a citation, or it moves to inference or hypotheses. If what you don't know is empty, look again. Historical questions almost always have gaps.
 
 ## 5. Present
 

@@ -11,6 +11,17 @@
  *   node scripts/sync-workspace.mjs --dest <dir>    # + any extra skills root (repeatable)
  *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
  *   node scripts/sync-workspace.mjs --no-vendor     # skip the pinned Matt + SimpleEnglish snapshots
+ *   node scripts/sync-workspace.mjs --no-personal   # skip mirroring personal skills across user roots
+ *   node scripts/sync-workspace.mjs --no-rules      # skip each product repo's rules generator
+ *
+ * One command for every agent (Claude, Cursor, VS Code / Copilot, Grok, Codex, ...):
+ *   1. pack skills (vendored + this overlay + swarm) -> user roots + each repo's skill dirs
+ *   2. each repo's own skills (skill_targets `own: [...]`) -> that repo's other skill dirs
+ *   3. personal skills (in a user root, not from a pack) -> the other user roots and every
+ *      repo skill dir, so a cloud session with no home folder still has them
+ *   4. each repo's rules generator (skill_targets `rules: "<command>"`, run in that repo)
+ * Steps 2 and 3 write a marker file (.synced-by-sync-workspace) and only ever replace
+ * a folder that carries it; a folder another installer owns is left alone.
  *
  * Vendored packs (vendor/<pack>/skills/<skill>, private clone only; the public snapshot
  * leaves vendor/ out): pinned, unedited copies of Matt's pack and SimpleEnglish
@@ -81,6 +92,8 @@ const argv = process.argv.slice(2);
 const EXTRA_DESTS = []; // { dir, box }
 let SYNC_SWARM = true;
 let SYNC_VENDOR = true;
+let SYNC_PERSONAL = true;
+let SYNC_RULES = true;
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
@@ -88,12 +101,16 @@ for (let i = 0; i < argv.length; i++) {
   else if (a.startsWith('--dest=')) EXTRA_DESTS.push({ dir: path.resolve(a.slice('--dest='.length)), box: false });
   else if (a === '--no-swarm') SYNC_SWARM = false;
   else if (a === '--no-vendor') SYNC_VENDOR = false;
+  else if (a === '--no-personal') SYNC_PERSONAL = false;
+  else if (a === '--no-rules') SYNC_RULES = false;
   else if (a === '-h' || a === '--help') {
-    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor]');
+    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
+    console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
+    console.log('  --no-rules     skip each product repo\'s rules generator (skill_targets rules:)');
     console.log('  UMBRELLA_SWARM=<folder>    pick the swarm companion sibling explicitly');
     console.log('  UMBRELLA_OVERLAY=<folder>  pick the private overlay sibling explicitly');
     process.exit(0);
@@ -188,7 +205,8 @@ function loadProjectConfig() {
 function parseSkillTargets(raw) {
   // Extremely small parser for:
   //   skill_targets:
-  //     - { name: Foo, dirs: [.cursor/skills] }
+  //     - { name: Foo, dirs: [.cursor/skills], own: [.grok/skills], rules: "node scripts/x.mjs" }
+  // own and rules are optional.
   const targets = [];
   const block = raw.match(/skill_targets:\s*\n((?:[ \t]+-.+\n?)+)/);
   if (!block) {
@@ -200,7 +218,9 @@ function parseSkillTargets(raw) {
     if (!m) continue;
     const name = m[1].trim();
     const dirs = m[2].split(',').map((s) => s.trim()).filter(Boolean);
-    targets.push({ repo: name, dirs });
+    const own = (line.match(/own:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const rules = line.match(/rules:\s*"([^"]*)"/)?.[1] || null;
+    targets.push({ repo: name, dirs, own, rules });
   }
   return targets;
 }
@@ -425,6 +445,129 @@ if (hasPrivate) {
   }
 }
 
+// ---------- steps 2-4: repo-own skills, personal skills, rules ----------
+// A copy this script made carries MIRROR_MARKER. Only a missing folder or one that
+// carries the marker (or the old sync:claude-skills marker) is ever replaced.
+const MIRROR_MARKER = '.synced-by-sync-workspace';
+const LEGACY_MARKERS = ['.synced-by-sync-claude-skills'];
+const packOwned = new Set([
+  ...OVERLAY_SKILLS,
+  ...VENDOR_SKILLS.map((v) => v.name),
+  ...(swarmRoot && SYNC_SWARM ? listSwarmSkills(swarmRoot) : []),
+]);
+const mirrorExclude = new Set(
+  (cfgRaw.match(/mirror_exclude:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean),
+);
+let failures = 0;
+
+function skillNames(root) {
+  if (!existsSync(root)) return [];
+  return readdirSync(root, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(path.join(root, e.name, 'SKILL.md')))
+    .map((e) => e.name);
+}
+function isMirrorCopy(dir) {
+  return [MIRROR_MARKER, ...LEGACY_MARKERS].some((m) => existsSync(path.join(dir, m)));
+}
+function mirrorSkill(from, to, note) {
+  if (existsSync(to) && !isMirrorCopy(to)) return false; // another installer owns it
+  rmSync(to, { recursive: true, force: true });
+  cpSync(from, to, { recursive: true, dereference: true });
+  for (const m of LEGACY_MARKERS) rmSync(path.join(to, m), { force: true });
+  writeFileSync(path.join(to, MIRROR_MARKER), `Copied by sync-workspace.mjs from ${note}. Edit the source, not this copy.\n`);
+  return true;
+}
+
+// 2. Each product repo's own skills -> its other skill dirs.
+const refreshed = new Set(); // resolved dest folders written or confirmed this run
+for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
+  const repoRoot = path.join(workspaceRoot, repo);
+  if (!own.length || !existsSync(repoRoot)) continue;
+  const seen = new Set();
+  const copied = [];
+  const kept = [];
+  for (const srcRel of own) {
+    for (const name of skillNames(path.join(repoRoot, srcRel))) {
+      if (seen.has(name) || packOwned.has(name) || mirrorExclude.has(name)) continue;
+      const from = path.join(repoRoot, srcRel, name);
+      if (isMirrorCopy(from)) continue; // a copy this script made, not a source
+      seen.add(name);
+      for (const rel of dirs) {
+        if (path.resolve(repoRoot, rel) === path.resolve(repoRoot, srcRel)) continue;
+        const to = path.join(repoRoot, rel, name);
+        if (mirrorSkill(from, to, `${repo}/${srcRel}/${name}`)) { copied.push(`${rel}/${name}`); refreshed.add(path.resolve(to)); }
+        else kept.push(`${rel}/${name}`);
+      }
+    }
+  }
+  console.log(`  own   ${repo}: ${copied.length} copied from ${own.join(', ')}${kept.length ? `; left alone (another installer): ${kept.join(', ')}` : ''}`);
+}
+
+// 3. Personal skills: any original skill in a user root (not a pack skill, not a copy)
+//    goes to the other user roots and to every repo skill dir.
+const repoSkillDirs = WORKSPACE_TARGETS.flatMap(({ repo, dirs }) =>
+  existsSync(path.join(workspaceRoot, repo)) ? dirs.map((rel) => path.join(workspaceRoot, repo, rel)) : [],
+);
+const repoOwnNames = new Set(
+  WORKSPACE_TARGETS.flatMap(({ repo, own }) => own.flatMap((rel) => skillNames(path.join(workspaceRoot, repo, rel)))),
+);
+if (SYNC_PERSONAL) {
+  const roots = USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel));
+  const sources = new Map(); // name -> first original (non-copy) folder
+  for (const root of roots) {
+    for (const name of skillNames(root)) {
+      if (packOwned.has(name) || mirrorExclude.has(name) || sources.has(name)) continue;
+      const dir = path.join(root, name);
+      if (!isMirrorCopy(dir)) sources.set(name, dir);
+    }
+  }
+  let n = 0;
+  for (const [name, from] of sources) {
+    const dests = [...roots, ...(repoOwnNames.has(name) ? [] : repoSkillDirs)];
+    for (const root of dests) {
+      const to = path.join(root, name);
+      if (path.resolve(to) === path.resolve(from)) continue;
+      if (mirrorSkill(from, to, label(from))) { n++; refreshed.add(path.resolve(to)); }
+    }
+  }
+  console.log(`Personal skills: ${sources.size} found, ${n} copies written to user roots and repo skill dirs (--no-personal skips)`);
+} else {
+  console.log('Personal skills: (skipped, --no-personal)');
+}
+
+// Copies this script made earlier whose source is gone from this machine. Not deleted:
+// on a machine without your personal skills (a cloud session) that would wipe them.
+const stale = [];
+for (const root of [...USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel)), ...repoSkillDirs]) {
+  for (const name of skillNames(root)) {
+    const dir = path.join(root, name);
+    if (isMirrorCopy(dir) && !refreshed.has(path.resolve(dir)) && !packOwned.has(name)) stale.push(label(dir));
+  }
+}
+if (stale.length && SYNC_PERSONAL) {
+  console.log(`  stale ${stale.length} copied skill(s) whose source is not on this machine (left in place; delete by hand if retired):`);
+  for (const s of stale) console.log(`    ${s}`);
+}
+
+// 4. Each product repo's rules generator.
+for (const { repo, rules } of WORKSPACE_TARGETS) {
+  const repoRoot = path.join(workspaceRoot, repo);
+  if (!rules || !existsSync(repoRoot)) continue;
+  if (!SYNC_RULES) {
+    console.log(`  rules ${repo}: (skipped, --no-rules)`);
+    continue;
+  }
+  const r = spawnSync(rules, { cwd: repoRoot, shell: true, encoding: 'utf8' });
+  const out = `${r.stdout || ''}${r.stderr || ''}`.trim().split('\n').filter(Boolean);
+  if (r.status === 0) {
+    console.log(`  rules ${repo}: ${out.at(-1) || 'ok'}`);
+  } else {
+    failures++;
+    console.error(`  rules ${repo}: FAILED (${rules}, exit ${r.status})`);
+    for (const l of out.slice(-10)) console.error(`    ${l}`);
+  }
+}
+
 // check:public-safe: turn the local pre-push gate on in every sibling clone that ships it.
 // Public repos carry .githooks/pre-push + scripts/check-public-safe.mjs; the denylist stays
 // private in the overlay (public-safe/denylist.txt). No CI: this runs on the pushing machine.
@@ -461,7 +604,12 @@ if (publicSafeRepos.length > 0) {
   }
 }
 
-console.log(`Done. Overlay${swarmRoot ? ' + swarm pack' : ''} copied; other skills were left in place.`);
+if (failures) {
+  console.error(`Done with ${failures} failure(s) above.`);
+  process.exitCode = 1;
+} else {
+  console.log(`Done. Overlay${swarmRoot ? ' + swarm pack' : ''} copied; other skills were left in place.`);
+}
 if (!hasPrivate) {
   console.log('Tip: clone your private overlay next to this pack to layer project.yml + standing rules.');
 }

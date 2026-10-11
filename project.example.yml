@@ -86,5 +86,11 @@ repos:
 
 workspace:
   overlay_pack: <private-overlay-repo-name>   # sibling clone; sync layers it on top
+  # mirror_exclude: [<personal-skill-name>]   # personal skills sync must never copy
   skill_targets:
-    - { name: <primary-repo>, dirs: [.cursor/skills] }   # add .grok/skills / .claude/skills when your coding agent loads those first
+    # dirs: every skill folder sync fills in that repo (commit them; cloud agents read only the checkout).
+    #   One source + one copy covers every agent: e.g. [.grok/skills, .claude/skills]
+    #   (.claude/skills is read by Claude Code, Cursor and VS Code; Grok reads .grok first).
+    # own: the repo's own skill folders, mirrored into its other dirs (optional).
+    # rules: the repo's agent-rules generator, run by the same sync (optional).
+    - { name: <primary-repo>, dirs: [.grok/skills, .claude/skills], own: [.grok/skills], rules: "node scripts/sync-agent-rules.mjs" }

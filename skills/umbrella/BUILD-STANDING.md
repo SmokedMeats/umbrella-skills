@@ -69,16 +69,16 @@ Nesting: phase child may spawn explore/bash; it must not spawn another umbrella 
 
 **Lanes when a Build loop empties.** Set that ticket’s Project Status from what is actually left ([PROJECTS.md](PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Before setting a terminal or leftover lane from an emptied Build loop, require a **build-verifier** Pass (inline or Task) for that ticket. `/code-review` in-scope findings still mean the loop is not empty. Phone-visible leftover still follows [DEVICE-QA.md](DEVICE-QA.md); Desk-device advance after a crawl follows Subagents §8 (verifier Pass), not the device-qa child’s own Project write. Ready to merge is one of those lanes. A production switch is GoLive. A desk check stays Desk device, and moves to GoLive when that check is done if the switch is still off. The lane and the labels must agree. Leftover lanes do not hold the next coding wave. **Ready to merge** holds dependents until the founder merges. Phone-visible work this pass cannot run (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) stays **Desk device** ([DEVICE-QA.md](DEVICE-QA.md)). Then crawl the next unblocked coding ticket. At the end of the house, walk every open ticket and correct any lane that still disagrees.
 
-**PR briefing (Ship mode PR).** The pull request body is a briefing. Put each section under a `##` heading, in this order, and drop a section that has nothing to say:
+**PR briefing (Ship mode PR).** The pull request body is a briefing. Put each section under a `##` heading, in this order, and drop a section that has nothing to say (except `## Scope`, which is always present):
 
 - `## Why` — the problem and the approach in one to three short sentences. No SHA list. No "based on main" preamble.
-- `## What changed` — one to three short bullets. Name a symbol or path only when it carries the change.
-- `## Scope` — what this PR covers and what it deliberately leaves out. Not a file list.
+- `## What changed` — one to three short bullets. Name a symbol or path only when it carries the change. For a rename or retarget, name both sides.
+- `## Scope` — always present. What this PR covers and what it deliberately leaves out. Not a file list.
 - `## Tradeoffs` — only a rejected alternative a reviewer would ask about.
 - `## Blast Radius` — one or two sentences on who or what the change touches, and why that is safe or risky.
 - `## Verification` — one to three bullets. Each names a real run and its outcome. A performance change reports one primary number with its unit as `before → after`. Put runs, range, and the limiter in a linked note. Do not report a number that skipped **explain-the-number**.
 
-Do not use `## Summary` or `## Test plan`. Keep the body under 8 KB. The one verification receipt stays under `## Verification`. Review-round history and raw harness output go in comments or linked notes, not the body. Open the PR ready, not draft. Do not merge from this section.
+Do not use `## Summary` or `## Test plan`. Keep the body under 8 KB. The one verification receipt stays under `## Verification`. Review-round history and raw harness output go in comments or linked notes, not the body. A commit body does not restate its subject. Open the PR ready, not draft. Do not merge from this section.
 
 **Push the unit (Ship mode PR).** After each verifiable unit on that ticket, push the PR branch with hooks on. Exception: the merge-time recheck push goes with the pre-push hook off (`HUSKY=0`), because `commands.pr_ready` just passed on that head ([DELEGATION.md](DELEGATION.md) **Recheck at merge**). A WIP commit on that branch is allowed. Do not force-push a shared branch. Do not push `<dev-branch>`, Preview, or `master`.
 
