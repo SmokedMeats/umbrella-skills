@@ -57,6 +57,18 @@ When cursor/plugins ships pstack changes, diff only those skill folders we porte
 
 On notice, or on a periodic review. Open a PR with the cherry-picks. A human (or Chief of Staff) merges.
 
+## Shared with umbrella-swarm
+
+umbrella-swarm (sibling pack) calls this pack's skills by name and keeps no copy of their rules: the heavy gate, test scope and kill handling (BUILD-STANDING), the memory check, sibling contract and merge recheck (DELEGATION), review depth and receipt fields (build-verifier). Change those here; swarm follows.
+
+These files are byte-identical in both packs. Change them here first, then copy them to umbrella-swarm in a PR there:
+
+- `project.example.yml`
+- `scripts/check-public-safe.mjs`
+- `.githooks/pre-push`
+
+When an issue here has a swarm companion, land this side first, then point the swarm skills at it.
+
 ## What belongs where
 
 - **README** — for people who install the overlay.

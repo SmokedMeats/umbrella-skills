@@ -20,7 +20,9 @@ After implement product lands on a ticket, **before** parent closes or sets left
 May run as: (1) an inline receipt in a session that did not write the ticket (the conductor for a child's ticket), or (2) separate
 readonly Task / Grok **Build Verifier**. Never the session that wrote the ticket. One verifier per ticket, never one pass over the wave's combined diff. One truth per ticket — do not run both and pick the softer verdict.
 
-Again at merge: if the branch was merged or rebased onto a newer `<dev-branch>` since this verdict, the parent compares patch-id. Same patch-id → the verdict holds. Different → a fresh verifier run on the new head.
+**Which of the two.** When the ticket's whole check is one cheap command (docs-only, config, a copy change), use (1): the conductor runs it and audits the receipt inline. A separate agent whose whole job is re-running one command is ceremony. Anything with behavior to judge gets (2). When the harness lets you pick the model, run (2) on a different model family from the writer; a verifier on the writer's model shares its blind spots (pstack `orchestrate.md` **Verification**).
+
+Again at merge: if the branch was merged or rebased onto a newer `<dev-branch>` since this verdict, the parent applies the patch-id rule ([DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**): the verdict holds unless the code changed.
 
 ## Packet in (required)
 
