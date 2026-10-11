@@ -105,6 +105,6 @@ When a branch is **not this pack** (v1 shipped without it, still wanted): file `
 
 ## Gaps
 
-The gap list from `/umbrella` **Pre-grill** is part of the design tree. Every gap is a frontier item until it is **answered**, **deferred** (owner + ticket), or **cut** (reason). Do not confirm the lock while one is open or vague (`later`, `TBD`, no owner). If the list was never written, stop and run the pre-grill doc pass before the first question.
+The gap list from umbrella [PRE-GRILL.md](../umbrella/PRE-GRILL.md) is part of the design tree. Every gap is a frontier item until it is **answered**, **deferred** (owner + ticket), or **cut** (reason). Do not confirm the lock while one is open or vague (`later`, `TBD`, no owner). If the list was never written, stop and run the pre-grill doc pass before the first question.
 
 The session ends only when the **whole live batch** is empty, every gap is closed, and the user confirms the shared understanding. That confirm is the lock. Then **next is `/to-spec` immediately**. Do not wait for them to ask. Do not implement yet. `/umbrella` continues into `/to-spec` in this session. Do not start `/to-tickets` or `/implement` until `/to-spec` has published.

@@ -21,7 +21,7 @@ Then sync this clone into every IDE and every product workspace repo listed in `
 node scripts/sync-workspace.mjs
 ```
 
-That overwrites only the overlay skill folders listed in `scripts/sync-workspace.mjs` (planning overlays, `umbrella-mode`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, and `blast-radius`). It writes user-global `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, and `~/.copilot` (each `<root>/skills`), plus each sibling repo’s `.cursor/skills`. It writes product repos only at the `dirs` each `skill_targets` row lists (for example `.cursor/skills`, `.grok/skills`, `.claude/skills`); other product-only skills in those folders stay. On the Grok Bot box add `--box` (box skills root `/home/box/agent-data/workflows`); any other skills root: `--dest <dir>`. With the private overlay present, every one of those roots gets `project.yml` + `standing-product-rules.md` next to `umbrella/PROJECT-CONFIG.md`.
+That overwrites only the overlay skill folders listed in `scripts/sync-workspace.mjs` (planning overlays, `umbrella-mode`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`). It writes user-global `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, and `~/.copilot` (each `<root>/skills`), plus each sibling repo’s `.cursor/skills`. It writes product repos only at the `dirs` each `skill_targets` row lists (for example `.cursor/skills`, `.grok/skills`, `.claude/skills`); other product-only skills in those folders stay. On the Grok Bot box add `--box` (box skills root `/home/box/agent-data/workflows`); any other skills root: `--dest <dir>`. With the private overlay present, every one of those roots gets `project.yml` + `standing-product-rules.md` next to `umbrella/PROJECT-CONFIG.md`.
 
 After you add or edit one of those folders, run the sync script in the same change before you call the pack installed.
 
@@ -43,7 +43,7 @@ This pack is the SSOT. Never auto-merge Matt or pstack.
 
 Target Matt version: **v1.3.1**. Unedited Matt skills update by reinstalling Matt's pack (`npx skills@latest add mattpocock/skills`) on its own schedule. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
 
-Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, and `blast-radius`.
+Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
 Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
 
@@ -51,7 +51,28 @@ Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Shi
 
 `how`, `why`, `teach`, `principles`, and `blast-radius` are adapted copies inside this overlay. The upstream folders are under [pstack](https://github.com/cursor/plugins/tree/main/pstack). Do not install poteto-mode as a second conductor.
 
-When cursor/plugins ships pstack changes, diff only those skill folders we ported. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+pstack ideas folded inline (no folder; diff these too when upstream changes):
+
+| pstack skill | Lives here as |
+| --- | --- |
+| `principle-*` (24 skills) | one index, `principles` |
+| `show-me-your-work` | umbrella [CONVENTIONS.md](skills/umbrella/CONVENTIONS.md) **Decision trail** |
+| `no-comments` | CONVENTIONS **Comment cleanup**, `/implement` **Comment cleanup** |
+| `recall` | CONVENTIONS **Recall** (umbrella-swarm also ships a `recall` skill) |
+| `figure-it-out` | CONVENTIONS **figure-it-out** |
+| `reflect` → `/correct` | CONVENTIONS **Repeated corrections** |
+| `unslop` | house style in `teach` and the ported skills |
+| poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; build-verifier **Which of the two** |
+
+When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+
+### SimpleEnglish ([AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish))
+
+`/simple-english` is a third-party pack (MIT), installed next to Matt's: `npx skills@latest add https://github.com/AminBlg/SimpleEnglish --skill simple-english`. Not Matt's, not copied here. `/umbrella` routes user-facing prose to it. Update it by reinstalling.
+
+### pit-of-success and zero-tech-debt
+
+Owned here. They were moved in from a product repo's `.claude/skills`, where they were the only copy and other clones never got them. Edit them in this pack; sync installs them.
 
 ### Cadence
 

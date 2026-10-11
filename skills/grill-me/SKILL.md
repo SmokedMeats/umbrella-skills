@@ -17,7 +17,7 @@ No umbrella → `/grilling` as a single tree. The pre-grill gap list is still re
 
 ## Pre-grill gate
 
-`/umbrella` **Pre-grill** must hand you a written gap list before the first question. If this session has no gap list, do not start the interview. Read that section and do the doc pass, or return to `/umbrella`.
+umbrella [PRE-GRILL.md](../umbrella/PRE-GRILL.md) must hand you a written gap list before the first question. If this session has no gap list, do not start the interview. Read that section and do the doc pass, or return to `/umbrella`.
 
 Refuse the lock while any gap is open or vague. A gap is closed only when it is **answered**, **deferred** (owner + ticket), or **cut** (reason). `later` and `TBD` are open.
 

@@ -38,7 +38,7 @@ Cross-link siblings in the body. Do **not** put satellite cards on the primary b
 
 ## Audit filing
 
-`/audit` and `/umbrella` file on **this clone’s repo**. Route findings to the repo that owns the code (primary vs website vs device companions per `repos[].kind`). Do not pile satellite findings onto the primary board as children of unrelated epics.
+`/audit` (a product-repo workflow, when installed) and `/umbrella` file on **this clone’s repo**. Route findings to the repo that owns the code (primary vs website vs device companions per `repos[].kind`). Do not pile satellite findings onto the primary board as children of unrelated epics.
 
 ## Views (do not invent more)
 

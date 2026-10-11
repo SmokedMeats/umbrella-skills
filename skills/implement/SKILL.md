@@ -21,7 +21,7 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Ship notes in the user reply follow `/simple-english` when that skill is installed. Follow [Build standing law](../umbrella/BUILD-STANDING.md).
 
-**DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See `/umbrella` **DESIGN-IT-TWICE**.
+**DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See umbrella [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **DESIGN-IT-TWICE**.
 
 **Orient (optional, non-blocking).** Before reading code for a ticket. Only when `commands.graph_freshness` is set: run it from the repo root. Exit 0 means the local code graph is fresh; then run `graphify query "<ticket area>" --budget 1500` (or `path` / `explain`) to find the files, then read them. Key unset, non-zero exit, or no `graphify` CLI → skip silently and use `rg` / Read. Never build or rebuild the graph inside a task.
 
@@ -211,7 +211,7 @@ The house is a tree, not one wave. After each ticket **closes**, **moves to a le
 
 Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is still open. T3 later leftover-lanes and unlocks T5/T6. Spawn T5 and T6 in this session.
 
-**Decision trail.** A multi-ticket crawl, or a **House queue**, keeps a trail as it goes: `decisions.tsv` in the house notes, or short bullets in `project.yml` `paths.umbrella_cursor`. Default on. Do not wait on the founder. One house at a time still holds. **Window full** points at the path. See `/umbrella` **Decision trail**.
+**Decision trail.** A multi-ticket crawl, or a **House queue**, keeps a trail as it goes: `decisions.tsv` in the house notes, or short bullets in `project.yml` `paths.umbrella_cursor`. Default on. Do not wait on the founder. One house at a time still holds. **Window full** points at the path. See umbrella [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Decision trail**.
 
 This session stays conductor across waves of **this** house. Completion of this house: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), a Founder pause blocks the session, the user stops, or **Window full**. When `/umbrella` **House queue** has a next house, that house starts after **End of house**. Do not pull its tickets from here. Filing tickets is not completion.
 
@@ -258,7 +258,10 @@ Obey **Ship mode** above. Mode A: same worktree on <dev-branch>. Mode B: one tic
 7. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → **Comment cleanup** → `/code-review` two-axis on the ticket → remainder back here). Its `/build-verifier` is a child that did not write the ticket, one per ticket. When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave, and do not run one combined pre-merge check over the wave's diff. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
 8. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave of **this** house. Repeat until **Crawl** says this house is done. A **House queue** with a next house returns to `/umbrella` after **End of house**. Do not pull that house's tickets here.
 
-### Child rules (paste into every spawn)
+### Child rules
+
+One copy, here. Every spawn carries them by reference: name this section and [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) by path in the packet's `CHILD_RULES`; a local child (in-process, or a Cursor Task on this checkout) reads them. Paste the list verbatim only for a child that cannot read installed skills (a sibling or cloud session; [DELEGATION.md](../umbrella/DELEGATION.md) **Sibling contract**).
+
 
 - Edit only your exclusive globs. Leave every other untracked file on disk.
 - Frozen shared files are consume-only. Ask the conductor if you need an append.

@@ -62,6 +62,8 @@ const OVERLAY_SKILLS = [
   'teach-me',
   'principles',
   'blast-radius',
+  'pit-of-success',
+  'zero-tech-debt',
 ];
 
 const USER_SKILL_DIRS = ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills', '.copilot/skills'];
@@ -300,7 +302,8 @@ for (const { dir: dest, box } of EXTRA_DESTS) {
   console.log(`  extra ${label(dest)}`);
 }
 
-// Swarm companion: user roots + --box/--dest roots (not product repo skill_targets).
+// Swarm companion: every root the overlay went to (user roots, product repo skill_targets, --box/--dest),
+// so a cloud coordinator or sibling working in a product checkout can read the swarm skills too.
 // Runs before the private skills-overlay merge so the overlay can patch swarm skills too.
 const swarmRoot = SYNC_SWARM ? findSwarmSibling() : null;
 if (!SYNC_SWARM) {
@@ -313,10 +316,7 @@ if (!SYNC_SWARM) {
   const names = all.filter((n) => !OVERLAY_SKILLS.includes(n));
   console.log(`Swarm pack: ${label(swarmRoot)} (${names.join(', ')})`);
   if (clash.length) console.log(`  swarm WARNING: skipped ${clash.join(', ')} (same name as an overlay skill; v1 wins)`);
-  const swarmDests = [
-    ...USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel)),
-    ...skillDests.filter((d) => EXTRA_DESTS.some((e) => path.resolve(e.dir) === path.resolve(d))),
-  ];
+  const swarmDests = [...new Set(skillDests.map((d) => path.resolve(d)))];
   for (const dest of swarmDests) {
     copySwarmInto(dest, swarmRoot, names);
     console.log(`  pack  ${label(dest)}: swarm skills`);

@@ -182,11 +182,9 @@ TICKET         # + body + ACs
 RULE_CARD      the spec's rule card (or its link) + harness command; brief stays near 2 KB
 EXCLUSIVES     file globs this kid may touch
 FROZEN_SHARED  paths kid must not edit (conductor owns)
-CHILD_RULES    no git; no merge; seam test; no type workarounds; Ship mode read-only;
-               self-proof = package `verify` for each touched package + tests for touched files and
-               their direct callers, one file at a time, no directory sweep (not `commands.pr_ready`);
-               heavy checks through the slotted gate; run checks to the end; 137/143 = re-run
-               (BUILD-STANDING **Heavy checks through the gate**, **Tests**)
+CHILD_RULES    path: implement/SKILL.md **Child rules** + umbrella/BUILD-STANDING.md (the child reads
+               them; one copy). Sibling / cloud child without installed skills: paste that section
+               verbatim instead (Sibling contract 1)
 SHARED_HELPERS existing helpers for this wave's kind of change (retry, decode, client, fixture)
                + any the conductor wrote first for this wave; use them, never write a second copy
 BUILD_VERIFIER separate          (a child that did not write this ticket; the writer's own block is not the verdict)
@@ -403,6 +401,7 @@ Why: 12 in-process children in one 15 GB container ran about 5 type checks at on
 A sibling session has no shared filesystem and cannot message the parent back.
 
 1. **Packet carries the full context.** Ticket body and ACs, the rule card text, exclusives, frozen shared, SHARED_HELPERS, child rules, and the commands. Link a file only when it is in the repo at the commit the sibling checks out. Paste anything else.
+   **Named skills must be readable where the sibling runs.** Either its environment installs the packs (Matt, umbrella-skills, umbrella-swarm, SimpleEnglish) in its setup, or the product repo commits the synced skill folders (`project.yml` `workspace.skill_targets`) at the commit it checks out. When neither holds, paste the named *sections* the child needs (implement **Child rules**, the BUILD-STANDING sections, the rule card), never a whole `SKILL.md`, and say in the packet that you did.
 2. **The sibling pushes its own ticket branch** (`TICKET_BRANCH`, one per ticket). Never the PR branch, never `<dev-branch>`, Preview, or `master`. That push is its only git write.
 3. **The parent reads the result on a scheduled check-in** (`send_later`), via `get_session` and `list_events`. It does not wait in the turn. A finished sibling's last message is its receipt.
 4. **The parent fetches `TICKET_BRANCH`** and lands only that ticket's exclusive files, the same as a local child's report (one commit per ticket on `<dev-branch>` or that ticket's PR branch).
