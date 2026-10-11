@@ -47,7 +47,7 @@ On a cluster of related grilling tickets, three gaps showed up for our pack:
 | Installed copies | What `sync-workspace.mjs` (or `npx skills add`) writes into each agent's skills folder: `~/.claude/skills`, `~/.cursor/skills`, `~/.grok/skills`, `~/.agents/skills`, `~/.copilot/skills`. VS Code (Copilot agent mode) reads `~/.copilot/skills`, `~/.claude/skills` and `~/.agents/skills` | No; re-run sync |
 | Product-repo copies | The same installed copies, written into each product repo's `workspace.skill_targets` folders (for example `.cursor/skills`, `.claude/skills`, `.grok/skills`) and **committed**, because a cloud agent only sees what its checkout has. VS Code also reads a repo's `.claude/skills`, `.agents/skills` and `.github/skills` | No; re-run sync and commit |
 
-Which folder each agent reads, so one source plus one copy covers them all:
+Which folder each agent reads. Sync gives each agent its own full copy (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) and keeps them identical, so no agent depends on another's folder:
 
 | Agent | Repo skills | User skills |
 | --- | --- | --- |
@@ -85,12 +85,12 @@ node scripts/sync-workspace.mjs
 
 That copies the overlay into `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, `~/.copilot` (each `<root>/skills`, created when missing), and each sibling product repo listed in `project.yml` `workspace.skill_targets` (defaults to none until you add a config). When a private overlay sibling is present, sync also layers `project.yml`, `skills-overlay/**`, and standing product rules.
 
-Every skills root sync writes ends up with the same three config files: `project.yml` and `standing-product-rules.md` at the root (from the private overlay) and `umbrella/PROJECT-CONFIG.md` (ships in this pack). Product repos also get `docs/agents/project.yml` + `docs/agents/standing-product-rules.md`; commit every `skill_targets` dir in the product repo (for example `.grok/skills` + `.claude/skills`) + `docs/agents` so cloud clones get them too. Those folders are installed copies: re-run sync and commit after a pack changes; never edit them in the product repo.
+Every skills root sync writes ends up with the same three config files: `project.yml` and `standing-product-rules.md` at the root (from the private overlay) and `umbrella/PROJECT-CONFIG.md` (ships in this pack). Product repos also get `docs/agents/project.yml` + `docs/agents/standing-product-rules.md`; commit every `skill_targets` dir in the product repo (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) + `docs/agents` so cloud clones get them too. Those folders are installed copies: re-run sync and commit after a pack changes; never edit them in the product repo.
 
 | Target | How |
 | --- | --- |
 | User skill roots `~/.grok/skills`, `~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` (VS Code reads the last three) | always (Windows: `%USERPROFILE%\.copilot\skills`) |
-| Each product repo's `skill_targets` folders (for example `.grok/skills` + `.claude/skills`) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| Each product repo's `skill_targets` folders (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
 | Each product repo's own skills (`own: [...]`) into that repo's other `skill_targets` folders | automatic when the row lists `own`; copies carry `.synced-by-sync-workspace`, and a folder another installer owns is left alone |
 | Personal skills (an original in one user root that no pack ships) into the other user roots and every repo `skill_targets` folder, so cloud sessions have them too | automatic; `--no-personal` skips; `workspace.mirror_exclude` lists names never copied; copies whose source is gone are listed, never deleted |
 | Each product repo's agent-rules generator (`rules: "<command>"`, run in that repo: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules`, Copilot instructions, …) | automatic when the row lists `rules`; `--no-rules` skips; a failure makes sync exit non-zero |

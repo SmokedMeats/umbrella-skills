@@ -508,8 +508,15 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
 const repoSkillDirs = WORKSPACE_TARGETS.flatMap(({ repo, dirs }) =>
   existsSync(path.join(workspaceRoot, repo)) ? dirs.map((rel) => path.join(workspaceRoot, repo, rel)) : [],
 );
+// Originals only: a copy this script left in an own folder is not a repo skill.
 const repoOwnNames = new Set(
-  WORKSPACE_TARGETS.flatMap(({ repo, own }) => own.flatMap((rel) => skillNames(path.join(workspaceRoot, repo, rel)))),
+  WORKSPACE_TARGETS.flatMap(({ repo, own }) =>
+    own.flatMap((rel) =>
+      skillNames(path.join(workspaceRoot, repo, rel)).filter(
+        (name) => !isMirrorCopy(path.join(workspaceRoot, repo, rel, name)),
+      ),
+    ),
+  ),
 );
 if (SYNC_PERSONAL) {
   const roots = USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel));

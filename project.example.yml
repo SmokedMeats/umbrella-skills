@@ -89,8 +89,8 @@ workspace:
   # mirror_exclude: [<personal-skill-name>]   # personal skills sync must never copy
   skill_targets:
     # dirs: every skill folder sync fills in that repo (commit them; cloud agents read only the checkout).
-    #   One source + one copy covers every agent: e.g. [.grok/skills, .claude/skills]
-    #   (.claude/skills is read by Claude Code, Cursor and VS Code; Grok reads .grok first).
+    #   Give each agent its own full copy, kept identical by sync: e.g. [.grok/skills, .claude/skills, .cursor/skills]
+    #   (VS Code reads .claude/skills; add .agents/skills for Codex).
     # own: the repo's own skill folders, mirrored into its other dirs (optional).
     # rules: the repo's agent-rules generator, run by the same sync (optional).
-    - { name: <primary-repo>, dirs: [.grok/skills, .claude/skills], own: [.grok/skills], rules: "node scripts/sync-agent-rules.mjs" }
+    - { name: <primary-repo>, dirs: [.grok/skills, .claude/skills, .cursor/skills], own: [.grok/skills], rules: "node scripts/sync-agent-rules.mjs" }
