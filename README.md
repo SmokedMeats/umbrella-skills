@@ -38,11 +38,22 @@ On a cluster of related grilling tickets, three gaps showed up for our pack:
 
 `/umbrella` is the conductor. It does not reimplement those skills.
 
+## Where skills live
+
+| Layer | What | Edit it? |
+| --- | --- | --- |
+| Source repos | This pack (umbrella-skills), [umbrella-swarm](https://github.com/SmokedMeats/umbrella-swarm), and the outside packs it depends on: [mattpocock/skills](https://github.com/mattpocock/skills) and [AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) | Only our own two. Outside packs are never edited; a house change to a Matt skill is an overlay skill here |
+| Pinned backups | `vendor/` in the **private** clone: unedited snapshots of Matt v1.3.1 and SimpleEnglish with their MIT licenses ([vendor/README.md](vendor/README.md)). If an outside repo disappears, installs still work. The public snapshot leaves `vendor/` out | No; bump a pin per `vendor/README.md` |
+| Installed copies | What `sync-workspace.mjs` (or `npx skills add`) writes into each agent's skills folder: `~/.claude/skills`, `~/.cursor/skills`, `~/.grok/skills`, `~/.agents/skills`, `~/.copilot/skills`. VS Code (Copilot agent mode) reads `~/.copilot/skills`, `~/.claude/skills` and `~/.agents/skills` | No; re-run sync |
+| Product-repo copies | The same installed copies, written into each product repo's `workspace.skill_targets` folders (for example `.cursor/skills`, `.claude/skills`, `.grok/skills`) and **committed**, because a cloud agent only sees what its checkout has. VS Code also reads a repo's `.claude/skills`, `.agents/skills` and `.github/skills` | No; re-run sync and commit |
+
+An agent *references* a skill by name and reads that installed file when it needs it; a brief never pastes a skill's body (cloud exception: umbrella `DELEGATION.md` **Sibling contract**).
+
 ## Install
 
 Preferred order (you can skip this if you go straight to `/umbrella` — it runs the same check):
 
-1. Install [mattpocock/skills](https://github.com/mattpocock/skills) at **v1.3.1** (`npx skills@latest add mattpocock/skills`). Then run `/setup-matt-pocock-skills` once in each repo.
+1. Install [mattpocock/skills](https://github.com/mattpocock/skills) at **v1.3.1** (`npx skills@latest add mattpocock/skills`). Then run `/setup-matt-pocock-skills` once in each repo. From the private clone you can skip this step: `sync-workspace.mjs` installs the pinned copies in `vendor/`.
    Also install `/simple-english` from [AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) (MIT): `npx skills@latest add https://github.com/AminBlg/SimpleEnglish --skill simple-english`. `/umbrella` routes user-facing prose to it.
 2. Add this overlay. It overwrites the skills in the table below, adds `/umbrella` (plus companions), optional `/umbrella-mode`, `/build-verifier`, `/device-qa-agent`, `/device-qa-verifier`, and `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, `/blast-radius`, `/pit-of-success`, and `/zero-tech-debt`. Planning-spine overlays stay Matt-based. `/how`, `/why`, `/teach`, `/principles`, and `/blast-radius` are adapted from [poteto](https://github.com/poteto) / [pstack](https://github.com/cursor/plugins/tree/main/pstack), with house unslop. `/teach-me` is Matt's former `/teach`.
 
@@ -68,8 +79,9 @@ Every skills root sync writes ends up with the same three config files: `project
 
 | Target | How |
 | --- | --- |
-| User skill roots `~/.grok/skills`, `~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` | always (Windows: `%USERPROFILE%\.copilot\skills`) |
-| Each product repo's `.cursor/skills` + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| User skill roots `~/.grok/skills`, `~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` (VS Code reads the last three) | always (Windows: `%USERPROFILE%\.copilot\skills`) |
+| Each product repo's `skill_targets` folders (`.cursor/skills`, `.claude/skills`, …) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| Pinned Matt v1.3.1 + SimpleEnglish (`vendor/`) into every root above, before the overlay so same-named overlay skills win | automatic in the private clone; `--no-vendor` skips; the public clone has no `vendor/` (use the npx lines in step 1) |
 | Grok Bot box skills root `/home/box/agent-data/workflows` | `--box` (skipped when that folder's parent is missing; override with `UMBRELLA_BOX_SKILLS_ROOT`) |
 | Any other skills root | `--dest <dir>` (repeatable) |
 | umbrella-swarm skills (every `skills/*` folder of the sibling that ships `skills/swarm` + `skills/swarm-mode`) into every root above, product repos included | automatic when that sibling clone exists (`UMBRELLA_SWARM=<folder>` picks one; `--no-swarm` skips; a name shared with an overlay skill is skipped) |

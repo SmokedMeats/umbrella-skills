@@ -4,7 +4,7 @@ For people who edit this repo. Installers can ignore this file.
 
 ## Private remote vs public snapshot
 
-Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
+Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
 
 Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
 
@@ -41,7 +41,7 @@ This pack is the SSOT. Never auto-merge Matt or pstack.
 
 ### Matt ([mattpocock/skills](https://github.com/mattpocock/skills))
 
-Target Matt version: **v1.3.1**. Unedited Matt skills update by reinstalling Matt's pack (`npx skills@latest add mattpocock/skills`) on its own schedule. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
+Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited snapshot + MIT license; [vendor/README.md](vendor/README.md) **Bump a pin**). `sync-workspace.mjs` installs the pinned copy, so an upstream delete or rewrite never breaks an install. Public-clone users reinstall with `npx skills@latest add mattpocock/skills`. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
 
 Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
@@ -64,11 +64,11 @@ pstack ideas folded inline (no folder; diff these too when upstream changes):
 | `unslop` | house style in `teach` and the ported skills |
 | poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; build-verifier **Which of the two** |
 
-When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.9**; the snapshot is **0.15.17**, so those deltas are the next pull. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
 
 ### SimpleEnglish ([AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish))
 
-`/simple-english` is a third-party pack (MIT), installed next to Matt's: `npx skills@latest add https://github.com/AminBlg/SimpleEnglish --skill simple-english`. Not Matt's, not copied here. `/umbrella` routes user-facing prose to it. Update it by reinstalling.
+`/simple-english` is a third-party pack (MIT), installed next to Matt's. Pinned unedited in `vendor/simple-english/` and installed by sync; public-clone users run `npx skills@latest add https://github.com/AminBlg/SimpleEnglish --skill simple-english`. Not Matt's, and never edited here. `/umbrella` routes user-facing prose to it. Update it by bumping the pin ([vendor/README.md](vendor/README.md)).
 
 ### pit-of-success and zero-tech-debt
 
@@ -86,7 +86,9 @@ These files are byte-identical in both packs. Change them here first, then copy 
 
 - `project.example.yml`
 - `scripts/check-public-safe.mjs`
+- `scripts/publish-public.sh` (except its repo name)
 - `.githooks/pre-push`
+- `.gitattributes`
 
 When an issue here has a swarm companion, land this side first, then point the swarm skills at it.
 

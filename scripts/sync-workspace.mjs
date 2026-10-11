@@ -10,6 +10,12 @@
  *   node scripts/sync-workspace.mjs --box           # + Grok Bot box skills root (BOX_SKILLS_ROOT)
  *   node scripts/sync-workspace.mjs --dest <dir>    # + any extra skills root (repeatable)
  *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
+ *   node scripts/sync-workspace.mjs --no-vendor     # skip the pinned Matt + SimpleEnglish snapshots
+ *
+ * Vendored packs (vendor/<pack>/skills/<skill>, private clone only; the public snapshot
+ * leaves vendor/ out): pinned, unedited copies of Matt's pack and SimpleEnglish
+ * (vendor/README.md). They go to every root first, so an overlay skill of the
+ * same name (grill-me, implement, teach, ...) still replaces Matt's.
  *
  * Swarm companion (when a sibling clone ships skills/swarm/SKILL.md +
  * skills/swarm-mode/SKILL.md, e.g. ../umbrella-swarm; UMBRELLA_SWARM=<folder>
@@ -74,17 +80,20 @@ const BOX_SKILLS_ROOT = '/home/box/agent-data/workflows';
 const argv = process.argv.slice(2);
 const EXTRA_DESTS = []; // { dir, box }
 let SYNC_SWARM = true;
+let SYNC_VENDOR = true;
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
   else if (a === '--dest' && argv[i + 1]) EXTRA_DESTS.push({ dir: path.resolve(argv[++i]), box: false });
   else if (a.startsWith('--dest=')) EXTRA_DESTS.push({ dir: path.resolve(a.slice('--dest='.length)), box: false });
   else if (a === '--no-swarm') SYNC_SWARM = false;
+  else if (a === '--no-vendor') SYNC_VENDOR = false;
   else if (a === '-h' || a === '--help') {
-    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]... [--no-swarm]');
+    console.log('Usage: node scripts/sync-workspace.mjs [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor]');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');
+    console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  UMBRELLA_SWARM=<folder>    pick the swarm companion sibling explicitly');
     console.log('  UMBRELLA_OVERLAY=<folder>  pick the private overlay sibling explicitly');
     process.exit(0);
@@ -209,8 +218,33 @@ function parsePrimaryRepo(raw) {
   return first ? first[1].trim() : null;
 }
 
+// Pinned upstream packs: vendor/<pack>/skills/<skill>/SKILL.md.
+function listVendorSkills() {
+  const root = path.join(packRoot, 'vendor');
+  if (!existsSync(root)) return [];
+  const out = [];
+  for (const pack of readdirSync(root, { withFileTypes: true })) {
+    const skills = path.join(root, pack.name, 'skills');
+    if (!pack.isDirectory() || !existsSync(skills)) continue;
+    for (const ent of readdirSync(skills, { withFileTypes: true })) {
+      if (ent.isDirectory() && existsSync(path.join(skills, ent.name, 'SKILL.md'))) {
+        out.push({ pack: pack.name, name: ent.name, from: path.join(skills, ent.name) });
+      }
+    }
+  }
+  return out;
+}
+
+const VENDOR_SKILLS = SYNC_VENDOR ? listVendorSkills() : [];
+
 function copyOverlayInto(destRoot) {
   mkdirSync(destRoot, { recursive: true });
+  // Vendored first, so the overlay's same-named skills replace Matt's below.
+  for (const { name, from } of VENDOR_SKILLS) {
+    const to = path.join(destRoot, name);
+    rmSync(to, { recursive: true, force: true });
+    cpSync(from, to, { recursive: true });
+  }
   for (const name of OVERLAY_SKILLS) {
     const from = path.join(srcRoot, name);
     const to = path.join(destRoot, name);
@@ -265,6 +299,14 @@ const hasPrivate = Boolean(privateRoot && existsSync(privateRoot));
 
 console.log(`Pack: ${label(packRoot)}`);
 if (cfg) console.log(`Config: ${label(cfg.path)}`);
+if (!SYNC_VENDOR) console.log('Vendored packs: (skipped, --no-vendor)');
+else if (VENDOR_SKILLS.length) {
+  const byPack = {};
+  for (const v of VENDOR_SKILLS) byPack[v.pack] = (byPack[v.pack] || 0) + 1;
+  console.log(`Vendored packs: ${Object.entries(byPack).map(([k, n]) => `${k} (${n})`).join(', ')}`);
+} else {
+  console.log('Vendored packs: (none in this clone; install Matt + SimpleEnglish with npx, README Install)');
+}
 if (hasPrivate) console.log(`Private overlay: ${label(privateRoot)}`);
 else console.log(`Private overlay: (none${overlayPackName ? ` at ../${overlayPackName}` : ' found'})`);
 

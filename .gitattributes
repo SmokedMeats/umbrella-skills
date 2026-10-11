@@ -2,3 +2,5 @@
 * text=auto eol=lf
 .githooks/* text eol=lf
 scripts/check-public-safe.mjs text eol=lf
+# Pinned upstream packs stay private; the public snapshot (git archive) leaves them out.
+/vendor export-ignore
