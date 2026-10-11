@@ -207,8 +207,8 @@ function loadProjectConfig() {
 function parseSkillTargets(raw) {
   // Extremely small parser for:
   //   skill_targets:
-  //     - { name: Foo, dirs: [.cursor/skills], own: [.grok/skills], rules: "node scripts/x.mjs" }
-  // own and rules are optional.
+  //     - { name: Foo, dirs: [.cursor/skills], own: [.grok/skills], rules: "node scripts/x.mjs", skip: [gh-mix] }
+  // own, rules and skip are optional.
   const targets = [];
   const block = raw.match(/skill_targets:\s*\n((?:[ \t]+-.+\n?)+)/);
   if (!block) {
@@ -222,7 +222,8 @@ function parseSkillTargets(raw) {
     const dirs = m[2].split(',').map((s) => s.trim()).filter(Boolean);
     const own = (line.match(/own:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
     const rules = line.match(/rules:\s*"([^"]*)"/)?.[1] || null;
-    targets.push({ repo: name, dirs, own, rules });
+    const skip = (line.match(/skip:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    targets.push({ repo: name, dirs, own, rules, skip });
   }
   return targets;
 }
@@ -471,6 +472,14 @@ function skillNames(root) {
 function isMirrorCopy(dir) {
   return [MIRROR_MARKER, ...LEGACY_MARKERS].some((m) => existsSync(path.join(dir, m)));
 }
+// Machine-independent source for the marker, so syncs on different machines write the same file.
+function sourceNote(p) {
+  const rel = (base, prefix) => {
+    const r = path.relative(base, p);
+    return r && !r.startsWith('..') && !path.isAbsolute(r) ? `${prefix}${r}` : null;
+  };
+  return label(rel(workspaceRoot, '') || rel(homedir(), '~/') || p);
+}
 function mirrorSkill(from, to, note) {
   if (existsSync(to) && !isMirrorCopy(to)) return false; // another installer owns it
   rmSync(to, { recursive: true, force: true });
@@ -510,6 +519,9 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
 //     A repo that has its own original keeps it. Per folder, an original in that same
 //     folder elsewhere wins (graphify's Claude-specific .claude/skills copy goes to
 //     .claude/skills); otherwise the first repo's first own source (targets order).
+//     A row's `skip: [...]` names skills that repo never receives, from other repos or
+//     from personal skills (step 3); a copy left there earlier is removed (only a marked
+//     copy, never the repo's own).
 const repoOriginals = new Map(); // repo -> Map(name -> Map(rel -> dir))
 for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
   const repoRoot = path.join(workspaceRoot, repo);
@@ -532,16 +544,25 @@ for (const found of repoOriginals.values()) {
     for (const [rel, dir] of byRel) if (!shared.get(name).byRel.has(rel)) shared.get(name).byRel.set(rel, dir);
   }
 }
-for (const { repo, dirs } of WORKSPACE_TARGETS) {
+for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
   const found = repoOriginals.get(repo);
   if (!found) continue;
   const copied = [];
+  const removed = [];
+  for (const name of skip) {
+    if (found.has(name)) continue; // the repo's own skill, not a shared copy
+    for (const rel of dirs) {
+      const dir = path.join(workspaceRoot, repo, rel, name);
+      if (existsSync(dir) && isMirrorCopy(dir)) { rmSync(dir, { recursive: true, force: true }); removed.push(`${rel}/${name}`); }
+    }
+  }
+  if (removed.length) console.log(`  skip  ${repo}: removed ${removed.length} earlier shared cop${removed.length === 1 ? 'y' : 'ies'} (${removed.join(', ')})`);
   for (const [name, { first, byRel }] of shared) {
-    if (found.has(name)) continue; // this repo's own version wins
+    if (found.has(name) || skip.includes(name)) continue; // own version wins; skip never arrives
     for (const rel of dirs) {
       const from = byRel.get(path.normalize(rel)) || first;
       const to = path.join(workspaceRoot, repo, rel, name);
-      if (mirrorSkill(from, to, label(from))) { copied.push(name); refreshed.add(path.resolve(to)); }
+      if (mirrorSkill(from, to, sourceNote(from))) { copied.push(name); refreshed.add(path.resolve(to)); }
     }
   }
   const names = [...new Set(copied)];
@@ -549,7 +570,11 @@ for (const { repo, dirs } of WORKSPACE_TARGETS) {
 }
 
 // 3. Personal skills: any original skill in a user root (not a pack skill, not a copy)
-//    goes to the other user roots and to every repo skill dir.
+//    goes to the other user roots and to every repo skill dir (minus that row's skip).
+const repoSkipFor = new Map(); // repo skill dir -> that row's skip list
+for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
+  for (const rel of dirs) repoSkipFor.set(path.join(workspaceRoot, repo, rel), skip);
+}
 const repoSkillDirs = WORKSPACE_TARGETS.flatMap(({ repo, dirs }) =>
   existsSync(path.join(workspaceRoot, repo)) ? dirs.map((rel) => path.join(workspaceRoot, repo, rel)) : [],
 );
@@ -575,11 +600,12 @@ if (SYNC_PERSONAL) {
   }
   let n = 0;
   for (const [name, from] of sources) {
-    const dests = [...roots, ...(repoOwnNames.has(name) ? [] : repoSkillDirs)];
+    const repoDests = repoOwnNames.has(name) ? [] : repoSkillDirs.filter((d) => !repoSkipFor.get(d)?.includes(name));
+    const dests = [...roots, ...repoDests];
     for (const root of dests) {
       const to = path.join(root, name);
       if (path.resolve(to) === path.resolve(from)) continue;
-      if (mirrorSkill(from, to, label(from))) { n++; refreshed.add(path.resolve(to)); }
+      if (mirrorSkill(from, to, sourceNote(from))) { n++; refreshed.add(path.resolve(to)); }
     }
   }
   console.log(`Personal skills: ${sources.size} found, ${n} copies written to user roots and repo skill dirs (--no-personal skips)`);
