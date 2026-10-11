@@ -7,6 +7,8 @@
  *   node scripts/sync-workspace.mjs --update          # report + diffs, update the auto
  *                                                     # sources, then the normal sync
  *   add --print to also stream every full diff to the terminal
+ *   --update holds an auto source whose new version would drop a skill, file or section
+ *   we have now (status "held"); after review, --update --force installs it anyway
  *
  * Output: per source, new skills (with what they do), removed skills, and per changed
  * skill a changelog: upstream commit subjects (git sources) plus the sections that
@@ -158,8 +160,9 @@ function summarize(currentDir, latestDir, history) {
     const a = new Set(listFiles(path.join(currentDir, curRel)));
     const b = new Set(listFiles(path.join(latestDir, latRel)));
     const notes = [];
+    const dropped = []; // what we have that the new version would take away
     for (const f of b) if (!a.has(f)) notes.push(`new file ${f}`);
-    for (const f of a) if (!b.has(f)) notes.push(`removed file ${f}`);
+    for (const f of a) if (!b.has(f)) { notes.push(`removed file ${f}`); dropped.push(`file ${f}`); }
     for (const f of b) {
       if (!a.has(f)) continue;
       const x = read(currentDir, curRel, f);
@@ -172,6 +175,7 @@ function summarize(currentDir, latestDir, history) {
       const sy = sections(y);
       const add = [...sy.keys()].filter((h) => !sx.has(h));
       const del = [...sx.keys()].filter((h) => !sy.has(h));
+      for (const h of del) dropped.push(`${where}section "${h}"`);
       const mod = [...sy.keys()].filter((h) => sx.has(h) && sx.get(h) !== sy.get(h));
       const fmt = (verb, list) =>
         list.length ? `${verb} ${list.slice(0, 3).map((h) => (h === 'the opening' ? h : `"${h}"`)).join(', ')}${list.length > 3 ? ` +${list.length - 3} more` : ''}` : null;
@@ -185,7 +189,7 @@ function summarize(currentDir, latestDir, history) {
       const log = spawnSync('git', ['-C', history.dir, 'log', '--no-merges', '--format=%s', `${history.from}..HEAD`, '--', upstreamPath], { encoding: 'utf8' });
       if (log.status === 0) commits = [...new Set(log.stdout.trim().split('\n').filter(Boolean))];
     }
-    sum.changed.push({ name, notes, commits });
+    sum.changed.push({ name, notes, commits, dropped });
   }
   // Files outside any skill folder (manifests, licenses, docs).
   const inSkill = (f, skills) => [...skills.values()].some((rel) => rel === '' || f === rel || f.startsWith(`${rel}/`));
@@ -199,7 +203,37 @@ function summarize(currentDir, latestDir, history) {
   return sum;
 }
 
-export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = false, print = false, label = (p) => p }) {
+// Our own skills: this pack, the swarm sibling, and a private overlay's skills-overlay.
+// name -> where; plus every .md text, to find which of our skills call a given skill.
+function houseSkills(packRoot, workspaceRoot) {
+  const roots = [['pack', path.join(packRoot, 'skills')]];
+  for (const e of existsSync(workspaceRoot) ? readdirSync(workspaceRoot, { withFileTypes: true }) : []) {
+    if (!e.isDirectory()) continue;
+    const skills = path.join(workspaceRoot, e.name, 'skills');
+    if (existsSync(path.join(skills, 'swarm', 'SKILL.md'))) roots.push(['swarm', skills]);
+    const overlay = path.join(workspaceRoot, e.name, 'skills-overlay');
+    if (existsSync(overlay)) roots.push(['overlay', overlay]);
+  }
+  const names = new Map();
+  const texts = []; // { skill, text }
+  for (const [where, root] of roots) {
+    for (const e of existsSync(root) ? readdirSync(root, { withFileTypes: true }) : []) {
+      if (!e.isDirectory()) continue;
+      if (!names.has(e.name)) names.set(e.name, where);
+      for (const f of listFiles(path.join(root, e.name)).filter((x) => x.endsWith('.md'))) {
+        texts.push({ skill: e.name, text: readFileSync(path.join(root, e.name, f), 'utf8') });
+      }
+    }
+  }
+  const usersOf = (name) => {
+    const re = new RegExp(`(^|[^\\w-])/${name}(?![\\w-])|\`${name}\``);
+    return [...new Set(texts.filter((t) => t.skill !== name && re.test(t.text)).map((t) => t.skill))];
+  };
+  return { names, usersOf };
+}
+
+export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = false, force = false, print = false, label = (p) => p }) {
+  const house = houseSkills(packRoot, workspaceRoot);
   const work = mkdtempSync(path.join(tmpdir(), 'umbrella-updates-'));
   const outDir = path.join(packRoot, 'updates');
   rmSync(outDir, { recursive: true, force: true });
@@ -235,6 +269,17 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       }
     }
     results.push(r);
+  }
+
+  // --update never takes something away silently: when the new version drops a skill,
+  // a file or a section we have now, hold it for review unless --force.
+  function holdIfDropping(r) {
+    const { removed, changed } = r.diff.summary;
+    const drops = [...removed.map((n) => `skill ${n}`), ...changed.flatMap((c) => c.dropped)];
+    if (!drops.length || force) return false;
+    r.status = 'held';
+    r.note = `would drop ${drops.slice(0, 3).join(', ')}${drops.length > 3 ? ` +${drops.length - 3} more` : ''}; review, then --update --force`;
+    return true;
   }
 
   // ---- review sources: vendored, pinned packs ----
@@ -352,6 +397,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
         }
         r.diff = diff(r.key, installed, latest);
         r.status = r.diff ? 'behind' : 'current';
+        if (r.diff && apply && holdIfDropping(r)) return;
         if (r.diff && apply) {
           run('npx', ['-y', 'skills@latest', 'add', r.install[0], '-s', r.install[1], '-a', 'codex', '-y', '--copy'], {
             cwd: repoRoot,
@@ -402,6 +448,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
         const latest = path.join(built.home, variant, 'skills', 'graphify');
         r.diff = diff(r.key, g.dir, latest);
         r.status = r.diff ? 'behind' : 'current';
+        if (r.diff && apply && holdIfDropping(r)) return;
         if (r.diff && apply) {
           rmSync(g.dir, { recursive: true, force: true });
           cpSync(latest, g.dir, { recursive: true });
@@ -428,11 +475,18 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       say('  New skills:');
       for (const a of added) say(`    + ${a.name}: ${a.does}`);
     }
-    if (removed.length) say(`  Removed skills: ${removed.join(', ')}`);
+    if (removed.length) {
+      say('  Removed skills:');
+      for (const n of removed) {
+        const users = house.usersOf(n);
+        say(`    - ${n}${users.length ? `  !! our skills still use it (${users.join(', ')}): keep it or replace it with something better before bumping` : ''}`);
+      }
+    }
     if (changed.length) {
       say('  Changed:');
       for (const c of changed) {
-        say(`    ~ ${c.name}`);
+        const ours = r.kind === 'review' && house.names.has(c.name);
+        say(`    ~ ${c.name}${ours ? `  (we ship our own ${c.name} [${house.names.get(c.name)}]: carry over only what helps, keep everything we added)` : ''}`);
         for (const m of c.commits.slice(0, 5)) say(`        - ${m}`);
         if (c.commits.length > 5) say(`        - … ${c.commits.length - 5} more commit${c.commits.length - 5 > 1 ? 's' : ''}`);
         for (const n of c.notes.slice(0, 4)) say(`        · ${n}`);
@@ -447,6 +501,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
   say('');
   if (behindReview.length) say('Review sources: read the summary (and the diff if needed), then bump by hand (vendor/README.md "Bump a pin", vendor/pins.json).');
   if (behindAuto.length) say('Auto sources: run sync with --update to install them, then commit the repo folders.');
+  if (results.some((r) => r.status === 'held')) say('Held: --update skipped these because the new version would drop something we have now. Check the summary; if nothing we need goes, rerun with --update --force.');
   if (!behindReview.length && !behindAuto.length && !results.some((r) => r.status === 'error')) say('Everything is current.');
   writeFileSync(path.join(outDir, 'SUMMARY.md'), `${out.join('\n')}\n`);
 

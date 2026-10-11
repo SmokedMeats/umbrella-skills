@@ -102,6 +102,7 @@ let SYNC_RULES = true;
 let CHECK_UPDATES = false; // --check-updates: report + diffs, then stop
 let APPLY_UPDATES = false; // --update: report + diffs, update auto sources, then sync
 let PRINT_DIFFS = false;
+let FORCE_UPDATES = false; // --force: --update installs even when the new version drops something
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
@@ -114,11 +115,13 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--check-updates') CHECK_UPDATES = true;
   else if (a === '--update') APPLY_UPDATES = true;
   else if (a === '--print') PRINT_DIFFS = true;
+  else if (a === '--force') FORCE_UPDATES = true;
   else if (a === '-h' || a === '--help') {
     console.log('Usage: node scripts/sync-workspace.mjs [--check-updates | --update [--print]] [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
     console.log('  --check-updates  compare every upstream source with its newest release, write updates/<source>.diff; install nothing');
     console.log('  --update         same report, then install the auto sources (npx skills lock, graphify) and run the sync');
     console.log('  --print          also print every full diff (default: a summary per source; diffs saved in updates/)');
+    console.log('  --force          with --update: install even a source whose new version drops a skill, file or section we have now');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');
@@ -331,7 +334,7 @@ const WORKSPACE_TARGETS = cfg ? parseSkillTargets(cfgRaw) : [];
 if (CHECK_UPDATES || APPLY_UPDATES) {
   const { checkUpdates } = await import('./check-updates.mjs');
   const results = await checkUpdates({
-    packRoot, workspaceRoot, targets: WORKSPACE_TARGETS, apply: APPLY_UPDATES, print: PRINT_DIFFS, label,
+    packRoot, workspaceRoot, targets: WORKSPACE_TARGETS, apply: APPLY_UPDATES, force: FORCE_UPDATES, print: PRINT_DIFFS, label,
   });
   if (CHECK_UPDATES) process.exit(results.some((r) => r.status === 'error') ? 1 : 0);
   console.log('');

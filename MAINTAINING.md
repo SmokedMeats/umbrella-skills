@@ -39,6 +39,11 @@ Do **not** update or reopen a field-notes issue on `mattpocock/skills`. This rep
 
 This pack is the SSOT. Never auto-merge Matt or pstack.
 
+**Keep what we added.** An upstream update never removes something we built on top: a house rule, a section, a step, a skill, a gate. Remove one only when the update replaces it with something that serves us better, and say so in the PR: what goes, what replaces it, and why the new one is better. Everything else we added stays, even when the upstream text around it changes.
+
+- `node scripts/sync-workspace.mjs --check-updates` marks every changed upstream skill we ship our own version of, and warns when upstream removes a skill our skills still call.
+- `--update` holds any auto source (Stripe, Neon, graphify, ...) whose new version would drop a skill, file or section we have now. Read the summary; install with `--update --force` only when nothing we need goes.
+
 ### Matt ([mattpocock/skills](https://github.com/mattpocock/skills))
 
 Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited snapshot + MIT license; [vendor/README.md](vendor/README.md) **Bump a pin**). `sync-workspace.mjs` installs the pinned copy, so an upstream delete or rewrite never breaks an install. Public-clone users reinstall with `npx skills@latest add mattpocock/skills`. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
