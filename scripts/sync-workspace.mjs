@@ -16,7 +16,8 @@
  *
  * One command for every agent (Claude, Cursor, VS Code / Copilot, Grok, Codex, ...):
  *   1. pack skills (vendored + this overlay + swarm) -> user roots + each repo's skill dirs
- *   2. each repo's own skills (skill_targets `own: [...]`) -> that repo's other skill dirs,
+ *   2. each repo's own skills (an original in `own: [...]` or any of its dirs) -> that repo's
+ *      other skill dirs,
  *      then a skill only some repos have -> every other repo (a repo's own version wins;
  *      an agent-specific original, like graphify's .claude/skills copy, feeds that folder)
  *   3. personal skills (in a user root, not from a pack) -> the other user roots and every
@@ -489,15 +490,17 @@ function mirrorSkill(from, to, note) {
   return true;
 }
 
-// 2. Each product repo's own skills -> its other skill dirs.
+// 2. Each product repo's own skills -> its other skill dirs. A source is any original
+//    (not a pack skill, not a copy) in the row's own folders first, then in any of its
+//    skill dirs, so a skill made in .cursor/skills reaches .grok and .claude too.
 const refreshed = new Set(); // resolved dest folders written or confirmed this run
 for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
   const repoRoot = path.join(workspaceRoot, repo);
-  if (!own.length || !existsSync(repoRoot)) continue;
+  if (!existsSync(repoRoot)) continue;
   const seen = new Set();
   const copied = [];
   const kept = [];
-  for (const srcRel of own) {
+  for (const srcRel of [...new Set([...own, ...dirs])]) {
     for (const name of skillNames(path.join(repoRoot, srcRel))) {
       if (seen.has(name) || packOwned.has(name) || mirrorExclude.has(name)) continue;
       const from = path.join(repoRoot, srcRel, name);
@@ -511,7 +514,7 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
       }
     }
   }
-  console.log(`  own   ${repo}: ${copied.length} copied from ${own.join(', ')}${kept.length ? `; left alone (another installer): ${kept.join(', ')}` : ''}`);
+  console.log(`  own   ${repo}: ${copied.length} copied between ${[...new Set([...own, ...dirs])].join(', ')}${kept.length ? `; left alone (another installer): ${kept.join(', ')}` : ''}`);
 }
 
 // 2b. A skill only some repos have -> every other repo too. An original is any skill
@@ -580,8 +583,8 @@ const repoSkillDirs = WORKSPACE_TARGETS.flatMap(({ repo, dirs }) =>
 );
 // Originals only: a copy this script left in an own folder is not a repo skill.
 const repoOwnNames = new Set(
-  WORKSPACE_TARGETS.flatMap(({ repo, own }) =>
-    own.flatMap((rel) =>
+  WORKSPACE_TARGETS.flatMap(({ repo, own, dirs }) =>
+    [...new Set([...own, ...dirs])].flatMap((rel) =>
       skillNames(path.join(workspaceRoot, repo, rel)).filter(
         (name) => !isMirrorCopy(path.join(workspaceRoot, repo, rel, name)),
       ),
