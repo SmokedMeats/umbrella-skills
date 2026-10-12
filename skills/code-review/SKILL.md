@@ -111,6 +111,7 @@ Also note for Standards (do not invent; just state facts):
 - The diff command and commit list.
 - The path or fetched contents of the spec. When the spec has a **Rule card**, paste the card and the harness output in place of the whole spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Also read the kit or grill page the ticket names. If the code disagrees with that locked page, that is a Spec miss even when the ticket bullets are thinner. Do not invent a softer reading of a decided line. Quote the spec or locked-page line for each finding. Under 400 words."
+- Retried or overlapping money and rewards: when the diff retries, redelivers or can overlap a grant, payout or paid write, the change must name its reply-lost case (the commit landed, the reply was lost) and its overlap case, each with a test that it applies once. A missing case is a Spec finding (c).
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
