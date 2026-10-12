@@ -204,7 +204,10 @@ SEAM_TEST      path or N/A reason
 HARNESS        the card's harness summary line, or none
 NEW_SHARED     new files under shared folders, or none (a second copy of a SHARED_HELPERS helper is a finding)
 NO_GIT         confirmed (sibling: TICKET_BRANCH + head SHA pushed, nothing else)
+ESCALATED_AFTER_REPEAT_FAIL  yes | no   (yes only from a fix child that ran with a repeat-failure reviewer verdict: name the check and the reviewer receipt)
 ```
+
+**Repeat failure.** Return `needs_parent` with the failing output and both diffs ([implement](../implement/SKILL.md) **Build loop** **Repeat failure**).
 
 **FORBIDDEN extras:** no git; no shared-file edits; no Project Status; no Device QA; no close/lane (parent after build-verifier + code-review empty).
 

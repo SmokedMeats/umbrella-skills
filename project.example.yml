@@ -36,6 +36,8 @@ commands:
   cycles_mobile: "cd <mobile-pkg> && npm run check-cycles"
   governance: "npm run check:governance"
   # graph_freshness: "node scripts/graph-freshness.mjs"  # optional; exit 0 = local code graph fresh (built at HEAD, ahead, or <24h behind). Unset → skip graphify Orient
+  # crawl_tick_gate: "node scripts/crawl-tick-gate.mjs"  # optional; read-only; prints one line, CHANGED or UNCHANGED since <time>. UNCHANGED skips most of the House crawl tick. Unset → every tick runs in full
+  # crawl_tick_gate_save: "node scripts/crawl-tick-gate.mjs --save"  # records the baseline after a clean full tick (pair with crawl_tick_gate)
 
 paths:
   mobile_src: <mobile-pkg>/src
