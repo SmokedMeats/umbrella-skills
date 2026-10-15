@@ -64,7 +64,7 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 ## Hybrid
 
 - **Coding runtime: founder picks `build` or `cloud` per house.** At house start the parent asks once: `build` (Grok Build or an IDE agent on `<local-dev-host>`, Ship mode `<dev-branch>`) or `cloud` (Cursor cloud agents). If the founder names one in the opener, use it and do not ask.
-- **Usage guard.** Before cloud coding, check shared Cursor cloud usage left. Under 10% → run `build` (as the default, or as a fallback even when `cloud` was picked) and say so in one line. The swarm start-work route keeps its own cloud ≥5% rule.
+- **Usage guard.** Before cloud coding, check shared Cursor cloud usage left. Under 5% → run `build` (as the default, or as a fallback even when `cloud` was picked) and say so in one line. The swarm start-work route keeps its own 10% floor (`caps.cloud_usage_floor`).
 - **Same gates either runtime:** TL PASS, `commands.pr_ready`, Dispatch GO, founder LAND. Stop at a new DB migration (before `commands.db_migrate`), workflow files, deploy config, and the founder gates above. **Cloud** opens a PR per ticket or slice and never pushes directly to `<dev-branch>`. **Build** keeps the bots-off direct-push rules above.
 - **Cursor Task** only for one-shot non-coding phase publish when no durable bot lane fits, or when the founder asks for cloud on that house.
 - **Grok bots** for durable room lanes (Umbrella / Verify / Investigate) that need standing presence. An observer lane may watch the local session.
