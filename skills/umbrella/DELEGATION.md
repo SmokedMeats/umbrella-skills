@@ -176,7 +176,7 @@ BLOCKED_BY             GitHub blocked-by links set (receipts)
 | | |
 | --- | --- |
 | **Delegate?** | Yes — one Task per extra ticket; conductor ticket + shared stays parent |
-| **Dispatch** | **Local coding agent** on `<local-dev-host>` (Grok Build / IDE; default for code). Grok **Implement Worker** only when durable room lane needed. Cursor Task / cloud only on founder override for that house. Shape and cap per **Child shape by runtime**. Still no git from kid (a sibling session pushes only its own ticket branch) |
+| **Dispatch** | **Local coding agent** on `<local-dev-host>` (Grok Build / IDE; default for code). Grok **Implement Worker** only when durable room lane needed. Cursor cloud agent when the founder picked `cloud` for the house and the usage guard allows (umbrella-mode **Hybrid**). Shape and cap per **Child shape by runtime**. Still no git from kid (a sibling session pushes only its own ticket branch) |
 
 **In (extra):**
 ```text
@@ -376,7 +376,7 @@ BLOCK_STATUS_MOVES  true | false
 
 | Work | Prefer |
 | --- | --- |
-| Code / implement extras | **Local coding agent** on `<local-dev-host>` (Cursor cloud only on founder override; cloud is reserved for swarm Active areas) |
+| Code / implement extras | **Local coding agent** on `<local-dev-host>` (`build`), or Cursor cloud agent when the founder picked `cloud` and usage left is ≥10% (umbrella-mode **Hybrid**) |
 | Code-review axes / one-shot phase publish | **Cursor Task** kids |
 | Durable lanes that need rooms (Verify, Umbrella, Investigate) | **Grok bots** |
 | Phone crawl | Local Task **or** `roles.device_qa` Grok lane — never cloud |

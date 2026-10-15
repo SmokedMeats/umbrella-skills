@@ -41,7 +41,7 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 - After `Next: /<skill>` (except grill-me, handoff, and conductor-owned implement work):
   1. Write `UMBRELLA_CURSOR` (parent).
   2. Build context packet ([DELEGATION.md](../umbrella/DELEGATION.md) when installed; else design schema). Copy that skill's `## Steps` into the packet as `STEPS`, and into your own todo list ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**).
-  3. Spawn: **implement/coding** → local coding agent on `<local-dev-host>` (default; see **Hybrid**). Other phases → matching Grok bot lane, or Cursor Task (`generalPurpose` / `umbrella-phase`) only when no bot lane fits or the founder overrides for cloud.
+  3. Spawn: **implement/coding** → the house runtime the founder picked, `build` (local coding agent on `<local-dev-host>`) or `cloud` (Cursor cloud agent, PR only); see **Hybrid**. Other phases → matching Grok bot lane, or Cursor Task (`generalPurpose` / `umbrella-phase`) only when no bot lane fits or the founder overrides for cloud.
   4. On return: verify receipts, `STEPS_DONE` included (a missing step is `partial`); apply CLOSE-PARENTS / Project / cursor rewrite; re-detect.
 - Implement wave 2+: one child per extra ticket; parent owns shared + git. **Child shape by runtime** ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**): Cursor runs a Task or cloud agent per ticket (own VM). Claude Code runs an in-process `Agent` child only while the memory check passes, else a sibling session (`create_session`, own container), else queues. One child cap for both runtimes (`limits.max_children`); a human "as many as needed" never exceeds the cap or the memory check.
 - **Verify each ticket on its own.** One build-verifier per ticket, from a child that did not write it. No combined pre-merge check over the wave. The child runs package `verify` + its own tests; the verifier runs `verify` + `commands.pr_ready` at the verdict SHA, at the `DEPTH` the packet names (full for locked areas and grant/money writes, light otherwise). Recheck at merge only if `<dev-branch>` moved: bring it in, run `commands.pr_ready` once, push with `HUSKY=0`; the patch-id rule keeps a verdict valid. No batch-level heavy gate in the pack ([DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**).
@@ -63,7 +63,9 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 ## Hybrid
 
-- **Coding / implement default: local** — Grok Build or an IDE agent on `<local-dev-host>` (Ship mode `<dev-branch>`). Cursor cloud agents are reserved for swarm Active areas. An umbrella house goes to cloud only on an explicit founder override for that house.
+- **Coding runtime: founder picks `build` or `cloud` per house.** At house start the parent asks once: `build` (Grok Build or an IDE agent on `<local-dev-host>`, Ship mode `<dev-branch>`) or `cloud` (Cursor cloud agents). If the founder names one in the opener, use it and do not ask.
+- **Usage guard.** Before cloud coding, check shared Cursor cloud usage left. Under 10% → run `build` (as the default, or as a fallback even when `cloud` was picked) and say so in one line. The swarm start-work route keeps its own cloud ≥5% rule.
+- **Same gates either runtime:** TL PASS, `commands.pr_ready`, Dispatch GO, founder LAND. Stop at a new DB migration (before `commands.db_migrate`), workflow files, deploy config, and the founder gates above. **Cloud** opens a PR per ticket or slice and never pushes directly to `<dev-branch>`. **Build** keeps the bots-off direct-push rules above.
 - **Cursor Task** only for one-shot non-coding phase publish when no durable bot lane fits, or when the founder asks for cloud on that house.
 - **Grok bots** for durable room lanes (Umbrella / Verify / Investigate) that need standing presence. An observer lane may watch the local session.
 - Never dual-truth two verifier verdicts for the same return.
