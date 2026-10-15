@@ -86,6 +86,7 @@ const OVERLAY_SKILLS = [
   'blast-radius',
   'pit-of-success',
   'zero-tech-debt',
+  'tech-lead-review',
 ];
 
 const USER_SKILL_DIRS = ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills', '.copilot/skills'];
