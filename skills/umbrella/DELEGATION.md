@@ -28,6 +28,7 @@ FORBIDDEN      always include: no umbrella/SKILL.md; no merge/promote/OTA/migrat
 ACCEPTANCE     checkable exit criteria for this phase
 REPORT_SHAPE   fields required in receipt out (below + role extras)
 DISPATCH       Cursor Task | Grok bot lane | inline receipt   (parent picks; see hybrid note)
+MODEL_TIER     fast | standard | deep   (role default below; parent may raise, never lower)
 ```
 
 ### Receipt out (child → parent)
@@ -44,6 +45,23 @@ CURSOR_PATCH   optional suggested fields for UMBRELLA_CURSOR (parent writes)
 ```
 
 **Law:** Return packets are inputs. Parent always re-detects phase from GitHub labels. Missing RECEIPTS → treat as `partial` and re-verify. Refuse spawn if GOAL, SKILL_PATH, STEPS, ACCEPTANCE, or FORBIDDEN are empty. A receipt whose `STEPS_DONE` misses a step, or names one with no proof and no skip reason, is `partial`. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty (see role packets). For **to-spec** / **to-tickets**: parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or lists `missing≠none`.
+
+### MODEL_TIER
+
+Every packet names a tier, not a model. The runtime maps the tier to a model with `project.yml` `models.<runtime>.<tier>` (see [PROJECT-CONFIG.md](PROJECT-CONFIG.md)); the pack never names a model.
+
+| Role | Default tier |
+| --- | --- |
+| Search, investigate (`/how`, `/why` readonly), file discovery | fast |
+| implement-ticket, build-verifier | standard |
+| code-review, the repeat-failure reviewer, pre-grill gap draft | deep |
+
+Roles not in the table default to `standard`.
+
+- **Inherit fallback.** `models.<runtime>` unset, the tier key unset, or the runtime cannot pick a model per child → the child inherits the parent's model (today's behaviour). Unset `MODEL_TIER` → the role default.
+- **Locked area, never below default.** A packet for a locked area (`standing-product-rules.md` locked areas, e.g. auth, OTA, money, GPS ingest) never gets a tier below its role default. A tier can be raised for a locked area; nobody lowers it, whether the parent or a `decide` helper picked it. Unsure if locked → treat as locked.
+- **Receipt names the model.** The child's receipt `ARTIFACTS` or `RECEIPTS` line names the model it actually ran on. A mismatch with the mapped model is a gap to log, not a fail.
+- **Decide is not a tier.** A cheap decision model (Jev, `decide`) may answer the conductor's own yes/no or pick-one forks (which tier, locked area?). It never runs a child.
 
 **Fresh child.** New work is a new child: the next phase, a fix round, a retry, the next ticket. Put the original brief, later directives, and the prior receipt in that packet. Resume the same child only when the next step needs its checkout, its uncommitted edits, or a process it still runs. Device QA on a borrowed phone is that case. Do not resume a finished child because the thread is convenient.
 

@@ -98,7 +98,7 @@ Every skills root sync writes ends up with the same three config files: `project
 | Pinned Matt v1.3.1 + SimpleEnglish (`vendor/`) into every root above, before the overlay so same-named overlay skills win | automatic in the private clone; `--no-vendor` skips; the public clone has no `vendor/` (use the npx lines in step 1) |
 | Grok Bot box skills root `/home/box/agent-data/workflows` | `--box` (skipped when that folder's parent is missing; override with `UMBRELLA_BOX_SKILLS_ROOT`) |
 | Any other skills root | `--dest <dir>` (repeatable) |
-| umbrella-swarm skills (every `skills/*` folder of the sibling that ships `skills/swarm` + `skills/swarm-mode`) into every root above, product repos included | automatic when that sibling clone exists (`UMBRELLA_SWARM=<folder>` picks one; `--no-swarm` skips; a name shared with an overlay skill is skipped) |
+| umbrella-swarm skills (every `skills/*` folder of the sibling that ships `skills/swarmy` + `skills/swarmy-mode`) into every root above, product repos included | automatic when that sibling clone exists (`UMBRELLA_SWARM=<folder>` picks one; `--no-swarm` skips; a name shared with an overlay skill is skipped) |
 
 `sync-workspace.mjs` (project.yml) and `check-public-safe.mjs` (denylist, allowlist, git output) normalize CRLF to LF on read, so Windows clones checked out with CRLF (`core.autocrlf=true`) sync every `skill_targets` repo, not just the first. This pack's `.gitattributes` also pins LF on checkout.
 
@@ -297,7 +297,7 @@ Short index first. Detail for the fat overlays is under the headings.
 | `principles` | One index of mid-task redirects, including **explain-the-number** and **resist-agent-mistakes**. Not a folder per principle. Not a second conductor. |
 | `pit-of-success` | Make the obvious call correct: move the invariant into the seam, delete bypasses, prove it with one check. |
 | `zero-tech-debt` | Rework a change from the intended end state; delete compatibility paths with no caller. |
-| `tech-lead-review` | Local PASS/FAIL review of a risky diff (money, locking, migrations, schema, Effect seams, rankings or seasons) after preflight, before push. FAIL blocks the push; no test on a money, lock, or migration path fails. |
+| `tech-lead-review` | Local PASS/FAIL review of a risky diff (money, locking, migrations, schema, Effect seams, Compete or seasons) after preflight, before push. FAIL blocks the push; no test on a money, lock, or migration path fails. |
 | `blast-radius` | What else a change breaks. Prove the one safety fact by running code. Optional graphify Orient when `commands.graph_freshness` passes. |
 
 Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.

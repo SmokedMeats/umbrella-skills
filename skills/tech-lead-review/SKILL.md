@@ -1,6 +1,6 @@
 ---
 name: tech-lead-review
-description: "Local judgment review a coding agent runs on its own diff after preflight and before pushing, when the diff touches money/payments/subscriptions/XP or reward grants, locking, DB migrations, schema, Effect service seams, or anything that could break rankings or seasons. Returns PASS, or FAIL with concrete fixes. Not a style pass. Use from /umbrella and umbrella-mode bots-off, or when asked for a tech-lead or scary-diff review."
+description: "Local judgment review a coding agent runs on its own diff after preflight and before pushing, when the diff touches money/payments/subscriptions/XP or reward grants, locking, DB migrations, schema, Effect service seams, or anything that could break Compete or seasons. Returns PASS, or FAIL with concrete fixes. Not a style pass. Use from /umbrella and umbrella-mode bots-off, or when asked for a tech-lead or scary-diff review."
 ---
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
@@ -17,7 +17,7 @@ After full preflight passes and before the push. Run it when any changed path or
 - **Locking:** mutexes, advisory or row locks, idempotency keys, retries, queues, cron or concurrent writers.
 - **DB:** migrations, schema files, ORM models, indexes, constraints, seed data that prod reads.
 - **Effect seams:** Layers, services, tags, error channels, resource scopes, runtime wiring.
-- **Rankings / seasons:** leaderboards, scoring, season clocks and rollovers, matchmaking, anything time- or ranking-dependent.
+- **Compete / seasons:** leaderboards, scoring, season clocks and rollovers, matchmaking, anything time- or ranking-dependent.
 
 None of these → skip; plain tickets push after preflight.
 
@@ -31,7 +31,7 @@ None of these → skip; plain tickets push after preflight.
    - Is every failure handled in the Effect error channel, not swallowed or thrown past it? Are resources released?
    - Migration: reversible or explicitly forward-only, safe on existing rows, no long table lock, deploy order with code is safe. A new migration still stops before `commands.db_migrate` (founder gate).
    - Schema change: every reader and writer updated; old clients still parse.
-   - Rankings / seasons: boundary times, time zones, rollover, ties, empty season, late events.
+   - Compete / seasons: boundary times, time zones, rollover, ties, empty season, late events.
 4. **Evidence.** Tests that actually exercise the risky path exist and passed in this preflight. No test for a money, lock, or migration path → FAIL. Optional: if the repo's graph freshness check passes, query affected symbols for reverse impact; skip silently if stale. Never build the graph.
 5. **Verdict.** Output exactly one:
 

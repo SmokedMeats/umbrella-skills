@@ -33,8 +33,8 @@
  * (vendor/README.md). They go to every root first, so an overlay skill of the
  * same name (grill-me, implement, teach, ...) still replaces Matt's.
  *
- * Swarm companion (when a sibling clone ships skills/swarm/SKILL.md +
- * skills/swarm-mode/SKILL.md, e.g. ../umbrella-swarm; UMBRELLA_SWARM=<folder>
+ * Swarm companion (when a sibling clone ships skills/swarmy/SKILL.md +
+ * skills/swarmy-mode/SKILL.md, e.g. ../umbrella-swarm; UMBRELLA_SWARM=<folder>
  * picks one explicitly): every skill folder under its skills/ is copied into the
  * user roots and --box/--dest roots too, so one command installs both packs.
  * A swarm skill that shares a name with an overlay skill is skipped (v1 wins).
@@ -125,7 +125,7 @@ for (let i = 0; i < argv.length; i++) {
     console.log('  --force          with --update: install even a source whose new version drops a skill, file or section we have now');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
-    console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarm + skills/swarm-mode)');
+    console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarmy + skills/swarmy-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
     console.log('  --no-rules     skip each product repo\'s rules generator (skill_targets rules:)');
@@ -167,17 +167,17 @@ function findOverlaySibling() {
 
 const overlaySibling = findOverlaySibling();
 
-// The swarm companion pack is a sibling clone that ships skills/swarm and
-// skills/swarm-mode. UMBRELLA_SWARM=<dir name or path> picks one explicitly;
+// The swarm companion pack is a sibling clone that ships skills/swarmy and
+// skills/swarmy-mode. UMBRELLA_SWARM=<dir name or path> picks one explicitly;
 // otherwise a folder named umbrella-swarm wins, then the first match by name.
 function isSwarmPack(dir) {
-  return ['swarm', 'swarm-mode'].every((n) => existsSync(path.join(dir, 'skills', n, 'SKILL.md')));
+  return ['swarmy', 'swarmy-mode'].every((n) => existsSync(path.join(dir, 'skills', n, 'SKILL.md')));
 }
 
 function findSwarmSibling() {
   if (process.env.UMBRELLA_SWARM) {
     const dir = path.resolve(workspaceRoot, process.env.UMBRELLA_SWARM);
-    if (!isSwarmPack(dir)) throw new Error(`UMBRELLA_SWARM=${process.env.UMBRELLA_SWARM}: no skills/swarm + skills/swarm-mode in ${dir}`);
+    if (!isSwarmPack(dir)) throw new Error(`UMBRELLA_SWARM=${process.env.UMBRELLA_SWARM}: no skills/swarmy + skills/swarmy-mode in ${dir}`);
     return dir;
   }
   const names = readdirSync(workspaceRoot, { withFileTypes: true })
@@ -412,6 +412,16 @@ if (!SYNC_SWARM) {
   const swarmDests = [...new Set(skillDests.map((d) => path.resolve(d)))];
   for (const dest of swarmDests) {
     copySwarmInto(dest, swarmRoot, names);
+    for (const retired of ['swarm', 'swarm-mode']) {
+      const dir = path.join(dest, retired);
+      const skillFile = path.join(dir, 'SKILL.md');
+      if (!existsSync(skillFile)) continue;
+      const text = readText(skillFile);
+      const ours = text.includes('product swarm') || text.includes('area coordinators');
+      if (!ours) continue;
+      rmSync(dir, { recursive: true, force: true });
+      console.log(`  pack  retired old /${retired} copy at ${label(dir)}`);
+    }
     console.log(`  pack  ${label(dest)}: swarm skills`);
   }
 }
