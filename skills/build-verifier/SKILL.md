@@ -21,7 +21,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 1. Check the packet: `TICKET_ACS` present, `DEPTH` set (empty → `full`). No AC section → FAIL. proof: the AC list.
 2. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. proof: the pass lines.
 3. **Depth by risk**: red-on-old-code test(s) in a temp worktree at `BASE_SHA`, plus `/blast-radius` when `full`. proof: the test paths and their red and green runs.
-4. Run checks 1 to 7, each PASS or N/A with a reason. proof: the per-check lines.
+4. Run checks 1 to 8, each PASS or N/A with a reason. proof: the per-check lines.
 5. Emit the receipt: VERDICT, HEAD and BASE SHA, PATCH_ID, `STEPS_DONE`. proof: the receipt.
 
 ## When
@@ -73,8 +73,17 @@ All must **PASS** or **N/A with reason**:
 5. **Seam test** — when a seam was added/changed, a behavior test (not smoke/`toBeDefined`) covers it; else N/A with why.
 6. **No type workarounds** — no new `as any` / `@ts-expect-error` / `as unknown as` covering the change without ticket-named exception.
 7. **Carry light (optional)** — if packet includes GRILL_LOCK / SPEC pointers, flag **FAIL** or **FINDING** when the ticket AC set ignores an obvious locked decision named on the ticket’s grill page (cite the decision text). Mechanical only — do **not** invent a second full carry pass. N/A if grill/spec pointers absent.
+8. **Database test lanes** — when the diff or ticket touches PostgreSQL tests, `openTestPostgres`, `TEST_PG`, or R2 integration, the section below holds. A skipped database test is not a real-database or R2 pass. Else N/A.
 
 Run each check to the end. Exit 137 or 143 is a kill (out of memory, or stopped), not FAIL: re-run it through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A second kill in a row → STATUS `blocked`, the killed command in ESCALATE, no VERDICT. The parent re-runs the verifier when the container has room.
+
+## Database test lanes
+
+Keep real-database proof honest. Do not weaken required lanes.
+
+1. **Database-only unit tests:** where the repository uses `openTestPostgres()`, use that shared helper and its existing `TEST_PG_URL`/local-socket contract. Gate optional no-database runs with `describePg = TEST_PG ? describe : describe.skip`, or the existing fake/pg backend list. When `REQUIRE_TEST_PG=1`, a missing database must fail at load, never silently skip. Do not add a missing-database `beforeAll` throw to an optional run.
+2. **Receipts / R2:** skipped database tests never count as a real-database or R2 pass. Required PostgreSQL cases must actually execute and pass; R2 also requires its configured integration checks. Record the command, database harness and executed/skipped results. An optional local green run is not proof that required database checks passed.
+3. **Harness boundaries:** follow the repository's configured separation: disposable unit PostgreSQL; isolated integration databases such as throwaway Neon branches or Testcontainers, never shared Preview/Production integration targets; and shared Preview-app end-to-end tests. Use existing helpers and safety gates, not per-file connection logic. Do not claim a database check ran merely because a particular assistant or editor was used.
 
 ## Receipt out
 

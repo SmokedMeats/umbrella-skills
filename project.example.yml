@@ -80,6 +80,9 @@ repos:
     status_field: PVTSSF_...
     live_beta_milestone: <n>
     go_live_milestone: <n>
+    # Status names only. No Verify column. Parked is the pre-launch shelf, not a verification hold.
+    # Unclaimed may stay unassigned. Desk device is phone-visible only. Field is outdoor / GPS / on-wrist only.
+    # Ids come from this board. Do not invent them.
     status_options:
       Unclaimed: <id>
       In Progress: <id>

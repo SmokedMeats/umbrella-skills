@@ -402,7 +402,7 @@ BLOCK_STATUS_MOVES  true | false
 
 Do **not** dual-truth: one implement return gets **one** build-verifier verdict (inline **or** Task/bot, not both competing).
 
-**Bots off.** With no Grok bot lanes this run, every role packet above runs as a local subagent on `<local-dev-host>` (Grok Build or IDE agent) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. On Claude Code the memory check still picks in-process or sibling.
+**Bots off.** With no Grok bot lanes this run, every role packet above runs as a local subagent on `<local-dev-host>` (Grok Build or IDE agent) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. On Claude Code the memory check still picks in-process or sibling. Direct `<dev-branch>` push stays. Do not add swarm, CoS, or Dispatch routing. Protected workflow files and Railway config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
 
 ---
 

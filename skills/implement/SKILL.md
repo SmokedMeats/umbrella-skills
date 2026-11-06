@@ -34,11 +34,11 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
 
-1. **Count first**: post the unblocked table and pick the session shape (1 → build here, 2+ → conductor). proof: the table in the reply.
+1. **Count first**: post the unblocked table of coding-eligible tickets and pick the session shape (1 → build here, 2+ → conductor). proof: the table in the reply, with each ticket's live Project Status.
 2. **House** and claim each wave ticket (Parent, labels, map child, milestone, Project **In Progress**), then rewrite the cursor. proof: the assignees and the cursor rewrite.
 3. **Spawn gate**: every extra ticket has a live child, or is queued past the cap. proof: the child ids, or `skip: count 1`.
 4. **Acceptance criteria gate**: the ticket has real `## Acceptance criteria`; empty → `needs_parent`. proof: the AC count.
-5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, harness run. proof: the commits, the test file, and the harness line.
+5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, database test lanes, harness run. proof: the commits, the test file, the harness line, and the database-lane receipt when a database test ran.
 6. **Gap check** on this ticket. PARTIAL or FAIL → back to step 5. proof: the PASS/PARTIAL/FAIL table on the ticket.
 7. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
 8. **Living docs** comment (and the **P\*** leaf when phone-visible), build-verifier Pass, the **Close gate** line, then the lane or close, and **Crawl** (recount). proof: the Living docs URL, the verdict, and the Close gate line.
@@ -70,6 +70,14 @@ Commit your work to the current branch.
 
 **Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `project.yml` `commands.db_migrate` (the command carries its own `cd`) in the same session after the file is on disk. A migrate run before that file exists will not include it. Do not edit a file that has already been applied. Do not run migrate again when this change added no new SQL file. A missed migrate stays on this ticket. It is not a leftover.
 
+## Database test lanes
+
+Keep real-database proof honest. Do not weaken required lanes.
+
+1. **Database-only unit tests:** where the repository uses `openTestPostgres()`, use that shared helper and its existing `TEST_PG_URL`/local-socket contract. Gate optional no-database runs with `describePg = TEST_PG ? describe : describe.skip`, or the existing fake/pg backend list. When `REQUIRE_TEST_PG=1`, a missing database must fail at load, never silently skip. Do not add a missing-database `beforeAll` throw to an optional run.
+2. **Receipts / R2:** skipped database tests never count as a real-database or R2 pass. Required PostgreSQL cases must actually execute and pass; R2 also requires its configured integration checks. Record the command, database harness and executed/skipped results. An optional local green run is not proof that required database checks passed.
+3. **Harness boundaries:** follow the repository's configured separation: disposable unit PostgreSQL; isolated integration databases such as throwaway Neon branches or Testcontainers, never shared Preview/Production integration targets; and shared Preview-app end-to-end tests. Use existing helpers and safety gates, not per-file connection logic. Do not claim a database check ran merely because a particular assistant or editor was used.
+
 ## Comment cleanup
 
 One pass on this ticket before `/code-review`. Strip comments added in this change that narrate the next line, or that are leftover noise. Keep a comment that documents an intentional API or a non-obvious constraint. Do not spawn a comment-cleanup subagent. A leftover narrative comment is an in-scope `/code-review` **Standards** finding.
@@ -84,8 +92,8 @@ Do this **per ticket** as that ticket’s product lands. Do not wait for the res
 2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session. **Two review rounds per ticket.** If round 2 still has a hard Spec or Standards finding, do not start round 3: the card is missing a rule. Write one grill question (`/grilling` shape) for it. A child puts it in ESCALATE and the parent asks it. Amend the card on the answer, and build to that. A round with no hard finding ends the loop. Nits and code-shape notes go to a follow-up ticket, not another round. Each fix round and each review round is a fresh child with a short brief ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) §10).
 4. When this ticket’s list is empty, write **Close gate** for this ticket into `project.yml` `paths.umbrella_cursor` (refuse if incomplete), then set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
-5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. **Ready to merge** holds dependents until merge.
-6. Stop **this house's** coding crawl when no unblocked coding ticket remains (live tickets on their real lanes, or held by a Ready-to-merge blocker in this house), **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. **Ready to merge** holds dependents in this house until the founder merges. It does not block the next house when `/umbrella` **House queue** has one — finish **End of house**, then return to `/umbrella` and start that house. Do not interleave tickets across houses. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets in this house. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
+5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds. **Ready to merge** holds until the founder merges.
+6. Stop **this house's** coding crawl when no unblocked coding ticket remains (live tickets on their real lanes, or held by a **Live Beta**, **GoLive**, or **Ready to merge** blocker in this house), **Window full**, a Founder pause that blocks the session (Preview fast-forward, migrate, OTA, master promote, irreversible), or the user stops. **Ready to merge** holds dependents in this house until the founder merges. It does not block the next house when `/umbrella` **House queue** has one — finish **End of house**, then return to `/umbrella` and start that house. Do not interleave tickets across houses. A Device QA ownership conflict pauses the phone and the crawl continues on other unblocked coding tickets in this house. Filing tickets is not a stop. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended.
 
 **Repeat failure.** When the **same** test, check or gate fails on two fix attempts in a row on this ticket, stop editing. Spawn a fresh read-only reviewer child (never the writer) with the failing output, the two diffs that tried to fix it, and one question: is this the root cause or a rabbit hole, and what should the next attempt change? The next fix attempt starts only with that verdict in hand. A third failure on the same check goes to `/diagnosing-bugs`. The fix child that ran with the verdict reports `ESCALATED_AFTER_REPEAT_FAIL: yes` ([DELEGATION.md](../umbrella/DELEGATION.md) **implement-ticket**), and the parent copies that line into the ticket's close comment so a retro can count it on GitHub. When no fix child ran (the parent built the ticket itself, or went straight to `/diagnosing-bugs`), the parent writes `ESCALATED_AFTER_REPEAT_FAIL: yes` there itself. The reviewer child's `SKILL_PATH` is this file, **Build loop** **Repeat failure**.
 
@@ -108,17 +116,27 @@ Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migra
 
 ## Count first
 
-Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
+Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`). An open issue with `ready-for-agent` is not enough to enter this count.
 
-**Do not pull** a ticket already on a **leftover lane** (not Parked / Unclaimed / Live Beta / GoLive / Ready to merge / In Progress / Done) — that card is leftover, not frontier. **Live Beta** and **GoLive** are pullable (beta / pre-prod queues).
+**Coding eligibility, before any coding spawn.** Read this repo's configured Project Status live ([PROJECTS.md](../umbrella/PROJECTS.md) **Resolve one item**, option names from `project.yml` `status_options`). The status must be readable. Missing status, an unreadable board, or a conflict between that status and the labels → **no coding spawn**.
 
-Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.”
+Coding-eligible statuses are only **Unclaimed** and **In Progress**, and only when the implementation is not already merged. **Desk device**, **Field**, **Operator**, **Live Beta**, and **GoLive** are handoff lanes, not routine new implementation. **Done** and a closed issue are out. **Parked** and **Ready to merge** stay off this frontier.
+
+Do not spawn a second coder when an open PR or a live worker already has that ticket.
+
+Skip work that already shipped, even if Status or `ready-for-agent` is stale. Proof is the merged change and the ticket's acceptance criteria in the current code. A non-closing reference (`Refs #n` and the like) can leave the issue open; that open issue is not unfinished code. A matching title, or a pull request merely mentioned, is not that proof.
+
+Handoff lanes still allow the QA and verifier work those lanes already name. An explicitly evidenced new regression (a failing check, or a named acceptance criterion the merged code does not meet, cited from that code or that run) may be new scope. Do not recode the handoff ticket as if it had never shipped.
+
+**Do not pull** a handoff lane for routine new implementation. **Handoff** is **Operator**, **Desk device**, **Field**, **Live Beta**, and **GoLive**. **Leftover** is the subset **Operator**, **Desk device**, and **Field** ([PROJECTS.md](../umbrella/PROJECTS.md) **Leftover lanes**). Those three are leftover and handoff. **Live Beta** and **GoLive** are handoff and are not leftover. None of the five is a coding spawn. **Ready to merge** stays the merge wait, not a handoff lane. **Parked** stays the pre-launch shelf.
+
+Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.” That unlock is only the leftover subset. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds.
 
 **First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
 
-| Unblocked | Role | Ticket |
-| --- | --- | --- |
-| *N* | conductor / child / this session | #n · title |
+| Unblocked | Role | Ticket | Status |
+| --- | --- | --- | --- |
+| *N* | conductor / child / this session | #n · title | live Project Status |
 
 Then pick the session shape:
 
@@ -131,7 +149,7 @@ A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive 
 
 Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the other wave tickets. That split is the draft.
 
-**Spawn gate.** Product-code edits start after one of:
+**Spawn gate.** No product-code spawn without a live coding-eligible Project Status for that ticket (**Count first**). Product-code edits start after one of:
 
 - Count **1** — the table is posted.
 - Count **2+** — every extra ticket has a **live child**, or is queued past the child cap or the memory check ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**).
@@ -220,7 +238,7 @@ The house is a tree, not one wave. After each ticket **closes**, **moves to a le
 
 - Unblocked and not in-flight → join the live wave. Draft exclusives if missing. Spawn a child for each extra (and for every new ticket if the conductor is already writing one).
 - Open **product** blocker remains (still In Progress / Unclaimed, ACs not PASS) → **hold**. Name the blocker.
-- Blocker is already on a leftover lane → **not a hold**. Unlock dependents now. **Ready to merge** still holds its dependents.
+- Blocker is already on a leftover lane → **not a hold**. Unlock dependents now. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds.
 - Phone-visible and this pass cannot run Device QA (`adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone) → **Desk device**, do not close, crawl the next unblocked coding ticket.
 - Exclusive glob still owned by an in-flight child → hold until that commit.
 
@@ -228,7 +246,7 @@ Example: T1 product-done → leftover lane unlocks T2/T3/T4 even though T1 is st
 
 **Decision trail.** A multi-ticket crawl, or a **House queue**, keeps a trail as it goes: `decisions.tsv` in the house notes, or short bullets in `project.yml` `paths.umbrella_cursor`. Default on. Do not wait on the founder. One house at a time still holds. **Window full** points at the path. See umbrella [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Decision trail**.
 
-This session stays conductor across waves of **this** house. Completion of this house: no unblocked implement tickets remain (leftover-lane cards do not count; **Ready to merge** still holds its dependents), a Founder pause blocks the session, the user stops, or **Window full**. When `/umbrella` **House queue** has a next house, that house starts after **End of house**. Do not pull its tickets from here. Filing tickets is not completion.
+This session stays conductor across waves of **this** house. Completion of this house: no unblocked implement tickets remain (leftover-lane cards do not count; a `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds), a Founder pause blocks the session, the user stops, or **Window full**. When `/umbrella` **House queue** has a next house, that house starts after **End of house**. Do not pull its tickets from here. Filing tickets is not completion.
 
 
 ## Ship mode (sticky — read the pin)
@@ -242,14 +260,14 @@ Also: Device QA runs only when this runner can see the USB phone (local <local-d
 - Stay in the **same worktree** on **`<dev-branch>`**. Isolated git worktrees only if the founder asks.
 - Conductor commits on `<dev-branch>` and **pushes to `origin/<dev-branch>`** when implementing (cloud save). No PR.
 - Parallel waves OK in one worktree. Children never run git (see Child rules). Conductor serializes commits.
-- Close -> **Done** (or a leftover lane). Never **Ready to merge** in Mode A.
+- Close -> **Done** only when applicable checks and QA are done (or a leftover lane when something is still left). A push is not Done. Never **Ready to merge** in Mode A. Phone-visible QA still open is **Desk device**. Outdoor, GPS, or on-wrist proof still open is **Field**. Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, and deps/runtime stay on the non-device check. Never those lanes. See [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**.
 
 ### Mode B — `Ship mode: PR`
 
 - **One ticket -> one branch -> one PR** into `<dev-branch>`, or **serialize**. Do not parallel-commit multiple tickets into one PR / one worktree tip.
 - Push **only** to the PR branch. Never push to `<dev-branch>` tip, Preview, or `master`. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. The founder does those. `project.yml` `commands.db_migrate` for a new drizzle file in this change stays in the Build loop.
 - After each verifiable unit, push that PR branch with hooks on. A WIP commit on that branch is allowed. Do not force-push a shared branch. The body follows [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **PR briefing** (`##` sections, open ready, not draft).
-- When PR is open, checks green, waiting on the founder: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** until Done (merged) or parked -- Ready to merge is **not** a leftover lane.
+- When PR is open, checks green, waiting on the founder: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** while it is Ready to merge. After the founder merges, set the lane from what is left. **Done** only when applicable checks and QA are done. A leftover lane after that merge does not hold dependents. Ready to merge is **not** a leftover lane. Parked is not a verification hold.
 - Before **Ready to merge** (Mode B, when `commands.pr_ready` is set): merge or rebase current `origin/<dev-branch>` into the PR branch, then the ticket's `/build-verifier` runs `project.yml` `commands.pr_ready` (fails if the branch is behind, then runs the backend and mobile typecheck) at its verdict SHA. Paste its PASS line (literal `commands.pr_ready_pass`, naming the current `<dev-branch>` tip) in the PR body. <dev-branch> moved before merge → [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge** runs it once more. Dispatch checks for that line before merge. No pass line, not Ready.
 - PR into a **public** repo (or one slated to go public): run `node scripts/check-public-safe.mjs` (`--base <ref>` for a stacked PR) on the branch tip and paste its `check:public-safe PASS <repo>@<sha> (gitleaks 0, denylist 0)` line in the PR body. Tip moved since → run it again. A FAIL is fixed in content, never bypassed. No pass line, not Ready.
 - If the ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull the dependent while the blocker is open, unless the blocker is on a leftover lane.
@@ -285,7 +303,7 @@ One copy, here. Every spawn carries them by reference: name this section and [BU
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
 - Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.
-- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Do not run `commands.pr_ready`; the build-verifier does.
+- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Database tests follow **Database test lanes** (skipped database tests are not a real-database or R2 pass). Do not run `commands.pr_ready`; the build-verifier does.
 - Type check, `verify`, and multi-test runs go through the heavy gate: `. /tmp/umbrella-heavy.sh && heavy <command>` ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**).
 - The same test or check red on two fix attempts in a row → stop and report `needs_parent` with the failing output and both diffs (**Build loop** **Repeat failure**). Do not try a third fix. A fix child sent with a repeat-failure verdict stops at its first red on that check and reports `needs_parent`; it does not try again.
 - Run each check in the foreground to its exit. Do not end your turn waiting on one. Exit 137 or 143 is a kill, not a red gate: re-run it through the gate. Never report it as a failed AC.
@@ -306,15 +324,17 @@ When **Crawl** says no unblocked implement tickets remain, do this before you st
 
 | What is left | Lane |
 | --- | --- |
-| Code still to write, unblocked | In Progress if claimed, otherwise Unclaimed |
-| Pull request open, waiting on merge | Ready to merge |
-| Phone on the desk, Preview APK, Device QA, or this pass cannot see the USB phone | Desk device |
-| Outdoor run or watch on the wrist | Field |
+| Code still to write, unblocked | In Progress if claimed, otherwise Unclaimed (unassigned until this session pulls it) |
+| Pull request open, checks green, waiting on merge | Ready to merge |
+| Phone-visible, and this pass cannot run Device QA | Desk device |
+| Outdoor, GPS, or on-wrist proof still required | Field |
 | Store, console, signing, auth-provider dashboard | Operator |
 | Switch that waits for production | GoLive |
 | Must finish before public beta | Live Beta |
-| Shelved on purpose | Parked |
-| Merged and nothing left | Done |
+| Shelved before launch | Parked |
+| Merged or pushed, applicable checks and QA done, nothing else left | Done |
+
+Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, and deps/runtime use the non-device check that already applies. Do not put them on **Desk device** or **Field**. Do not invent a **Verify** column. **Parked** is the pre-launch shelf, not a verification hold. A merge is not **Done** while a check or applicable QA is still open. Order with the native parent / sub-issue link and blocked-by. Status moves follow [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**. The gate owner ticks with that gate's evidence.
 
 A desk check whose real remainder is "turn this on at production" moves to **GoLive** after the desk check, not to Done. Do not park a GoLive switch to keep the build from pulling it.
 

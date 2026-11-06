@@ -77,7 +77,7 @@ Parent refuses close and leftover-lane until the line is complete. Parent alone 
 
 **Resume brief.** On Window full, session end, or the next agent, the file carries **House queue** (keep later houses), **Ship mode**, now-on tickets, the decisions trail path, blockers, and corrections this session (none, or each one encoded as `<lint|test|skill line>`). If `handoff/SKILL.md` is in the parent skills directory, follow `/handoff` and include that brief. Do not add a `/recall` skill.
 
-**Ship mode (sticky + actor force).** On first write this run, set **Ship mode** to `<dev-branch>` or `PR` per actor force: Grok Bot / Cursor cloud -> always PR; local Grok Build / Cursor IDE on <local-dev-host> -> always <dev-branch>. Every later skill, and every later house in **House queue**, reads that pin -- do not re-pick. If the file pin disagrees with the actor, correct it and note the correction.
+**Ship mode (sticky + actor force).** On first write this run, set **Ship mode** to `<dev-branch>` or `PR` per actor force: Grok Bot / Cursor cloud -> always PR; local Grok Build / Cursor IDE on <local-dev-host> -> always <dev-branch>. Every later skill, and every later house in **House queue**, reads that pin -- do not re-pick. If the file pin disagrees with the actor, correct it and note the correction. Project Status follows [PROJECTS.md](PROJECTS.md) **Lane fit** for that actor. Local Grok Build / Cursor IDE direct push does not add swarm or CoS routing. Do not invent a **Verify** column.
 
 ## Idle
 

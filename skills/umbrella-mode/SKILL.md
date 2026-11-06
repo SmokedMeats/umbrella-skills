@@ -27,6 +27,7 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 4. **Return packets are law inputs, not law.** Parent re-detects phase from GitHub labels.
 5. **No irreversible ship without the founder.** Merge / FF / migrate / OTA / master stay paused. The in-loop `commands.db_migrate` for a new migration file in this change follows [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Database migrate**.
 6. **No poteto install.** Do not add poteto-mode / poteto-agent to this pack.
+   Allowed pstack skills (Jacob 2:47 AM CT 2026-11-05): verify-own-work and show-me-your-work (garden self-prove pilot), statechart (opt-in), tdd, blast-radius, no-comments (only the one batched backend cleanup PR), why. Still excluded: poteto-mode, poteto-agent, pstack itself, unslop (deslop owns cleanup), principle-* skills.
 7. **Repo agent rules ride every packet.** Parent reads `paths.agent_rules` at start ([PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md) **Repo agent rules**). Every child packet names it in `COMPANIONS`, and local coding children read it first.
 
 ## Spine (unchanged)
@@ -61,7 +62,8 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 - **code-review:** own kid (judgment); findings re-enter Build loop. Do **not** merge into verifiers.
 - **Device QA:** parent Probe first. On PASS → `device-qa-agent` packet. On return →
   `device-qa-verifier` (readonly, no phone). Parent applies `STATUS_MOVES` only when
-  verify Pass (or CoS skip-verify). On probe FAIL → Desk device Waiting; keep coding.
+  verify Pass (or CoS skip-verify when bots are on; bots-off, the founder). On probe FAIL → status **Desk device** and comment **Waiting: Device QA** (not a Waiting or Verify column); keep coding. **Desk device** is phone-visible only.
+- **Kanban, every runtime** (umbrella, and bots-off Grok Build, Cursor, and Claude Code). Status moves follow [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**. No **Verify** column. **Parked** is pre-launch only, never a post-launch verification hold. **Unclaimed** may stay unassigned; do not force a full triage. Order with native parent / sub-issues and blocked-by. **Field** is outdoor, GPS, or on-wrist only. Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, and deps/runtime use the non-device check that already applies. Merged is not **Done** until applicable checks and QA are done. The gate owner ticks with that gate's evidence.
 - Refuse spawn if GOAL, SKILL_PATH, STEPS, ACCEPTANCE, or FORBIDDEN are empty. For to-tickets / implement-ticket / build-verifier: also refuse or fail-closed when required live-ticket AC pointers are empty.
 - **Carry:** Spec Writer (`to-spec`) then Ticket Filers (`to-tickets`) own grill→spec→ticket carry. Parent refuses next spawn (and treats return as `partial`) when `CARRY_FROM_GRILL` / `CARRY_FROM_SPEC` is empty or `missing≠none` on those receipts.
 - **Fresh child by default.** A new phase, a fix round, a retry, and the next ticket go to a fresh child. The packet carries the original brief, later directives, and the prior receipt. Resume the same child only when the next step needs state that is costly to move: its checkout, its uncommitted edits, or a process it still runs (dev server, simulator, adb session). Device QA on a borrowed phone is that case. A stop is not reuse. A role outlives the child. The next round is a new child. Do not spawn `poteto-agent`.
@@ -73,9 +75,10 @@ Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, an
 
 - **Coding runtime: founder picks `build` or `cloud` per house.** At house start the parent asks once: `build` (Grok Build or an IDE agent on `<local-dev-host>`, Ship mode `<dev-branch>`) or `cloud` (Cursor cloud agents). If the founder names one in the opener, use it and do not ask.
 - **Usage guard.** Before cloud coding, check shared Cursor cloud usage left. Under 5% → run `build` (as the default, or as a fallback even when `cloud` was picked) and say so in one line. The swarm start-work route keeps its own 10% floor (`caps.cloud_usage_floor`).
-- **Same gates either runtime:** TL PASS, `commands.pr_ready`, Dispatch GO, founder LAND. Stop at a new DB migration (before `commands.db_migrate`), workflow files, deploy (Railway) config, and the founder gates above. **Cloud** opens a PR per ticket or slice and never pushes directly to `<dev-branch>`. **Build** keeps the bots-off direct-push rules above.
+- **Same gates either runtime:** TL PASS, `commands.pr_ready`, and founder LAND. **Dispatch GO** stays the cloud / bot-lane gate. **Bots off** Build does not add Dispatch, CoS, or swarm routing. It keeps the direct `<dev-branch>` push above. Protected workflow files and Railway config still go branch + PR. Stop at a new DB migration (before `commands.db_migrate`), workflow files, deploy (Railway) config, and the founder gates above. **Cloud** opens a PR per ticket or slice and never pushes directly to `<dev-branch>`. **Build** keeps the bots-off direct-push rules above.
 - **Cursor Task** only for one-shot non-coding phase publish when no durable bot lane fits, or when the founder asks for cloud on that house.
 - **Grok bots** for durable room lanes (Umbrella / Verify / Investigate) that need standing presence. An observer lane may watch the local session.
+- **MESSAGING (Jacob 2026-10-15):** keep messages succinct; DM the 1–2 target bots (SendToAgent), never post to a group room. Durable room lanes above are standing presence, not a place to broadcast fleet status.
 - Never dual-truth two verifier verdicts for the same return.
 - Why: shared Cursor usage is the swarm's fuel; classic `/umbrella` houses should not drain it.
 

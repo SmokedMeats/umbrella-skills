@@ -69,13 +69,13 @@ If the only remaining work on the ticket is the Device QA crawl (Leaves done or 
 
 5. Rewrite `project.yml` `paths.umbrella_cursor`: this ticket is Desk leftover · **Next** is the next unblocked implement wave (not “stop for phone”). List the leftover numbers so a later `/device-qa-agent` can walk them.
 
-6. **Crawl immediately.** Desk device is leftover, not Window full. Return to `/implement` **Count first** in this session and take the next unblocked coding ticket. A GitHub `blocked_by` that is already Desk device does **not** hold the next wave. **Ready to merge** still holds its dependents.
+6. **Crawl immediately.** Desk device is leftover, not Window full. Return to `/implement` **Count first** in this session and take the next unblocked coding ticket. A GitHub `blocked_by` that is already Desk device does **not** hold the next wave. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds.
 
 Living docs must already be on the ticket (including the **P\*** leaf). No Living docs comment → do not park.
 
 If Device QA is **not** the last leftover (product ACs still open): stay **In Progress**, note that this pass cannot run the phone crawl, keep building. Do not move the ticket.
 
-Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS.md) as usual.
+Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS.md) as usual. Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, and deps/runtime are not **Desk device** and not **Field** ([PROJECTS.md](PROJECTS.md) **Lane fit**). **Field** is outdoor, GPS, or on-wrist proof only.
 
 ## Who runs this
 

@@ -138,7 +138,7 @@ Every existing issue this pass walked gets **one GitHub comment**: date, device,
 
 For each ticket whose Desk-device wait this session resolved, pick **one** proposed next Status:
 
-- Outdoor run / on-wrist / goldens / location-only ACs still needed → **Field** (issue stays OPEN; add the calendar-wait label (`PRODUCT.md`) when a calendar or season still blocks and cannot pass with injected time)
+- Outdoor, GPS, or on-wrist proof still needed → **Field** (issue stays OPEN; add the calendar-wait label (`PRODUCT.md`) when a calendar or season still blocks and cannot pass with injected time). A golden or other desk-phone check stays **Desk device**. Non-device checks (backend, SQL, CI, Railway, types, website-only, reports, pure math, research, deps/runtime) are not **Field** and not **Desk device**
 - Store console / signing / auth-provider dashboard leftover → **Operator** (OPEN)
 - Must finish before public live beta → **Live Beta** (OPEN)
 - Must finish before production store ship → **GoLive** (OPEN)
@@ -147,11 +147,11 @@ For each ticket whose Desk-device wait this session resolved, pick **one** propo
 - Acceptance boxes still open, or the leaf is one part of a parent → comment only, no move
 - Issue already closed → comment only; do not reopen
 
-Default when unsure: **Field** if outdoor proof remains, else **Done**.
+Default when unsure: **Field** if outdoor, GPS, or on-wrist proof remains, else **Done**. Do not send a non-outdoor check to **Field**. There is no **Verify** status. **Parked** is not a verification hold.
 
 ### Off Field
 
-- Field ACs clear → **Done** (or next leftover: Operator / Live Beta / GoLive)
+- Field ACs clear → **Done**, or the next lane that is actually left: **Operator** (leftover) or **Live Beta** / **GoLive** (handoff, not leftover)
 - Outdoor or season still honestly blocked → stay **Field** + keep the calendar-wait label (never Parked for a date/season hold; never invent Pass)
 - Product fail found outdoors → same Fail rules (ticket back to **In Progress**, or one new issue)
 
@@ -165,7 +165,7 @@ Mark the block `STATUS_MOVES — UNAPPLIED` and hand it to the parent. If the fo
 
 ### Standalone (no conductor)
 
-Invoked with no parent packet and the founder said "you own Status": you may apply the moves yourself, but only with RUN_FOLDER + REPORT.md written. Prefer proposing.
+Invoked with no parent packet and the founder said "you own Status": you may apply the moves yourself, but only with RUN_FOLDER + REPORT.md written. Prefer proposing. Apply [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**. No **Verify** status. **Desk device** only when the leftover is phone-visible. **Field** only for outdoor, GPS, or on-wrist proof. Do not force device or Field QA onto backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or deps/runtime. Merged is not **Done** until the applicable check or QA is done. This path does not add swarm or CoS routing.
 
 ## 9. Field outdoor crawl (same lane)
 

@@ -32,7 +32,11 @@ When `standing-product-rules.md` has a **Boards** section, it adds this workspac
 
 Pre-prod work is **two lanes on every board**, not a primary-repo-only shelf. File the ticket on the repo that owns the flip. Each repo has continuous **Live Beta** and **Go Live** milestones (do not Hit).
 
-**Live Beta** = must finish before a public live beta. **GoLive** = must finish before production store / production ship. Right edge of the board: leftover lanes → **Live Beta** → **GoLive** → **Done**. Both are pullable. Claim → **In Progress**.
+**Live Beta** = must finish before a public live beta. **GoLive** = must finish before production store / production ship. Right edge of the board: leftover lanes → **Live Beta** → **GoLive** → **Done**.
+
+**Handoff lanes** are **Operator**, **Desk device**, **Field**, **Live Beta**, and **GoLive**. None of the five is routine new implementation. `/implement` **Count first** does not spawn coding on them. QA and an evidenced regression stay as that section says.
+
+**Leftover lanes** are the handoff subset **Operator**, **Desk device**, and **Field** (and any later column the founder adds between In Progress and **Live Beta**, except **Ready to merge**). A `blocked_by` on a leftover lane does not hold the next wave. **Live Beta** and **GoLive** are handoff and are not leftover; a `blocked_by` on either still holds. **Ready to merge** is the merge wait: not handoff, not leftover, and a `blocked_by` on it still holds. **Parked** is the pre-launch shelf, not a handoff lane. Do not add a column.
 
 Cross-link siblings in the body. Do **not** put satellite cards on the primary board.
 
@@ -53,7 +57,7 @@ The primary board already has these. Satellite boards have the same Status colum
 | **Grill** | table | `label:wayfinder:grilling -label:parked:*` | HITL queue |
 | **Parked** | table | `label:parked:* is:open` | Open shelf only. Status may be Parked or a leftover column |
 
-Status columns today: **Parked** → **Unclaimed** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Ready to merge** → **Live Beta** → **GoLive** → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. If the founder adds another Status after In Progress and before **Live Beta** (and it is not **Ready to merge**), it is a **leftover lane** (below). **Live Beta**, **GoLive**, and **Ready to merge** are work queues (not leftover).
+Status columns today: **Parked** → **Unclaimed** → **In Progress** → leftover lanes (**Operator** → **Desk device** → **Field**) → **Ready to merge** → **Live Beta** → **GoLive** → **Done**. Locked stays a label (Kanban hides `locked`). Agents do not invent a column. There is no **Verify** status. If the founder adds another Status after In Progress and before **Live Beta** (and it is not **Ready to merge**), it is a **leftover lane** (below) and therefore also a handoff lane. **Live Beta** and **GoLive** are handoff lanes and are not leftover. **Ready to merge** is not a handoff lane and is not leftover.
 
 **Now** is a **view** (assignee / ready-for-agent). Working-now on the Kanban is **In Progress**.
 
@@ -61,38 +65,38 @@ Status columns today: **Parked** → **Unclaimed** → **In Progress** → lefto
 
 | Event | Status |
 | --- | --- |
-| Create / file | **Unclaimed** |
-| Must finish before public live beta | **Live Beta** — immediately before GoLive. Pullable. File on **this clone’s repo**. Milestone **Live Beta** on that same repo (continuous — do not Hit). Never `item-add` a satellite card to the primary board. Claim → **In Progress** |
-| Must finish before production go-live | **GoLive** — immediately before Done. Pullable. File on **this clone’s repo**. Milestone **Go Live** on that same repo (continuous — do not Hit). Never `item-add` a satellite GoLive card to the primary board. Claim → **In Progress** |
-| Park (`parked:*`) while code/grill still needed | **Parked** — left of Unclaimed. Do not pull |
-| Park after code is done | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status |
+| Create / file | **Unclaimed**. It may stay unassigned. Do not force a full `/triage` or an assignee until a session pulls it |
+| Must finish before public live beta | **Live Beta** — immediately before GoLive. File on **this clone’s repo**. Milestone **Live Beta** on that same repo (continuous — do not Hit). Never `item-add` a satellite card to the primary board. Not a routine coding spawn |
+| Must finish before production go-live | **GoLive** — immediately before Done. File on **this clone’s repo**. Milestone **Go Live** on that same repo (continuous — do not Hit). Never `item-add` a satellite GoLive card to the primary board. Not a routine coding spawn |
+| Shelve pre-launch (`parked:*`) while code or grill is still needed | **Parked** — left of Unclaimed. Do not pull. Not a post-launch or verification hold |
+| Pre-launch shelf whose code is already done (console, phone-visible, or outdoor / GPS / on-wrist) | **Operator** / **Desk device** / **Field** — keep `parked:*`. Do not use Parked status. A live ticket waiting on checks or QA does not move to Parked and does not gain `parked:*` |
 | `/umbrella` claim, `/grill-me` claim, `/implement` claim | **In Progress** |
 | Repo or spec done; leftover is store console, signing, IdP admin | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
-| Leftover is device automation, sideload, desk companion, or Device QA this pass cannot run — `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA**. Then crawl the next unblocked coding ticket |
-| Leftover is a physical outdoor / on-device field check | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device) |
-| Mode B PR open, checks green, waiting on the founder | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until **Done** (merged) or parked. The founder merges. |
-| Close after Build loop empty **and** no leftover-lane wait (Mode A), or after the founder merges a Ready-to-merge PR (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. |
+| Leftover is phone-visible, and Device QA this pass cannot run — `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** (a comment, not a column). Then crawl the next unblocked coding ticket |
+| Leftover is actual outdoor, GPS, or on-wrist proof | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device). A desk phone check stays **Desk device** |
+| Mode B PR open, checks green, waiting on the founder | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until the founder merges (then the lane that is actually left) or the card is parked. The founder merges. |
+| Close after Build loop empty **and** applicable checks and QA are done **and** no leftover-lane wait (Mode A), or after the founder merges a Ready-to-merge PR **and** those checks and QA are done (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. A merge by itself is not Done |
 
 ## Leftover lanes (code complete, not Done)
 
-A **leftover lane** is any Status that is **not** Parked, Unclaimed, **Live Beta**, **GoLive**, **Ready to merge**, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and **Live Beta**, **except Ready to merge**. **Live Beta** and **GoLive** are pullable work queues, not leftover.
+A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **Field**: any Status that is **not** Parked, Unclaimed, **Live Beta**, **GoLive**, **Ready to merge**, In Progress, or Done. Product ACs are PASS. The card stays **open**. Today that is Operator, Desk device, and Field. Tomorrow it is also any new column the founder puts between In Progress and **Live Beta**, **except Ready to merge**. **Live Beta** and **GoLive** are the other handoff lanes. They are not leftover, and they are not routine coding frontier. **Ready to merge** is not leftover and is not handoff.
 
 ### Ready to merge — EXPLICIT exception (not a leftover lane)
 
-**Ready to merge** is a Mode B wait-on-founder lane. It is **not** a leftover lane.
+**Ready to merge** is a Mode B wait-on-founder lane. It is **not** a leftover lane and **not** a handoff lane.
 
 | | |
 | --- | --- |
 | When to set | PR is open, checks green, waiting on the founder to merge into `<dev-branch>` |
 | Pull this card? | **No** — not implement frontier |
-| Hold dependents? | **Yes** — dependents **WAIT** until this card is **Done** (merged) or parked. Do **not** unlock the next wave the way leftover lanes do |
+| Hold dependents? | **Yes** while this card is **Ready to merge**. Dependents **WAIT** until the founder merges or the card is parked. Do **not** unlock the next wave the way leftover lanes do. After the merge, a leftover lane does not keep that hold |
 | Window full? | **No** |
-| Close? | **No** — the founder merges; then Status **Done** |
+| Close? | **No** while it is **Ready to merge**. The founder merges, then Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
 | Who merges | **The founder only** (`project.yml` `founder`). Bots never merge |
 | Mode B gate | Before this status: rebase/merge current `origin/<dev-branch>`, run `commands.pr_ready`, paste its PASS line (`commands.pr_ready_pass`, naming the current `<dev-branch>` tip) in the PR body. Dispatch checks for that line before merge |
 | Public-repo gate | PR into a public repo: paste the `check:public-safe PASS` line for the current tip in the PR body. No line, not Ready |
 
-Do **not** crawl dependents past a Ready-to-merge blocker. Do **not** call Ready to merge a leftover.
+Do **not** crawl dependents past a **Ready to merge**, **Live Beta**, or **GoLive** blocker. Do **not** call Ready to merge a leftover or a handoff lane. Do **not** call **Live Beta** or **GoLive** leftover.
 
 ### Leftover lane rules (Operator / Desk device / Field / ...)
 
@@ -104,7 +108,22 @@ Do **not** crawl dependents past a Ready-to-merge blocker. Do **not** call Ready
 | Close? | **No** until the leftover is walked |
 | After the move | Living docs already on the ticket. `/implement` **Crawl** the next wave **in this session** |
 
-Do not write “still blocked until this ticket closes” for leftover lanes. **Do** hold for **Ready to merge**.
+Do not write “still blocked until this ticket closes” for leftover lanes. **Do** hold for a `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge**.
+
+## Lane fit
+
+The **Status** table is the transition policy. Do not invent a move or a column. There is no **Verify** status. Ordering that is real uses the tracker’s native parent / sub-issue link, plus GitHub blocked-by when one ticket actually waits on another. A sentence in the body is not that order.
+
+| What is left | Where it sits |
+| --- | --- |
+| Shelved before launch | **Parked** (or a pre-launch `parked:*` leftover lane above). Never a post-launch verification hold |
+| Filed, not pulled | **Unclaimed**, unassigned. The `/triage` catch is the inbox. It does not triage every Unclaimed card |
+| Phone-visible crawl not run this pass | **Desk device** only |
+| Outdoor, GPS, or on-wrist proof still required | **Field** only. A desk phone, a golden, or any other non-outdoor check is not Field |
+| Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, `commands.pr_ready`, `/build-verifier`, tech-lead-review, CI). Never **Desk device** or **Field** |
+| Merged or pushed, and those checks plus any applicable QA are done, and nothing else is left | **Done** |
+
+A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: `/build-verifier` before close or a leftover lane, `device-qa-verifier` before leaving **Desk device** or **Field**, the `commands.pr_ready` PASS line before **Ready to merge**, the founder for merge. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 
@@ -210,13 +229,13 @@ Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Un
 
 | Skill | Project write |
 | --- | --- |
-| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress. Live-beta / pre-prod tickets stay **Live Beta** / **GoLive** until claimed |
+| `/umbrella` | Catch: missing items + Done-lane trim. Claim → In Progress only for a coding-eligible ticket (`/implement` **Count first**). Live-beta / pre-prod tickets stay **Live Beta** / **GoLive**. Do not claim those lanes for routine new implementation |
 | `/triage` | `item-add` when it files or houses |
 | `/wayfinder` | `item-add` on map + children + `Later:` |
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; empty Build loop → the lane that matches what is left (Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done); Mode B green PR waiting on the founder → **Ready to merge** (holds dependents); Mode A close with nothing left → Done (no immediate archive); phone-visible and this pass cannot run Device QA → Desk device, then crawl the next coding ticket |
+| `/implement` | Backfill item; claim → In Progress; empty Build loop → the lane that matches what is left ([Lane fit](#lane-fit)); Mode B green PR waiting on the founder → **Ready to merge** (holds dependents until merge); **Done** only when applicable checks and QA are done (no immediate archive); phone-visible and this pass cannot run Device QA → Desk device, then crawl the next coding ticket |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.

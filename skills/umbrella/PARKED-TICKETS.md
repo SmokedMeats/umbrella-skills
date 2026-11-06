@@ -41,7 +41,7 @@ If the new issue is `Later:` or `Leftover:` (or the body says shelved / parked /
 2. `--remove-label "umbrella:<slug>"` if present.
 3. Do not `--add-assignee`.
 4. Assign the **same house milestone** as the live pack (`gh issue edit <n> --milestone "<Pack name>"`). Create the milestone if the house has none. Do not invent a `Parked:` milestone.
-5. `item-add` to this repo's Project. Status **Parked** if code/grill is still needed. If the leftover is already console / desk / a run, use **Operator** / **Desk device** / **Field** and keep `parked:*`. See [PROJECTS.md](PROJECTS.md).
+5. `item-add` to this repo's Project. Status **Parked** if code or grill is still needed (pre-launch shelf only). If that shelved slice is already console, phone-visible, or outdoor / GPS / on-wrist, use **Operator** / **Desk device** / **Field** and keep `parked:*`. Do not use **Parked** as a post-launch verification hold. A live check or QA wait does not gain `parked:*`. See [PROJECTS.md](PROJECTS.md) **Lane fit**.
 6. Body **must** include **When to do this** with all four lines.
 
 ```markdown
