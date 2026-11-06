@@ -20,6 +20,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 1. Rewrite the cursor, then ingest the locked grill and the gap list. Refuse while a gap is open. proof: the count of locks ingested.
 2. Explore the repo and sketch the test seams (highest, fewest). Name every untrusted bag. proof: the seam list.
 3. Write the **Rule card**: 5 to 15 rules, each with its proof, plus **The bar** and the harness command when the change grades. proof: `RULE_CARD`.
+3a. **Statechart (scoped trigger, Jacob 8:29 AM CT 2026-10-30).** When the product's standing rules require a statechart for this spec, or the spec defines a state machine that involves money, entitlements or locking, or where 2+ actors race (webhooks, retries, timers), run `/statechart`. That run is required once the trigger fires. Produce a small TLA+ model with bounded constants plus a Mermaid chart under `docs/specs/models/<slug>/`. Each invariant becomes a Rule card line, and the chart goes in Implementation Decisions. If TLC takes more than a few minutes, run it on a cloud agent; if usage is out, it waits for the reset, never on the box. When the product has no scoped Statechart policy and none of those conditions hold, write `n/a` with the reason the trigger did not fire, and do not invent a trigger. A fired trigger stays required. If the trigger fired and `/statechart` is not installed, the step is BLOCKED or a capability handoff, not writer `n/a`. proof: `STATECHART` with the path and the rules passed out of total, or `n/a` with the reason the trigger did not fire.
 4. Run the **Carry checklist**: every lock is answered, deferred or cut in Further Notes. proof: `CARRY_FROM_GRILL` with `missing=none`.
 5. Publish the spec with `spec` and `ready-for-agent`, the house milestone and a Project item. File any missing `Later:`. proof: the spec URL.
 6. Rewrite the cursor. Next is `/to-tickets`, with no approval wait. proof: `Next: /to-tickets`.
@@ -34,7 +35,7 @@ Before publish, every locked grill decision / closed gap from the ingest **must*
 
 **Refuse to publish** if any locked decision is missing from that cite list. Fix the cite list (or return to `/grill-me` only if still open/vague) — do not drop locks silently.
 
-**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). `RULE_CARD` — rule count, bar present or `n/a`, harness command or `none` (required). Parent refuses next spawn if either field is empty.
+**Receipt Out:** `CARRY_FROM_GRILL` — count of locked decisions covered; list of deferred/cut; `missing=none` (required). `RULE_CARD` — rule count, bar present or `n/a`, harness command or `none` (required). `STATECHART` — model path and rules passed/total, or `n/a` with a reason (required). Parent refuses next spawn if any field is empty.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
@@ -55,6 +56,10 @@ Seams come from the locked grill. Do not stop to ask the user to approve them. I
 4. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label and the **`spec`** type label (create it if the repo lacks it: `gh label create spec --color "0E8A16" --description "Spec (PRD parent). Status follows its child tickets."`). No extra triage. Do **not** apply `needs-triage`. `spec` lets the Kanban filter specs out with `-label:spec`; a spec's progress is its child tickets, not a lane. **Milestone on create** — find or create the house GitHub milestone and assign the spec (same pack as the map). See `/umbrella` **Milestones**. **Project on create** — `item-add` the spec per `/umbrella` [PROJECTS.md](../umbrella/PROJECTS.md).
 
 5. Do not wait for spec approval. Show the published spec. **Next is `/to-tickets` immediately.** Do not implement yet. If `/umbrella` is driving this session, continue into `/to-tickets` in this session.
+
+## Statechart scope
+
+Owner: Spec Tickets writes it at to-spec. Implement Worker updates and reruns it when its ticket changes that machine. Tech Lead requests one in review, and Build Verifier reruns it. The trigger is scoped and conditional: a product standing-rules file that requires a statechart, and the money, entitlements, locking, and multi-actor race conditions in step 3a. Standing rules add a trigger. They do not replace those conditions. Once any of those triggers fires, Statechart is required. Leave it out when the product has no scoped Statechart policy and none of those conditions hold, and leave it out of `/grill-me` (too early), plain UI flows with no concurrency (a plain Mermaid diagram is enough), bot process rules, expand/contract migrations, and GitHub required CI (no Java/TLC in CI). This pack does not cite product-only issue numbers as a generic mandate, and it does not require a statechart for every spec.
 
 <spec-template>
 

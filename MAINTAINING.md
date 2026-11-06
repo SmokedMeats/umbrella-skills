@@ -4,7 +4,7 @@ For people who edit this repo. Installers can ignore this file.
 
 ## Private remote vs public snapshot
 
-Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
+Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. `skills/umbrella/private-bindings.md` is the same omission for approved product bindings. Sync copies it with the umbrella skill folder. Generic skills do not require that path. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
 
 Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
 
@@ -50,7 +50,7 @@ Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited
 
 Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
-Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` (sync runs it first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
+Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` and `node scripts/check-shared-flow.mjs` (sync runs both first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
 
 ### pstack ([cursor/plugins](https://github.com/cursor/plugins))
 

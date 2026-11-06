@@ -103,6 +103,13 @@ ESCALATE             []
 NEXT_HINT            (ignored by parent)
 ```
 
+
+## Parallel scoped Jest / type-check (Jacob 1:20–1:25 CT)
+
+1. BV may run up to **4** parallel cloud agents for scoped Jest/type-check on **exact PR heads**. Stop at **90%** included usage or when launches fail.
+2. When a BV gate finishes, immediately pull the next ready PR into a free cloud slot (cap 4).
+3. After each successful run, BV ticks the Pipeline **Scoped Jest + type-check** step itself.
+
 ## Forbidden
 
 - Product code edits  
@@ -111,3 +118,60 @@ NEXT_HINT            (ignored by parent)
 - Standards/Spec judgment essay (that is `/code-review`)  
 - Device QA crawl or checklist ticks  
 - Loading `umbrella/SKILL.md`
+
+## Gate by patch, not commit (Jacob 2:16 CT 2026-10-15)
+
+- BV runs full scoped Jest + type-check once per PR patch (git patch-id of the PR diff vs merge-base), up to 4 parallel cloud agents, stop at 90% usage.
+- Record the PASS with its patch-id on the PR (PASS line: head SHA + patch-id).
+- On resync: if patch-id unchanged AND rebase was clean, reuse that PASS; run only fast `check:pr-ready` (~80s) on the new head, then Dispatch GO.
+- Full rerun only when ANY of: patch-id changed; rebase had conflicts; PR overlaps files with a commit merged since the PASS; or merged-since commits touch shared surfaces (package.json/lockfile, tsconfig/jest config, DB schema/migrations, shared types/barrel exports).
+- If unsure, rerun full.
+
+## Merge-queue carry-over (Jacob 11:57 + 12:02 CT 2026-10-23, adjusted 12:07)
+
+Applies only to one-at-a-time queues (dependency bumps, or PRs that share files). PRs that can merge in any order use the patch rule above.
+
+1. **The key is the merged tree.** A check carries over in full only when the resync's merged tree SHA (`git rev-parse HEAD^{tree}`) equals the tree the pre-warm rehearsed. If only the patch-id matches, carry over just lint, type-check and unit tests for files the base diff didn't touch, and rerun anything that overlaps the base diff.
+2. **Full rerun list.** Rerun everything when the PR or the base diff touches package.json, any lock file, tsconfig, jest/babel/metro config, app.json/app.config/eas.json (Expo fingerprint), `.github/workflows`, or migrations. A migration run never carries over if the base added a migration.
+3. **Bot gates only.** Carry-over skips BV's own cloud-agent gates. GitHub required CI always runs on the pushed head, and branch protection is never bypassed.
+4. **Stale rehearsal.** If a PR ahead is amended, dropped or reordered, every rehearsal behind it is stale. Treat it as no rehearsal.
+5. **Receipt.** Accept a carry-over only when the pr-ready note lists the rehearsed tree SHA, the actual tree SHA, and each check as `carried` or `reran`. If a field is missing or the SHAs differ outside rule 1, FAIL the carry-over and rerun. BV accepts or rejects each carried check by name.
+
+**Check split (Jacob 12:53 CT 2026-10-23):**
+1. **IW pre-warm runs the light set only:** merge rehearsal, deps install, lint, tsc, and Jest on the changed files. It finds breakage early, but it isn't a certification. IW does not run full Jest, the fingerprint check or the bundle budget.
+2. **BV runs the heavy set once, on IW's rehearsed merge, as soon as it's ready** (while the PR ahead is still landing): full Jest, fingerprint, bundle budget, prebuild and migrations, on BV's cloud agents. On resync, a tree SHA match carries BV's pass over and GO is instant. A deps or config change means BV reruns once, on the new rehearsal.
+3. **BV never adopts IW's results** as its own pass. That keeps the check independent.
+4. **Bundle-budget jitter:** Metro temp-path jitter must not fail the gate. The root fix (a deterministic measurement that normalizes or strips temp paths) folds into the current PR or a related ticket, not a new ticket. Until it lands, a budget miss under 64 bytes gets one rerun, not a FAIL.
+
+## Behind-GO post-land check (Jacob 2:23 + 2:24 PM CT 2026-10-23)
+
+Dispatch may GO a PR that's behind Dev only because of landed lane squashes on disjoint files (1-hop import check clean, merge-tree clean, no deps/locks/config/migrations in between, 3 squashes behind at most, none of the don't-use cases in the Dispatch persona). The GO comment carries `behind-GO: N squashes, disjoint+1hop clean`. GitHub required CI always runs.
+
+1. **Post-land check.** When a PR with a behind-GO tag lands, BV runs tsc plus Jest for the touched areas on the Dev merge commit, on a cloud agent. If GitHub CI on that merge commit already ran full tsc and Jest green, cite it and skip.
+2. **Red means revert first.** If it's red, tell CoS to revert the land now. The root-cause fix comes after, in the same ticket.
+3. **No stacking.** Report green or red to Dispatch and CoS. Dispatch gives no other behind-GO until this one's check is green.
+4. **Auto-off.** One red behind-GO turns the rule off. Every PR goes 0-behind until the cause is found and CoS says it's back on.
+5. **Receipt.** `behind-GO post-land: <PR> <merge sha> tsc <pass/fail> jest <pass/fail> (<scope>)`.
+
+## Batch land (Jacob 3:21 PM CT 2026-10-23)
+
+Dispatch may batch 3–4 ready disjoint PRs. Each one needs its own TL pass (or a low-risk TL skip, Jacob 1:39 PM CT 2026-11-02: no money, auth, locking, migrations, deps/locks, config, native, hot lease, Preview or master, plus a `## Evidence` block), the light set green, Dispatch GO, and has to qualify for behind-GO on its own. Shared-file PRs and migrations never batch. The tag is `batch-GO: #a,#b,#c on <tree sha>`.
+
+1. **One heavy run.** BV runs the heavy set once, on cloud agents, on the stacked branch off the current Dev tip. GitHub required CI runs on it too. Record the combined tree SHA.
+2. **Land.** CoS lands each PR as its own squash in Dispatch's order, only if Dev hasn't moved since the batch base. If it moved, the batch is stale: rebuild and rerun. The combined green counts as each PR's post-land check.
+3. **Red, bisect.** If the failure clearly points at one PR's files, drop that PR and rerun the rest once. Otherwise split in half, run both halves in parallel on cloud agents, report the green half as landable, and split the red half again (2 rounds max for 4). A PR red on its own goes back to IW. If each PR is green alone but the set is red, mark them coupled; they land one at a time. Never pass part of a red batch without that subset's own green run.
+4. **Auto-off.** Two red batches in a day turns batching off until the cause is found and CoS turns it back on.
+5. **Receipt.** `batch: #a,#b,#c base <dev sha> tree <sha> heavy <pass/fail> CI <pass/fail>`, plus the result of each bisect round.
+
+## Statechart rerun (Jacob 8:29 AM CT 2026-10-30)
+
+If a PR touches a model under `docs/specs/models/` or the code it covers (named in that model's `report.md`), rerun TLC on that model as part of the heavy set, on a cloud agent. If usage is out, it waits for the reset, never on the box. A broken invariant fails the gate, unless the rule is a known open hole listed in `report.md` with a ticket; in that case it reports as known. Not run in GitHub CI. Receipt: `statechart: <model> states <n> rules <passed>/<total> (known: <list or none>)`.
+
+## Boxes ticked before moving forward (Jacob 2:39 CT 2026-10-15)
+
+- Before a product card moves to Ready to merge: every AC line plus Pipeline boxes Spec/grill through Dispatch GO must be ticked.
+- Before Done: every AC and every Pipeline box must be ticked.
+- A step fitted out counts as cleared only when it's marked N/A with a one-line reason (or struck through).
+- If anything is unticked, the card goes back with a comment listing the unticked boxes and AC lines by name.
+- Exempt: hand-off lanes Operator, Field, Desk device, Live Beta, GoLive (phone, field or founder steps may stay open there).
+- Whoever moves the card (area coordinator, Board, Dispatch) checks this first.

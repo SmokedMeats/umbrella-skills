@@ -6,6 +6,44 @@ Companion to [SKILL.md](SKILL.md). Thin house rules any agent may read: the `/um
 
 House rules. Not new skill folders. Not a second conductor. Matt skills stay Matt installs. Read `SKILL.md` from the parent skills directory. Do not copy those bodies here. Missing file → do not invent the body. Swarm and arena are not standing slashes. `/automate-me` stays maintainer-only. Do not add a `typescript-best-practices` overlay.
 
+### Shared full-flow entry
+
+One canonical companion section (this file). No new skill folder. Packs carry reusable full-flow routing and handoff shape only. Product standing rules, discovery adapters, and version pins stay in the product repo.
+
+**Coding entry (standalone umbrella-skills is valid):** If `/start-work` is installed, use it to pick and route work. If it is not installed, enter `/implement` when product discovery, the house crawl, or an explicit ticket Start already cleared readiness. Still obey `/implement` **Acceptance criteria gate**, **House** claim, **Coding-spawn gate**, and live Project Status rules. A missing `/start-work` does not waive those guards. Swarm `/area-coordinator` is optional and is not required for a standalone skills-pack install.
+
+**Pipeline / task boxes:** the configured gate owner ticks with evidence when that gate clears. Do not batch-tick at the end. Do not tick a conditional gate that did not fire. Independent `/build-verifier` is never unilaterally marked N/A by the writer.
+
+**Base / SHA revalidation (not a blanket full BV):** follow existing `/build-verifier` **Gate by patch, not commit** and **Merge-queue carry-over**, plus [DELEGATION.md](DELEGATION.md) **Recheck at merge**. Fresh configured `commands.pr_ready` runs on the new head when those rules require it. Reuse a PASS when the patch-id is unchanged and the rebase is clean. A full heavy rerun happens only under those listed conditions. Squash SHA need not equal review SHA.
+
+**New-code positive conformity (when standing-product-rules or Effect seams apply):** read the product's canonical patterns doc when that doc is present, and open one actual closest sibling module in the tree. Resolve the installed `effect` package from the product lockfile. This pack does not hardcode a product Effect major and does not assume an upgrade.
+
+**Capability-limited handoff:** when the runtime cannot move Project Status or Kanban, or cannot delete a merged branch, post a GitHub `CAPABILITY_HANDOFF` receipt (the action, the error or limit, ticket, PR, and branch ids, the desired end state, and the suggested owner). Escalate to the configured **Chief of Staff** role, or the configured parent conductor, then the owner. Do not invent access. Do not ask the user to perform the board or branch action. Do not delete a WIP branch. Do not name private agent ids in pack text. `/start-work` and `/area-coordinator` hold the procedure when those files are present. A missing procedure file does not waive the receipt.
+
+**Required skill missing:** a required owner for a fired row, when that skill is not installed, is BLOCKED or a capability handoff. The writer does not mark that row N/A.
+
+#### Conditional skill trigger table
+
+Symptom, then the existing owner, then the proof. Conditional N/A is valid only when that skill's own skip rule applies, with the reason written down. Do not invent a mandate. A locked small bug stays on its existing path.
+
+| Symptom / need | Owner (existing) | Required proof (or justified N/A) |
+| --- | --- | --- |
+| Pick / route next coding work; cloud vs local | `/start-work` if that file is installed; otherwise product discovery plus `/implement` readiness. Standalone does not require swarm. | Start outcome line. Coding-spawn gate and live Project Status stay required. |
+| Locked grill gaps; house map fog | `/grill-me`, `/grilling`, and `/wayfinder` as already configured | Grill lock or map decisions. |
+| Spec and Rule card from a locked grill | `/to-spec` | `RULE_CARD`, `CARRY_FROM_GRILL` |
+| Money, entitlements, locking, or 2+ actor races, or a product Statechart standing rule | `/to-spec` **Statechart** (scoped trigger). `/statechart` produces the model. | `STATECHART` path and rules, or `n/a` with the reason the trigger did not fire. Fired trigger with the skill missing is BLOCKED or a capability handoff. |
+| Ticket graph and ACs from a spec | `/to-tickets` | Tickets with real AC checkboxes |
+| Product code on a coding-eligible ticket | `/implement` **Build loop** and the sections named from `/implement` **Shared full-flow entry** | Gap check PASS / PARTIAL / FAIL table. Living docs. Seam harness. Independent BV Pass. Close gate. Owner lane ticks with evidence. |
+| Untrusted JSON, webhook, or native bag added or edited | `/implement` **Effect Schema inventory** when that inventory is configured | Inventory row plus the configured command. The skill's own skip applies only when the inventory is not configured, with the reason. |
+| Effect or domain seam of the same shape as a sibling | `/implement` **Effect-TS check** and **Backend domain functions** when standing-product-rules are present | Sibling-shape match. Canonical doc read. Closest module read. Installed version read from the lockfile. |
+| Diff cleanup before review | `/implement` **Comment cleanup** (`/deslop` on this ticket's diff) | Cleanup done before `/code-review` |
+| Standards and Spec review, including blast-radius and cycles when configured | `/code-review` | Two-axis report on this ticket. In-scope findings return to the same-ticket Build loop. |
+| The same test or gate fails on two fix attempts | `/implement` **Build loop** **Repeat failure**, then `/diagnosing-bugs` | Escalation receipt. Not a new grill. |
+| Independent mechanical verify | `/build-verifier`. The writer does not mark this N/A. | BV Pass line (head and patch-id on Mode B). When `/build-verifier` is missing, the row is BLOCKED or a capability handoff. |
+| Tech-lead review, or a low-risk skip the product policy already lists | `/tech-lead-review` | TL pass, or the skip that existing product policy documents. This pack does not add skip reasons. When policy requires the review and the skill is missing, the row is BLOCKED or a capability handoff. |
+| Phone-visible leftover or Device QA | `/device-qa-agent` and [DEVICE-QA.md](DEVICE-QA.md) | Probe and run receipts when the product configures Device QA. When that skill is required and missing, the row is BLOCKED or a capability handoff. |
+| Board or branch action blocked by this runtime | CONVENTIONS **Capability-limited handoff** | `CAPABILITY_HANDOFF` GitHub comment. Procedure files add detail when present. The receipt still posts. |
+
 ### Steps
 
 Every phase skill opens with a `## Steps` list: at most 8 numbered lines, each ending in **proof:**, the evidence that step is done. The sections below the list hold the detail. The list holds the order.

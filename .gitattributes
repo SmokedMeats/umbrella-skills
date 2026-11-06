@@ -4,3 +4,5 @@
 scripts/check-public-safe.mjs text eol=lf
 # Pinned upstream packs stay private; the public snapshot (git archive) leaves them out.
 /vendor export-ignore
+# Private policy installed with the umbrella skill folder. The public archive omits it.
+/skills/umbrella/private-bindings.md export-ignore

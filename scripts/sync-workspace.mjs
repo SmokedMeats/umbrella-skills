@@ -9,6 +9,8 @@
  * ~/.agents/skills, ~/.copilot/skills (created when missing).
  *   node scripts/sync-workspace.mjs --box           # + Grok Bot box skills root (BOX_SKILLS_ROOT)
  *   node scripts/sync-workspace.mjs --dest <dir>    # + any extra skills root (repeatable)
+ *   node scripts/sync-workspace.mjs --fixture-root <dir>
+ *       # overlay copy into that directory only; no user roots, personal mirror, rules, or hook config
  *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
  *   node scripts/sync-workspace.mjs --no-vendor     # skip the pinned Matt + SimpleEnglish snapshots
  *   node scripts/sync-workspace.mjs --no-personal   # skip mirroring personal skills across user roots
@@ -58,8 +60,9 @@
  *   - git config publicsafe.denylist <overlay>/public-safe/denylist.txt
  *   - warns when gitleaks is missing (the hook fails closed without it)
  */
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -104,6 +107,7 @@ let CHECK_UPDATES = false; // --check-updates: report + diffs, then stop
 let APPLY_UPDATES = false; // --update: report + diffs, update auto sources, then sync
 let PRINT_DIFFS = false;
 let FORCE_UPDATES = false; // --force: --update installs even when the new version drops something
+let FIXTURE_ROOT = ''; // --fixture-root: one disposable skills root; no user homes
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
@@ -117,6 +121,8 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--update') APPLY_UPDATES = true;
   else if (a === '--print') PRINT_DIFFS = true;
   else if (a === '--force') FORCE_UPDATES = true;
+  else if (a === '--fixture-root' && argv[i + 1]) FIXTURE_ROOT = path.resolve(argv[++i]);
+  else if (a.startsWith('--fixture-root=')) FIXTURE_ROOT = path.resolve(a.slice('--fixture-root='.length));
   else if (a === '-h' || a === '--help') {
     console.log('Usage: node scripts/sync-workspace.mjs [--check-updates | --update [--print]] [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
     console.log('  --check-updates  compare every upstream source with its newest release, write updates/<source>.diff; install nothing');
@@ -125,6 +131,7 @@ for (let i = 0; i < argv.length; i++) {
     console.log('  --force          with --update: install even a source whose new version drops a skill, file or section we have now');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
+    console.log('  --fixture-root <dir>  copy overlay skills into that directory only (no home, mirror, rules, or hooks)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarmy + skills/swarmy-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
@@ -148,7 +155,9 @@ function readText(p) {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const packRoot = path.resolve(here, '..');
 const srcRoot = path.join(packRoot, 'skills');
-const workspaceRoot = path.resolve(packRoot, '..');
+const workspaceRoot = FIXTURE_ROOT && process.env.UMBRELLA_FIXTURE_WORKSPACE
+  ? path.resolve(process.env.UMBRELLA_FIXTURE_WORKSPACE)
+  : path.resolve(packRoot, '..');
 
 // The private overlay is a sibling clone whose project.yml names itself in
 // `workspace.overlay_pack`. The public pack never hard-codes its name.
@@ -276,24 +285,97 @@ function listVendorSkills() {
 
 const VENDOR_SKILLS = SYNC_VENDOR ? listVendorSkills() : [];
 
+const PACK_BASELINE = '.sync-workspace-baseline';
+
+function treeHash(dir) {
+  const hash = createHash('sha256');
+  const walk = (rel) => {
+    const abs = rel ? path.join(dir, rel) : dir;
+    const entries = readdirSync(abs, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+    for (const ent of entries) {
+      if (!rel && ent.name === PACK_BASELINE) continue;
+      const child = rel ? `${rel}/${ent.name}` : ent.name;
+      const childAbs = path.join(dir, child);
+      if (ent.isSymbolicLink()) {
+        hash.update('symlink\0');
+        hash.update(child);
+        hash.update('\0');
+        hash.update(readlinkSync(childAbs));
+        hash.update('\0');
+      } else if (ent.isDirectory()) {
+        hash.update('dir\0');
+        hash.update(child);
+        hash.update('\0');
+        if (!walk(child)) return false;
+      } else if (ent.isFile()) {
+        hash.update('file\0');
+        hash.update(child);
+        hash.update('\0');
+        hash.update(readFileSync(childAbs));
+        hash.update('\0');
+      } else {
+        return false;
+      }
+    }
+    return true;
+  };
+  if (!walk('')) return null;
+  return hash.digest('hex');
+}
+
+function packDestState(dest, from) {
+  if (!existsSync(dest)) return 'absent';
+  const info = lstatSync(dest);
+  if (!info.isDirectory()) return 'not-a-directory';
+  const destHash = treeHash(dest);
+  if (destHash === null) return 'unsupported';
+  const baseline = path.join(dest, PACK_BASELINE);
+  if (!existsSync(baseline) || !lstatSync(baseline).isFile()) {
+    const srcHash = treeHash(from);
+    if (srcHash === null) return 'unsupported';
+    return destHash === srcHash ? 'identical' : 'differ';
+  }
+  return readFileSync(baseline, 'utf8').trim() === destHash ? 'clean' : 'dirty';
+}
+
+function placePackSkill(from, to) {
+  const state = packDestState(to, from);
+  if (state !== 'absent' && state !== 'clean' && state !== 'identical') {
+    console.error(`sync: refuse to replace ${label(to)} (${state}). Not deleted.`);
+    return false;
+  }
+  rmSync(to, { recursive: true, force: true });
+  cpSync(from, to, { recursive: true });
+  const installed = treeHash(to);
+  if (installed === null) {
+    console.error(`sync: refuse to replace ${label(to)} (unsupported). Not deleted.`);
+    return false;
+  }
+  writeFileSync(path.join(to, PACK_BASELINE), `${installed}\n`);
+  return true;
+}
+
+// Each pack skill is decided on its own. A refusal does not undo an earlier
+// skill in the same call; this is not a transaction. A directory is replaced
+// only when it is absent, when its baseline still matches, or when it has no
+// baseline and its tree hash equals the source. Symlink targets are part of
+// that hash and are not followed. Anything else is left in place.
+// --fixture-root returns before overlay project writes, repo-own copies, and repo share.
 function copyOverlayInto(destRoot) {
   mkdirSync(destRoot, { recursive: true });
-  // Vendored first, so the overlay's same-named skills replace Matt's below.
+  let ok = true;
   for (const { name, from } of VENDOR_SKILLS) {
-    const to = path.join(destRoot, name);
-    rmSync(to, { recursive: true, force: true });
-    cpSync(from, to, { recursive: true });
+    if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
   }
   for (const name of OVERLAY_SKILLS) {
     const from = path.join(srcRoot, name);
-    const to = path.join(destRoot, name);
-    if (!existsSync(from)) {
-      throw new Error(`Missing overlay skill: ${from}`);
-    }
-    rmSync(to, { recursive: true, force: true });
-    cpSync(from, to, { recursive: true });
+    if (!existsSync(from)) throw new Error(`Missing overlay skill: ${from}`);
+    if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
   }
+  return ok;
 }
+// The pre-sync check below stays before loadProjectConfig and before any write.
+// copyOverlayInto still replaces only overlay skill folders. Mirror copies stay marker-gated.
 
 function deepMergeDir(fromRoot, toRoot) {
   if (!existsSync(fromRoot)) return;
@@ -331,6 +413,8 @@ if (missing.length > 0) {
 {
   const { checkSteps, reportSteps } = await import('./check-steps.mjs');
   if (!reportSteps(checkSteps(packRoot))) process.exit(1);
+  const { checkSharedFlow, reportSharedFlow } = await import('./check-shared-flow.mjs');
+  if (!reportSharedFlow(checkSharedFlow(packRoot))) process.exit(1);
 }
 
 const cfg = loadProjectConfig();
@@ -362,15 +446,36 @@ if (hasPrivate) console.log(`Private overlay: ${label(privateRoot)}`);
 else console.log(`Private overlay: (none${overlayPackName ? ` at ../${overlayPackName}` : ' found'})`);
 
 const skillDests = [];
+let installRefused = 0;
 
-for (const rel of USER_SKILL_DIRS) {
+if (FIXTURE_ROOT) {
+  if (!copyOverlayInto(FIXTURE_ROOT)) process.exit(1);
+  const ownedSkill = path.join(FIXTURE_ROOT, 'wip-owned', 'SKILL.md');
+  mkdirSync(path.dirname(ownedSkill), { recursive: true });
+  const ownedMark = '# owned by another installer\n';
+  writeFileSync(ownedSkill, ownedMark);
+  const binding = path.join(FIXTURE_ROOT, 'umbrella', 'private-bindings.md');
+  if (!existsSync(binding)) {
+    console.error('fixture binding: umbrella/private-bindings.md was not installed');
+    process.exit(1);
+  }
+  if (readFileSync(ownedSkill, 'utf8') !== ownedMark) {
+    console.error('fixture WIP: unmarked skill was replaced');
+    process.exit(1);
+  }
+  console.log(`  fixture ${label(FIXTURE_ROOT)}`);
+  console.log('fixture: unmarked non-pack skill left in place');
+  console.log(`fixture binding: ${label(binding)}`);
+  console.log('fixture-root: skipped personal mirror, rules, and hook config');
+  process.exit(0);
+} else for (const rel of USER_SKILL_DIRS) {
   const dest = path.join(homedir(), rel);
-  copyOverlayInto(dest);
+  if (!copyOverlayInto(dest)) installRefused += 1;
   skillDests.push(dest);
   console.log(`  user  ${label(dest)}`);
 }
 
-for (const { repo, dirs } of WORKSPACE_TARGETS) {
+if (!FIXTURE_ROOT) for (const { repo, dirs } of WORKSPACE_TARGETS) {
   const repoRoot = path.join(workspaceRoot, repo);
   if (!existsSync(repoRoot)) {
     console.log(`  skip  ${repo} (not next to this clone)`);
@@ -378,19 +483,19 @@ for (const { repo, dirs } of WORKSPACE_TARGETS) {
   }
   for (const rel of dirs) {
     const dest = path.join(repoRoot, rel);
-    copyOverlayInto(dest);
+    if (!copyOverlayInto(dest)) installRefused += 1;
     skillDests.push(dest);
     console.log(`  repo  ${repo}/${rel}`);
   }
 }
 
-for (const { dir: dest, box } of EXTRA_DESTS) {
+if (!FIXTURE_ROOT) for (const { dir: dest, box } of EXTRA_DESTS) {
   // --box on a machine without the box layout: skip instead of inventing /home/box.
   if (box && !existsSync(path.dirname(dest))) {
     console.log(`  skip  ${label(dest)} (--box: parent folder missing; not the Grok Bot box?)`);
     continue;
   }
-  copyOverlayInto(dest);
+  if (!copyOverlayInto(dest)) installRefused += 1;
   skillDests.push(dest);
   console.log(`  extra ${label(dest)}`);
 }
@@ -722,6 +827,7 @@ if (publicSafeRepos.length > 0) {
   }
 }
 
+if (installRefused) failures += installRefused;
 if (failures) {
   console.error(`Done with ${failures} failure(s) above.`);
   process.exitCode = 1;

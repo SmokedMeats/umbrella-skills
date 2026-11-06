@@ -223,7 +223,7 @@ Never-block on reversible work (a lookup, a test, a rename, a local commit in th
 
 ## Thin conventions
 
-House rules. Not new skill folders. Not a second conductor. The text lives in [CONVENTIONS.md](CONVENTIONS.md) so agents that never load this file (implement children, swarm area coordinators) read the same copy. Sections: **Steps**, **DESIGN-IT-TWICE**, **Agent-shaped design**, **Repeated corrections**, **Measured slowness**, **Agent cost**, **Asks outside the grill**, **Decision trail**, **figure-it-out**, **Comment cleanup**, **Recall**, **OVERFLOW_LOCAL (local mid-stop)**. A routing row above that names one means: read that section in CONVENTIONS.md.
+House rules. Not new skill folders. Not a second conductor. The text lives in [CONVENTIONS.md](CONVENTIONS.md) so agents that never load this file (implement children, swarm area coordinators) read the same copy. Sections: **Shared full-flow entry**, **Steps**, **DESIGN-IT-TWICE**, **Agent-shaped design**, **Repeated corrections**, **Measured slowness**, **Agent cost**, **Asks outside the grill**, **Decision trail**, **figure-it-out**, **Comment cleanup**, **Recall**, **OVERFLOW_LOCAL (local mid-stop)**. A routing row above that names one means: read that section in CONVENTIONS.md.
 
 ## Founder intervention
 

@@ -202,8 +202,10 @@ function gitleaks(logOpts) {
   }
   const dir = mkdtempSync(path.join(os.tmpdir(), 'public-safe-'));
   const report = path.join(dir, 'gitleaks.json');
-  const gArgs = ['git', '.', '--no-banner', '--redact', '--exit-code', '1', '--report-format', 'json', '--report-path', report];
-  if (logOpts) gArgs.push(`--log-opts=${logOpts}`);
+  const gArgs = logOpts
+    ? ['git', '.', '--no-banner', '--redact', '--exit-code', '1', '--report-format', 'json', '--report-path', report, `--log-opts=${logOpts}`]
+    : ['dir', top, '--no-banner', '--redact', '--exit-code', '1', '--report-format', 'json', '--report-path', report];
+  console.log(`gitleaks ${gArgs.join(' ')}`);
   const r = run('gitleaks', gArgs);
   let findings = [];
   try {
@@ -212,7 +214,9 @@ function gitleaks(logOpts) {
     // no report written
   }
   rmSync(dir, { recursive: true, force: true });
-  if (r.status !== 0 && r.status !== 1) die(`check:public-safe FAIL ${repo}: gitleaks error\n${r.stderr}`);
+  if (r.status !== 0 && r.status !== 1) {
+    die(`check:public-safe FAIL ${repo}: gitleaks error (fail closed)\n${r.stderr || r.stdout || ''}`);
+  }
   return findings.map((f) => ({
     where: `${(f.Commit || '').slice(0, 7)} ${f.File}:${f.StartLine}`,
     text: `${f.RuleID} ${f.Match || ''}`.slice(0, 200),
@@ -265,7 +269,7 @@ if (flag('--pre-push')) {
   }
 } else if (flag('--tree')) {
   const tip = git('rev-parse', 'HEAD').trim();
-  ok = report('(tree)', tip, [], scanTree());
+  ok = report('(tree)', tip, gitleaks(), scanTree());
 } else {
   const tip = git('rev-parse', 'HEAD').trim();
   const range = opt('--range');
