@@ -11,7 +11,8 @@
  *   node scripts/sync-workspace.mjs --box           # + Grok Bot box skills root (BOX_SKILLS_ROOT)
  *   node scripts/sync-workspace.mjs --dest <dir>    # + any extra skills root (repeatable)
  *   node scripts/sync-workspace.mjs --fixture-root <dir>
- *       # overlay copy into that directory only; no user roots, personal mirror, rules, or hook config
+ *       # overlay skills only. Does not copy project.yml, standing rules,
+ *       # skills-overlay, or swarm docs, and does not run personal mirror, rules, or hook config.
  *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
  *   node scripts/sync-workspace.mjs --no-vendor     # skip the pinned Matt + SimpleEnglish snapshots
  *   node scripts/sync-workspace.mjs --no-personal   # skip mirroring personal skills across user roots
@@ -137,7 +138,7 @@ for (let i = 0; i < argv.length; i++) {
     console.log('  --force          with --update: install even a source whose new version drops a skill, file or section we have now');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
-    console.log('  --fixture-root <dir>  copy overlay skills into that directory only (no home, mirror, rules, or hooks)');
+    console.log('  --fixture-root <dir>  copy overlay skills into that directory only (no home, mirror, rules, hooks, project.yml, standing rules, skills-overlay, or swarm docs)');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarmy + skills/swarmy-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
@@ -290,6 +291,14 @@ function listVendorSkills() {
 }
 
 const VENDOR_SKILLS = SYNC_VENDOR ? listVendorSkills() : [];
+const packSkillNames = new Set([
+  ...OVERLAY_SKILLS,
+  ...VENDOR_SKILLS.map((v) => v.name),
+]);
+// Skills successfully replaced in this run, keyed by destination root.
+// The private overlay is merged only onto those skills, then the baseline is
+// rewritten to the merged tree. A refused skill is not merged onto.
+const placedThisRun = new Map();
 
 const PACK_BASELINE = '.sync-workspace-baseline';
 
@@ -344,6 +353,13 @@ function packDestState(dest, from) {
   return readFileSync(baseline, 'utf8').trim() === destHash ? 'clean' : 'dirty';
 }
 
+function recordPackBaseline(skillDir) {
+  const installed = treeHash(skillDir);
+  if (installed === null) return false;
+  writeFileSync(path.join(skillDir, PACK_BASELINE), `${installed}\n`);
+  return true;
+}
+
 function placePackSkill(from, to) {
   const state = packDestState(to, from);
   if (state !== 'absent' && state !== 'clean' && state !== 'identical') {
@@ -352,12 +368,10 @@ function placePackSkill(from, to) {
   }
   rmSync(to, { recursive: true, force: true });
   cpSync(from, to, { recursive: true });
-  const installed = treeHash(to);
-  if (installed === null) {
+  if (!recordPackBaseline(to)) {
     console.error(`sync: refuse to replace ${label(to)} (unsupported). Not deleted.`);
     return false;
   }
-  writeFileSync(path.join(to, PACK_BASELINE), `${installed}\n`);
   return true;
 }
 
@@ -370,15 +384,40 @@ function placePackSkill(from, to) {
 function copyOverlayInto(destRoot) {
   mkdirSync(destRoot, { recursive: true });
   let ok = true;
+  const placed = new Set();
   for (const { name, from } of VENDOR_SKILLS) {
     if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
+    else placed.add(name);
   }
   for (const name of OVERLAY_SKILLS) {
     const from = path.join(srcRoot, name);
     if (!existsSync(from)) throw new Error(`Missing overlay skill: ${from}`);
     if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
+    else placed.add(name);
   }
+  placedThisRun.set(path.resolve(destRoot), placed);
   return ok;
+}
+
+// Pack skills this run refused stay byte-identical. Everything else in the
+// overlay is merged as before. A merged pack skill then records the post-merge
+// tree as its clean baseline, so the same overlay does not look dirty next run.
+function applySkillsOverlay(dest, skillsOverlay) {
+  const placed = placedThisRun.get(path.resolve(dest)) || new Set();
+  let merged = false;
+  for (const ent of readdirSync(skillsOverlay, { withFileTypes: true })) {
+    if (packSkillNames.has(ent.name) && !placed.has(ent.name)) continue;
+    const from = path.join(skillsOverlay, ent.name);
+    const to = path.join(dest, ent.name);
+    if (ent.isDirectory()) deepMergeDir(from, to);
+    else copyFile(from, to);
+    if (placed.has(ent.name) && !recordPackBaseline(to)) {
+      console.error(`sync: baseline not recorded for ${label(to)} (unsupported). Not deleted.`);
+      installRefused += 1;
+    }
+    merged = true;
+  }
+  return merged;
 }
 // The pre-sync check below stays before loadProjectConfig and before any write.
 // copyOverlayInto still replaces only overlay skill folders. Mirror copies stay marker-gated.
@@ -480,7 +519,7 @@ if (FIXTURE_ROOT) {
   }
   console.log(`  fixture ${label(FIXTURE_ROOT)}`);
   console.log('fixture: unmarked non-pack skill left in place');
-  console.log('fixture-root: skipped personal mirror, rules, and hook config');
+  console.log('fixture-root: skipped personal mirror, rules, hook config, project.yml, standing rules, skills-overlay, and swarm docs');
   process.exit(0);
 } else for (const rel of USER_SKILL_DIRS) {
   const dest = path.join(homedir(), rel);
@@ -560,8 +599,7 @@ if (hasPrivate) {
       copyFile(standing, path.join(dest, 'standing-product-rules.md'));
       wrote.push('standing-product-rules.md');
     }
-    if (existsSync(skillsOverlay)) {
-      deepMergeDir(skillsOverlay, dest);
+    if (existsSync(skillsOverlay) && applySkillsOverlay(dest, skillsOverlay)) {
       wrote.push('skills-overlay/**');
     }
     if (wrote.length) console.log(`  cfg   ${label(dest)}: ${wrote.join(', ')}`);

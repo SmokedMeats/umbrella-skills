@@ -244,7 +244,7 @@ test('fixture-root installs the binding and leaves an unmarked skill', () => {
     );
     assert.match(run, /fixture binding:/);
     assert.match(run, /unmarked non-pack skill left in place/);
-    assert.match(run, /skipped personal mirror, rules, and hook config/);
+    assert.match(run, /skipped personal mirror, rules, hook config, project.yml, standing rules, skills-overlay, and swarm docs/);
     const binding = readFileSync(path.join(dest, 'umbrella', 'private-bindings.md'), 'utf8');
     const owned = readFileSync(path.join(dest, 'wip-owned', 'SKILL.md'), 'utf8');
     const skill = readFileSync(path.join(dest, 'umbrella', 'SKILL.md'), 'utf8');
@@ -311,6 +311,10 @@ test('fixture-root does not write outside the fixture when a private overlay is 
       assert.deepEqual(readFileSync(file), before[i]);
     });
     assert.equal(readFileSync(path.join(fixture, 'umbrella-dirty.txt'), 'utf8'), 'dirty-outside-skill\n');
+    assert.equal(existsSync(path.join(fixture, 'project.yml')), false);
+    assert.equal(existsSync(path.join(fixture, 'standing-product-rules.md')), false);
+    assert.equal(existsSync(path.join(repo, 'docs', 'agents', 'project.yml')), false);
+    assert.equal(existsSync(path.join(repo, 'docs', 'swarm', 'areas.yml')), false);
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
   }
@@ -436,11 +440,12 @@ test('generated public archive passes only with an explicit public flag', () => 
   }
 });
 
+// Listing only. A public export does not contain the binding file, so this
+// check must not read it. Source presence stays in the source-pack tests.
 test('public archive omits the private binding and vendor', () => {
   const listed = execSync('git archive --format=tar HEAD | tar -t', { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 1 << 26 });
   assert.equal(listed.includes('private-bindings.md'), false);
   assert.equal(listed.includes('vendor/'), false);
-  assert.equal(readFileSync(path.join(root, INSTALLED_BINDING), 'utf8').includes('Pilot:'), true);
 });
 
 const SYNTHETIC_BINDING = [
@@ -626,6 +631,159 @@ test('public default install copies 22 skills when vendor and swarm are absent',
       assert.deepEqual(skillDirNames(dest), expected);
       assert.equal(existsSync(path.join(dest, 'umbrella', 'private-bindings.md')), false);
       assert.equal(existsSync(path.join(dest, 'ask-matt', 'SKILL.md')), false);
+    }
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+const DEVICE_QA_HOME = ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills', '.copilot/skills'];
+const DEVICE_QA_REPO = ['.grok/skills', '.claude/skills', '.cursor/skills'];
+const OVERLAY_NOTE = 'adapter device-qa note\n';
+const OVERLAY_REVISED = 'adapter device-qa note revised\n';
+
+function deviceQaDirs(home, repo) {
+  return [
+    ...DEVICE_QA_HOME.map((rel) => path.join(home, rel, 'device-qa-agent')),
+    ...DEVICE_QA_REPO.map((rel) => path.join(repo, rel, 'device-qa-agent')),
+  ];
+}
+
+function snapshotTree(dir) {
+  const out = new Map();
+  const walk = (rel) => {
+    const abs = rel ? path.join(dir, rel) : dir;
+    for (const ent of readdirSync(abs, { withFileTypes: true })) {
+      const child = rel ? `${rel}/${ent.name}` : ent.name;
+      const childAbs = path.join(dir, child);
+      if (ent.isDirectory()) walk(child);
+      else if (ent.isFile()) out.set(child, readFileSync(childAbs));
+      else if (ent.isSymbolicLink()) out.set(child, Buffer.from(`symlink:${readlinkSync(childAbs)}`));
+    }
+  };
+  if (existsSync(dir)) walk('');
+  return out;
+}
+
+function snapshotsEqual(left, right) {
+  if (left.size !== right.size) return false;
+  for (const [key, value] of left) {
+    const other = right.get(key);
+    if (!other || !value.equals(other)) return false;
+  }
+  return true;
+}
+
+function layRepeatSyncWorkspace(sandbox) {
+  const pack = path.join(sandbox, 'pack');
+  const home = path.join(sandbox, 'home');
+  const repo = path.join(sandbox, 'fake-product');
+  const overlay = path.join(sandbox, 'adapter-overlay');
+  const swarm = path.join(sandbox, 'umbrella-swarm');
+  const agents = path.join(repo, '.agents', 'skills', 'owned-note');
+  const wip = path.join(repo, '.cursor', 'skills', 'wip-unmarked');
+  copyPack(pack);
+  writeFileSync(path.join(pack, INSTALLED_BINDING), SYNTHETIC_BINDING);
+  mkdirSync(home);
+  mkdirSync(path.join(overlay, 'skills-overlay', 'device-qa-agent'), { recursive: true });
+  mkdirSync(path.join(overlay, 'docs'), { recursive: true });
+  writeFileSync(path.join(overlay, 'skills-overlay', 'device-qa-agent', 'ADAPTER.md'), OVERLAY_NOTE);
+  writeFileSync(path.join(overlay, 'project.yml'), [
+    'overlay_pack: adapter-overlay',
+    'workspace:',
+    '  skill_targets:',
+    '    - { name: fake-product, dirs: [.grok/skills, .claude/skills, .cursor/skills], own: [.agents/skills] }',
+    'repos:',
+    '  - name: fake-product',
+    '    kind: primary',
+    '',
+  ].join('\n'));
+  writeFileSync(path.join(overlay, 'docs', 'standing-product-rules.md'), 'generic standing\n');
+  writeFileSync(path.join(overlay, 'areas.yml'), 'areas: generic\n');
+  for (const name of ['swarmy', 'swarmy-mode']) {
+    mkdirSync(path.join(swarm, 'skills', name), { recursive: true });
+    writeFileSync(path.join(swarm, 'skills', name, 'SKILL.md'), `---\nname: ${name}\n---\nlocal stand-in\n`);
+  }
+  mkdirSync(agents, { recursive: true });
+  writeFileSync(path.join(agents, 'SKILL.md'), 'owned note\n');
+  writeFileSync(path.join(agents, 'notes.txt'), 'dirty notes\n');
+  mkdirSync(wip, { recursive: true });
+  writeFileSync(path.join(wip, 'SKILL.md'), 'unmarked wip\n');
+  return { pack, home, repo, overlay, agents, wip };
+}
+
+test('repeated sync keeps an overlay merge clean and preserves owned originals', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-repeat-'));
+  try {
+    const { pack, home, repo, agents, wip } = layRepeatSyncWorkspace(sandbox);
+    const agentsBefore = snapshotTree(agents);
+    const wipBefore = readFileSync(path.join(wip, 'SKILL.md'));
+    const first = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(first.status, 0, first.text);
+    const dirs = deviceQaDirs(home, repo);
+    assert.equal(dirs.length, 8);
+    for (const dir of dirs) assert.equal(readFileSync(path.join(dir, 'ADAPTER.md'), 'utf8'), OVERLAY_NOTE);
+    const baseline = readFileSync(path.join(home, '.cursor', 'skills', 'device-qa-agent', '.sync-workspace-baseline'));
+    const projectBytes = readFileSync(path.join(sandbox, 'adapter-overlay', 'project.yml'));
+    const standingBytes = readFileSync(path.join(sandbox, 'adapter-overlay', 'docs', 'standing-product-rules.md'));
+    const areasBytes = readFileSync(path.join(sandbox, 'adapter-overlay', 'areas.yml'));
+    const configDests = [
+      ...DEVICE_QA_HOME.map((rel) => path.join(home, rel)),
+      ...DEVICE_QA_REPO.map((rel) => path.join(repo, rel)),
+      path.join(repo, 'docs', 'agents'),
+    ];
+    const assertConfigParity = () => {
+      for (const dest of configDests) {
+        assert.deepEqual(readFileSync(path.join(dest, 'project.yml')), projectBytes);
+        assert.deepEqual(readFileSync(path.join(dest, 'standing-product-rules.md')), standingBytes);
+      }
+      assert.deepEqual(readFileSync(path.join(repo, 'docs', 'swarm', 'areas.yml')), areasBytes);
+    };
+    assertConfigParity();
+    const second = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(second.status, 0, second.text);
+    assert.equal(second.text.includes('refuse to replace'), false);
+    assertConfigParity();
+    assert.deepEqual(readFileSync(path.join(home, '.cursor', 'skills', 'device-qa-agent', '.sync-workspace-baseline')), baseline);
+    for (const dir of dirs) assert.equal(readFileSync(path.join(dir, 'ADAPTER.md'), 'utf8'), OVERLAY_NOTE);
+    assert.equal(snapshotsEqual(snapshotTree(agents), agentsBefore), true);
+    assert.equal(existsSync(path.join(agents, '.synced-by-sync-workspace')), false);
+    assert.deepEqual(readFileSync(path.join(wip, 'SKILL.md')), wipBefore);
+    const mirrored = path.join(repo, '.grok', 'skills', 'owned-note');
+    assert.equal(readFileSync(path.join(mirrored, 'SKILL.md'), 'utf8'), 'owned note\n');
+    assert.equal(existsSync(path.join(mirrored, '.synced-by-sync-workspace')), true);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('dirty pack and overlay edits stay put while a changed overlay updates clean copies', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-dirty-overlay-'));
+  try {
+    const { pack, home, repo, overlay, agents } = layRepeatSyncWorkspace(sandbox);
+    const agentsBefore = snapshotTree(agents);
+    const first = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(first.status, 0, first.text);
+    const implement = path.join(repo, '.cursor', 'skills', 'implement', 'SKILL.md');
+    const dirtyQa = path.join(home, '.cursor', 'skills', 'device-qa-agent');
+    writeFileSync(implement, `${readFileSync(implement, 'utf8')}local edit\n`);
+    writeFileSync(path.join(dirtyQa, 'USER.md'), 'user edit\n');
+    const implementBefore = readFileSync(implement);
+    const dirtyBefore = snapshotTree(dirtyQa);
+    writeFileSync(path.join(overlay, 'skills-overlay', 'device-qa-agent', 'ADAPTER.md'), OVERLAY_REVISED);
+    const again = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(again.status, 1, again.text);
+    const refuses = again.text.split('\n').filter((line) => line.includes('refuse to replace'));
+    assert.equal(refuses.length, 2, again.text);
+    assert.equal(refuses.some((line) => line.includes('/implement (dirty)')), true);
+    assert.equal(refuses.some((line) => line.includes('/device-qa-agent (dirty)')), true);
+    assert.deepEqual(readFileSync(implement), implementBefore);
+    assert.equal(snapshotsEqual(snapshotTree(dirtyQa), dirtyBefore), true);
+    assert.equal(snapshotsEqual(snapshotTree(agents), agentsBefore), true);
+    for (const dir of deviceQaDirs(home, repo)) {
+      if (dir === dirtyQa) continue;
+      assert.equal(readFileSync(path.join(dir, 'ADAPTER.md'), 'utf8'), OVERLAY_REVISED);
+      assert.equal(existsSync(path.join(dir, 'USER.md')), false);
     }
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
