@@ -80,7 +80,11 @@ cd umbrella-skills
 # git clone <private-overlay-url> ../<overlay_pack>
 # optional swarm companion (installed by the same command):
 # git clone https://github.com/SmokedMeats/umbrella-swarm.git ../umbrella-swarm
-node scripts/sync-workspace.mjs
+# Public snapshot: --public is required. This tree omits
+# skills/umbrella/private-bindings.md. Generic skills do not require that file.
+# Without --public the source check stops before any copy. A missing file is
+# not treated as --public.
+node scripts/sync-workspace.mjs --public
 ```
 
 That copies the overlay into `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, `~/.copilot` (each `<root>/skills`, created when missing), and each sibling product repo listed in `project.yml` `workspace.skill_targets` (defaults to none until you add a config). When a private overlay sibling is present, sync also layers `project.yml`, `skills-overlay/**`, and standing product rules.
@@ -413,7 +417,7 @@ This public pack ships **no product board ids, branch names, npm command names, 
 3. Optional `standing-product-rules.md` (from the private overlay; sync writes it to the same two places) adds product-specific locks by named section (**Grill Context**, **Code-review facts**, **Code-review hard pins**, **Effect domain functions**, **Repeated corrections**, **Boards**, …). Public skills keep the generic form of each rule.
 4. `paths.agent_rules` (unset → `AGENTS.md`) names the product repo's agent-rules file: the coding standing a bare local session also reads. Skills read it at start and pass it to every child packet ([PROJECT-CONFIG.md](skills/umbrella/PROJECT-CONFIG.md) **Repo agent rules**).
 5. Optional `commands.graph_freshness` turns on the non-blocking graphify **Orient** step in `/implement`, `/wayfinder`, and `/blast-radius`: query only when it exits 0; otherwise skip silently. Skills never build the graph.
-6. `node scripts/sync-workspace.mjs` copies the public overlay, then layers the private overlay from the sibling folder whose `project.yml` sets `workspace.overlay_pack` to its own folder name (or `UMBRELLA_OVERLAY=<folder>`). The public pack never names that repo. `--box` / `--dest <dir>` add more skills roots (see **Install** above).
+6. `node scripts/sync-workspace.mjs --public` copies the public overlay, then layers the private overlay from the sibling folder whose `project.yml` sets `workspace.overlay_pack` to its own folder name (or `UMBRELLA_OVERLAY=<folder>`). The public pack never names that repo. On a public clone, pass `--public`. Without that flag the source check stops when `skills/umbrella/private-bindings.md` is missing. A missing file does not turn the flag on. `--box` / `--dest <dir>` add more skills roots (see **Install** above).
 
 Role names **Board**, **Dispatch**, **Chief of Staff**, and the phone lane `roles.device_qa` (default Mobile QA) are generic process roles. Bind the founder display name and GitHub Project option ids only in `project.yml`.
 

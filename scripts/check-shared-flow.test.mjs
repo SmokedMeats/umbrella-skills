@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,7 @@ import {
   INSTALL_SKILL_ROOTS,
   INSTALLED_BINDING,
   SNIPPETS,
+  checkSharedFlow,
   copyOverlaySkillDir,
   loadPack,
   sharedFlowProblems,
@@ -159,6 +160,7 @@ test('PR 56 head fails the shared-flow contract', () => {
 
 test('live pack satisfies shared full-flow', () => {
   const pack = loadPack(root);
+  assert.equal(pack.bindingPresent, true);
   assert.ok(pack.privateBindings.length > 0);
   assert.deepEqual(sharedFlowProblems(pack), []);
 });
@@ -183,9 +185,28 @@ test('a public archive without the binding file is not a source-pack failure', (
   const docs = syntheticPack();
   docs.packMode = 'public';
   docs.privateBindings = '';
+  docs.bindingPresent = false;
   const problems = sharedFlowProblems(docs);
   assert.equal(problems.some((problem) => problem.includes('fail closed')), false);
   assert.equal(problems.some((problem) => problem.includes('must omit private bindings')), false);
+});
+
+test('public mode refuses an empty binding file', () => {
+  const docs = syntheticPack();
+  docs.packMode = 'public';
+  docs.privateBindings = '';
+  docs.bindingPresent = true;
+  const problems = sharedFlowProblems(docs);
+  assert.ok(problems.some((problem) => problem.includes('public archive must omit private bindings')));
+});
+
+test('an invalid pack mode is rejected before the pack is read', () => {
+  const missing = path.join(tmpdir(), `umbrella-no-such-pack-${process.pid}`);
+  rmSync(missing, { recursive: true, force: true });
+  const failures = checkSharedFlow(missing, { packMode: 'inferred' });
+  assert.deepEqual(failures, [{ skill: 'shared-flow', problems: ['unknown pack mode inferred'] }]);
+  assert.equal(existsSync(missing), false);
+  assert.deepEqual(checkSharedFlow(missing, { packMode: 'PUBLIC' }), [{ skill: 'shared-flow', problems: ['unknown pack mode PUBLIC'] }]);
 });
 
 test('umbrella skill copy lands the private binding on an install root', () => {
@@ -420,4 +441,193 @@ test('public archive omits the private binding and vendor', () => {
   assert.equal(listed.includes('private-bindings.md'), false);
   assert.equal(listed.includes('vendor/'), false);
   assert.equal(readFileSync(path.join(root, INSTALLED_BINDING), 'utf8').includes('Pilot:'), true);
+});
+
+const SYNTHETIC_BINDING = [
+  'Pilot: #999 `docs/specs/models/example/` (PR #1000).',
+  'Before a sample card moves to Ready to merge',
+  '',
+].join('\n');
+
+function copyPack(dir) {
+  cpSync(root, dir, {
+    recursive: true,
+    filter: (src) => {
+      const rel = path.relative(root, src);
+      if (!rel) return true;
+      const parts = rel.split(path.sep);
+      return !parts.includes('.git') && parts[0] !== 'vendor';
+    },
+  });
+}
+
+function childEnv(home) {
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  delete env.UMBRELLA_SWARM;
+  delete env.UMBRELLA_OVERLAY;
+  delete env.UMBRELLA_FIXTURE_WORKSPACE;
+  delete env.UMBRELLA_BOX_SKILLS_ROOT;
+  return env;
+}
+
+function runSync(pack, args, home) {
+  let status = 0;
+  let text = '';
+  try {
+    text = execSync(`node scripts/sync-workspace.mjs ${args}`, {
+      cwd: pack,
+      encoding: 'utf8',
+      env: childEnv(home),
+    });
+  } catch (err) {
+    status = err.status === null || err.status === undefined ? 1 : err.status;
+    text = `${err.stdout || ''}${err.stderr || ''}`;
+  }
+  return { status, text };
+}
+
+function skillDirNames(dir) {
+  return readdirSync(dir)
+    .filter((name) => existsSync(path.join(dir, name, 'SKILL.md')))
+    .sort();
+}
+
+test('missing binding does not select public mode and does not create the fixture', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-pub-neg-'));
+  const pack = path.join(sandbox, 'pack');
+  const fixture = path.join(sandbox, 'fixture');
+  const home = path.join(sandbox, 'home');
+  try {
+    copyPack(pack);
+    rmSync(path.join(pack, INSTALLED_BINDING), { force: true });
+    mkdirSync(home);
+    const run = runSync(pack, `--fixture-root ${JSON.stringify(fixture)} --no-vendor --no-swarm`, home);
+    assert.notEqual(run.status, 0);
+    assert.match(run.text, /required binding missing; fail closed/);
+    assert.equal(existsSync(fixture), false);
+    assert.equal(existsSync(path.join(home, '.cursor', 'skills')), false);
+    const failures = checkSharedFlow(pack);
+    const explicit = checkSharedFlow(pack, { packMode: 'source' });
+    assert.deepEqual(explicit, failures);
+    assert.ok(failures.some((row) => row.problems.some((problem) => problem.includes('fail closed'))));
+    assert.equal(failures.some((row) => row.problems.some((problem) => problem.includes('must omit private bindings'))), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('explicit --public installs the 22 overlay skills when the binding file is absent', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-pub-pos-'));
+  const pack = path.join(sandbox, 'pack');
+  const fixture = path.join(sandbox, 'fixture');
+  const home = path.join(sandbox, 'home');
+  try {
+    copyPack(pack);
+    rmSync(path.join(pack, INSTALLED_BINDING), { force: true });
+    mkdirSync(home);
+    const run = runSync(pack, `--public --fixture-root ${JSON.stringify(fixture)} --no-vendor --no-swarm`, home);
+    assert.equal(run.status, 0, run.text);
+    assert.match(run.text, /fixture binding: omitted/);
+    const installed = skillDirNames(fixture).filter((name) => name !== 'wip-owned');
+    assert.deepEqual(installed, skillDirNames(path.join(pack, 'skills')));
+    assert.equal(installed.length, 22);
+    assert.equal(existsSync(path.join(fixture, 'umbrella', 'private-bindings.md')), false);
+    assert.equal(existsSync(path.join(home, '.cursor', 'skills')), false);
+    assert.deepEqual(checkSharedFlow(pack, { packMode: 'public' }), []);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('public mode refuses a pack that still has the binding file', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-pub-refuse-'));
+  const pack = path.join(sandbox, 'pack');
+  const fixture = path.join(sandbox, 'fixture');
+  const home = path.join(sandbox, 'home');
+  try {
+    copyPack(pack);
+    mkdirSync(path.dirname(path.join(pack, INSTALLED_BINDING)), { recursive: true });
+    writeFileSync(path.join(pack, INSTALLED_BINDING), SYNTHETIC_BINDING);
+    mkdirSync(home);
+    const run = runSync(pack, `--public --fixture-root ${JSON.stringify(fixture)} --no-vendor --no-swarm`, home);
+    assert.notEqual(run.status, 0);
+    assert.match(run.text, /public archive must omit private bindings/);
+    assert.doesNotMatch(run.text, /fixture binding: omitted/);
+    assert.equal(existsSync(fixture), false);
+    assert.equal(existsSync(path.join(home, '.cursor', 'skills')), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('public mode refuses an empty binding file before copy', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-pub-empty-'));
+  const pack = path.join(sandbox, 'pack');
+  const fixture = path.join(sandbox, 'fixture');
+  const home = path.join(sandbox, 'home');
+  try {
+    copyPack(pack);
+    writeFileSync(path.join(pack, INSTALLED_BINDING), '');
+    mkdirSync(home);
+    const run = runSync(pack, `--public --fixture-root ${JSON.stringify(fixture)} --no-vendor --no-swarm`, home);
+    assert.notEqual(run.status, 0);
+    assert.match(run.text, /public archive must omit private bindings/);
+    assert.equal(existsSync(fixture), false);
+    assert.equal(existsSync(path.join(home, '.cursor', 'skills')), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('source mode copies a present binding file and still fails closed when that file is removed', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-src-bind-'));
+  const pack = path.join(sandbox, 'pack');
+  const fixture = path.join(sandbox, 'fixture');
+  const home = path.join(sandbox, 'home');
+  const gone = path.join(sandbox, 'gone');
+  try {
+    copyPack(pack);
+    writeFileSync(path.join(pack, INSTALLED_BINDING), SYNTHETIC_BINDING);
+    mkdirSync(home);
+    const run = runSync(pack, `--fixture-root ${JSON.stringify(fixture)} --no-vendor --no-swarm`, home);
+    assert.equal(run.status, 0, run.text);
+    assert.equal(readFileSync(path.join(fixture, 'umbrella', 'private-bindings.md'), 'utf8'), SYNTHETIC_BINDING);
+    assert.match(run.text, /fixture binding:/);
+    rmSync(path.join(pack, INSTALLED_BINDING));
+    const again = runSync(pack, `--fixture-root ${JSON.stringify(gone)} --no-vendor --no-swarm`, home);
+    assert.notEqual(again.status, 0);
+    assert.match(again.text, /required binding missing; fail closed/);
+    assert.equal(existsSync(gone), false);
+    assert.equal(existsSync(path.join(home, '.cursor', 'skills')), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('public default install copies 22 skills when vendor and swarm are absent', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-pub-default-'));
+  const pack = path.join(sandbox, 'pack');
+  const home = path.join(sandbox, 'home');
+  const expected = [];
+  try {
+    copyPack(pack);
+    rmSync(path.join(pack, INSTALLED_BINDING), { force: true });
+    expected.push(...skillDirNames(path.join(pack, 'skills')));
+    mkdirSync(home);
+    const run = runSync(pack, '--public', home);
+    assert.equal(run.status, 0, run.text);
+    assert.match(run.text, /Vendored packs: \(none in this clone/);
+    assert.match(run.text, /Swarm pack: \(none found/);
+    assert.equal(run.text.includes('/home/ubuntu'), false);
+    assert.equal(run.text.includes('/home/box'), false);
+    assert.equal(expected.length, 22);
+    for (const rel of ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills', '.copilot/skills']) {
+      const dest = path.join(home, rel);
+      assert.deepEqual(skillDirNames(dest), expected);
+      assert.equal(existsSync(path.join(dest, 'umbrella', 'private-bindings.md')), false);
+      assert.equal(existsSync(path.join(dest, 'ask-matt', 'SKILL.md')), false);
+    }
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
 });

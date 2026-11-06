@@ -3,7 +3,8 @@
  * product repo that sits next to this clone. Optionally layer a private
  * project overlay (a sibling clone; see findOverlaySibling) for bindings.
  *
- *   node scripts/sync-workspace.mjs                 # user roots + workspace.skill_targets
+ *   node scripts/sync-workspace.mjs                 # source pack: user roots + workspace.skill_targets
+ *   node scripts/sync-workspace.mjs --public        # public snapshot install; explicit, never inferred
  *
  * User roots (always): ~/.grok/skills, ~/.cursor/skills, ~/.claude/skills,
  * ~/.agents/skills, ~/.copilot/skills (created when missing).
@@ -108,6 +109,7 @@ let APPLY_UPDATES = false; // --update: report + diffs, update auto sources, the
 let PRINT_DIFFS = false;
 let FORCE_UPDATES = false; // --force: --update installs even when the new version drops something
 let FIXTURE_ROOT = ''; // --fixture-root: one disposable skills root; no user homes
+let PUBLIC_SNAPSHOT = false; // --public: explicit public-snapshot check. Missing binding does not set this.
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--box') EXTRA_DESTS.push({ dir: process.env.UMBRELLA_BOX_SKILLS_ROOT || BOX_SKILLS_ROOT, box: true });
@@ -123,8 +125,12 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--force') FORCE_UPDATES = true;
   else if (a === '--fixture-root' && argv[i + 1]) FIXTURE_ROOT = path.resolve(argv[++i]);
   else if (a.startsWith('--fixture-root=')) FIXTURE_ROOT = path.resolve(a.slice('--fixture-root='.length));
+  else if (a === '--public') PUBLIC_SNAPSHOT = true;
   else if (a === '-h' || a === '--help') {
-    console.log('Usage: node scripts/sync-workspace.mjs [--check-updates | --update [--print]] [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
+    console.log('Usage: node scripts/sync-workspace.mjs [--public] [--check-updates | --update [--print]] [--box] [--dest <skills-root>]... [--no-swarm] [--no-vendor] [--no-personal] [--no-rules]');
+    console.log('  --public       public snapshot install. Runs the public shared-flow check (the binding file must be absent).');
+    console.log('                 Explicit only: a missing binding file does not select this mode.');
+    console.log('                 Default is the source pack and fails closed when skills/umbrella/private-bindings.md is missing.');
     console.log('  --check-updates  compare every upstream source with its newest release, write updates/<source>.diff; install nothing');
     console.log('  --update         same report, then install the auto sources (npx skills lock, graphify) and run the sync');
     console.log('  --print          also print every full diff (default: a summary per source; diffs saved in updates/)');
@@ -414,7 +420,8 @@ if (missing.length > 0) {
   const { checkSteps, reportSteps } = await import('./check-steps.mjs');
   if (!reportSteps(checkSteps(packRoot))) process.exit(1);
   const { checkSharedFlow, reportSharedFlow } = await import('./check-shared-flow.mjs');
-  if (!reportSharedFlow(checkSharedFlow(packRoot))) process.exit(1);
+  const packMode = PUBLIC_SNAPSHOT ? 'public' : 'source';
+  if (!reportSharedFlow(checkSharedFlow(packRoot, { packMode }))) process.exit(1);
 }
 
 const cfg = loadProjectConfig();
@@ -455,9 +462,17 @@ if (FIXTURE_ROOT) {
   const ownedMark = '# owned by another installer\n';
   writeFileSync(ownedSkill, ownedMark);
   const binding = path.join(FIXTURE_ROOT, 'umbrella', 'private-bindings.md');
-  if (!existsSync(binding)) {
+  if (PUBLIC_SNAPSHOT) {
+    if (existsSync(binding)) {
+      console.error('fixture binding: public install copied private-bindings.md');
+      process.exit(1);
+    }
+    console.log('fixture binding: omitted');
+  } else if (!existsSync(binding)) {
     console.error('fixture binding: umbrella/private-bindings.md was not installed');
     process.exit(1);
+  } else {
+    console.log(`fixture binding: ${label(binding)}`);
   }
   if (readFileSync(ownedSkill, 'utf8') !== ownedMark) {
     console.error('fixture WIP: unmarked skill was replaced');
@@ -465,7 +480,6 @@ if (FIXTURE_ROOT) {
   }
   console.log(`  fixture ${label(FIXTURE_ROOT)}`);
   console.log('fixture: unmarked non-pack skill left in place');
-  console.log(`fixture binding: ${label(binding)}`);
   console.log('fixture-root: skipped personal mirror, rules, and hook config');
   process.exit(0);
 } else for (const rel of USER_SKILL_DIRS) {

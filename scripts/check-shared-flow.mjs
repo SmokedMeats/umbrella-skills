@@ -3,7 +3,10 @@
 // implement, with the conditional trigger table. sync-workspace runs this with
 // check-steps. A missing phrase or a forbidden pin is a problem string.
 //
-//   node scripts/check-shared-flow.mjs [packRoot]
+//   node scripts/check-shared-flow.mjs [--public] [packRoot]
+//   Omitting --public keeps source mode and fails closed when the binding
+//   file is missing. --public is explicit. A missing file does not select it.
+//   Public mode refuses the binding file when that file is present.
 import { cpSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -224,7 +227,7 @@ export function sharedFlowProblems(docs) {
   const published = [docs.toSpec, docs.buildVerifier, docs.implement, docs.conventions, docs.umbrella].join('\n');
   const dangling = DANGLING_BINDING.filter((token) => published.includes(token));
   const publicArchive = docs.packMode === 'public';
-  if (publicArchive && bindings) {
+  if (publicArchive && (docs.bindingPresent || bindings)) {
     problems.push('public archive must omit private bindings');
   }
   if (!publicArchive && !bindings) {
@@ -287,6 +290,7 @@ export function loadPack(packRoot) {
     buildVerifier: read('skills/build-verifier/SKILL.md'),
     deviceQa: read('skills/device-qa-agent/SKILL.md'),
     deviceQaDoc: read('skills/umbrella/DEVICE-QA.md'),
+    bindingPresent: existsSync(path.join(packRoot, INSTALLED_BINDING)),
     privateBindings: existsSync(path.join(packRoot, INSTALLED_BINDING))
       ? read(INSTALLED_BINDING)
       : '',
@@ -296,8 +300,18 @@ export function loadPack(packRoot) {
   };
 }
 
-export function checkSharedFlow(packRoot) {
-  const problems = sharedFlowProblems(loadPack(packRoot));
+// packMode is explicit. Omitting it, or passing "source", keeps the source
+// check: a missing binding file fails closed. "public" is only the public
+// archive check. A missing file does not select "public". Any other mode is
+// rejected before the pack is read.
+export function checkSharedFlow(packRoot, options = {}) {
+  const packMode = options.packMode;
+  if (packMode !== undefined && packMode !== 'public' && packMode !== 'source') {
+    return [{ skill: 'shared-flow', problems: [`unknown pack mode ${packMode}`] }];
+  }
+  const pack = loadPack(packRoot);
+  if (packMode === 'public' || packMode === 'source') pack.packMode = packMode;
+  const problems = sharedFlowProblems(pack);
   return problems.length === 0 ? [] : [{ skill: 'shared-flow', problems }];
 }
 
@@ -314,9 +328,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2).filter((arg) => arg !== '--public');
   const packMode = process.argv.includes('--public') ? 'public' : 'source';
   const root = path.resolve(args[0] || path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
-  const pack = loadPack(root);
-  pack.packMode = packMode;
-  const problems = sharedFlowProblems(pack);
-  if (!reportSharedFlow(problems.length === 0 ? [] : [{ skill: 'shared-flow', problems }])) process.exit(1);
+  if (!reportSharedFlow(checkSharedFlow(root, { packMode }))) process.exit(1);
   console.log(`check-shared-flow: OK (${packMode})`);
 }

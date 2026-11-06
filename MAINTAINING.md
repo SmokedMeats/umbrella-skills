@@ -4,7 +4,7 @@ For people who edit this repo. Installers can ignore this file.
 
 ## Private remote vs public snapshot
 
-Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. `skills/umbrella/private-bindings.md` is the same omission for approved product bindings. Sync copies it with the umbrella skill folder. Generic skills do not require that path. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
+Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. `skills/umbrella/private-bindings.md` is the same omission for approved product bindings. Sync copies it with the umbrella skill folder when the file is present and `--public` was not passed. Generic skills do not require that path. A public clone that installs with this script passes `--public`. That flag is explicit: a missing binding file does not select it, and `--public` refuses to copy when the file is present. The default command stays the source check and fails closed when the file is missing. On the private clone, do not pass `--public`. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
 
 Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
 
@@ -15,7 +15,7 @@ Update both in the same change:
 1. The skill file under `skills/`
 2. The "What this pack changes" index + skill headings in `README.md`
 
-Then sync this clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`):
+Then sync this private clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`). Do not pass `--public` here:
 
 ```text
 node scripts/sync-workspace.mjs
