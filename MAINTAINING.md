@@ -8,6 +8,8 @@ Day-to-day work stays on the **private** GitHub remote (name ends in `-private`)
 
 Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
 
+`node scripts/check-readiness.mjs` is the source aggregate: source shared-flow, the full test file, and a source install fixture. It fails closed when the private binding is missing. A public clone does not pass that command. `node scripts/check-readiness.mjs --public` is explicit and is not inferred from a missing file. It runs check-steps, `check-shared-flow --public`, a public install fixture, and the archive omission check. The source rows are reported `NOT APPLICABLE`. That is not a pass, and it does not turn the raw public suite into a pass. An unset denylist stays `NOT RUN`. On the private clone, do not pass `--public`: the binding file is present, so that check fails closed. The public fixture does not copy project config and does not replace swarm skills.
+
 ## When an overlay rule changes
 
 Update both in the same change:
