@@ -4,9 +4,11 @@ For people who edit this repo. Installers can ignore this file.
 
 ## Private remote vs public snapshot
 
-Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
+Day-to-day work stays on the **private** GitHub remote (name ends in `-private`). `vendor/` (pinned outside packs) exists only there: `.gitattributes` `export-ignore` keeps it out of the `git archive` the publish script uses, so the public tree is the private tree minus `vendor/`. `skills/umbrella/private-bindings.md` is the same omission for approved product bindings. Sync copies it with the umbrella skill folder when the file is present and `--public` was not passed. Generic skills do not require that path. A public clone that installs with this script passes `--public`. That flag is explicit: a missing binding file does not select it, and `--public` refuses to copy when the file is present. The default command stays the source check and fails closed when the file is missing. On the private clone, do not pass `--public`. Keep the local folder name `umbrella-skills`. The public repo of the same short name is a rebuilt single-commit snapshot only — never push private history there. Re-publish with `scripts/publish-public.sh` (or the equivalent orphan rebuild) after `check:public-safe` passes.
 
 Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **public** pack.
+
+`node scripts/check-readiness.mjs` is the source aggregate: source shared-flow, the full test file, and a source install fixture. It fails closed when the private binding is missing. A public clone does not pass that command. `node scripts/check-readiness.mjs --public` is explicit and is not inferred from a missing file. It runs check-steps, `check-shared-flow --public`, a public install fixture, and the archive omission check. The source rows are reported `NOT APPLICABLE`. That is not a pass, and it does not turn the raw public suite into a pass. An unset denylist stays `NOT RUN`. On the private clone, do not pass `--public`: the binding file is present, so that check fails closed. The public fixture does not copy project config and does not replace swarm skills.
 
 ## When an overlay rule changes
 
@@ -15,7 +17,7 @@ Update both in the same change:
 1. The skill file under `skills/`
 2. The "What this pack changes" index + skill headings in `README.md`
 
-Then sync this clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`):
+Then sync this private clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`). Do not pass `--public` here:
 
 ```text
 node scripts/sync-workspace.mjs
@@ -50,7 +52,7 @@ Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited
 
 Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
-Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` (sync runs it first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
+Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` and `node scripts/check-shared-flow.mjs` (sync runs both first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
 
 ### pstack ([cursor/plugins](https://github.com/cursor/plugins))
 

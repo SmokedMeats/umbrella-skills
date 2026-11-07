@@ -151,7 +151,7 @@ Default when unsure: **Field** if outdoor, GPS, or on-wrist proof remains, else 
 
 ### Off Field
 
-- Field ACs clear → **Done**, or the next lane that is actually left: **Operator** (leftover) or **Live Beta** / **GoLive** (handoff, not leftover)
+- Field ACs clear → **Done** (or next Status: **Operator** leftover, or **Live Beta** / **GoLive** handoff — not leftover)
 - Outdoor or season still honestly blocked → stay **Field** + keep the calendar-wait label (never Parked for a date/season hold; never invent Pass)
 - Product fail found outdoors → same Fail rules (ticket back to **In Progress**, or one new issue)
 
@@ -193,3 +193,12 @@ Completion: every asked Field AC is Pass, Fail, N/A, Skip, or still-wait (calend
 The phone is exclusive. The worktree is shared: you dirty the checklist (**Leaves** + ticks) and the run folder. Coding agents keep `src/`. If the checklist is mid-edit in another session, write ticks into the run `REPORT.md` and say so.
 
 Android-first. **iPhone:** leaves → **N/A** on an Android kit. After a declared-done full pass or an OTA smoke, archive per `PRODUCT.md`.
+
+## Device QA IN / OUT
+
+Test: could a Preview phone crawl catch a product lie in this ticket's AC? If no, no Device QA.
+- **Desk IN:** phone-visible UI, auth/sign-in, boot/splash/theme, on-screen chrome the product checklist names, push on the device, sync between devices the product configures, an explicit phone AC, or a Device QA Fail / P* leaf.
+- **Field IN:** only real GPS, outdoor or on-wrist proof.
+- **OUT:** backend/SQL, CI and deploy config, types/hardening, pure math with unit proof, website-only, cron/admin reports, research/decision, dep/runtime bumps (unless the founder asks for an OTA smoke).
+- No phone-visible/outdoor tag → default desk-only. No phone-visible AC → Done after merge gates (or Operator/GoLive), never Desk device or Field.
+- Tick only the phone/Field boxes you actually ran.

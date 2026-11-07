@@ -38,10 +38,18 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 2. **House** and claim each wave ticket (Parent, labels, map child, milestone, Project **In Progress**), then rewrite the cursor. proof: the assignees and the cursor rewrite.
 3. **Spawn gate**: every extra ticket has a live child, or is queued past the cap. proof: the child ids, or `skip: count 1`.
 4. **Acceptance criteria gate**: the ticket has real `## Acceptance criteria`; empty → `needs_parent`. proof: the AC count.
-5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, database test lanes, harness run. proof: the commits, the test file, the harness line, and the database-lane receipt when a database test ran.
+5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, harness run. proof: the commits, the test file, and the harness line.
 6. **Gap check** on this ticket. PARTIAL or FAIL → back to step 5. proof: the PASS/PARTIAL/FAIL table on the ticket.
 7. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
 8. **Living docs** comment (and the **P\*** leaf when phone-visible), build-verifier Pass, the **Close gate** line, then the lane or close, and **Crawl** (recount). proof: the Living docs URL, the verdict, and the Close gate line.
+
+## Shared full-flow entry (no new skill)
+
+**Entry:** If `/start-work` is installed, use it to route. If it is not, enter this skill when product discovery, the house crawl, or an explicit ticket Start already selected the work. You still run **Acceptance criteria gate**, **House** claim, and **Coding-spawn gate**. A missing `/start-work` does not waive those guards. Do not add a skill folder for this entry. The conditional trigger table is [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Shared full-flow entry**.
+
+**Obligatory Build-loop chain (existing sections of this skill — the owner ticks a gate only when it clears, with evidence):** **Acceptance criteria gate** → **Rule card and harness** (seam test when behavior changes) → product code → **Gap check** (PASS / PARTIAL / FAIL on that ticket) → **Living docs** (including **Effect-TS check**, **Effect Schema inventory** when configured, and **Backend domain functions** when standing-product-rules are present) → **Comment cleanup** (`/deslop` on this ticket's diff) → `/code-review` two-axis Standards and Spec, including blast-radius and cycles when that skill's rules say to run them → same-ticket **Build loop** for in-scope findings (two rounds; a missing Rule card rule is one grill question) → **Repeat failure** when the same check fails twice → independent `/build-verifier` (the writer does not mark it N/A) → **Close gate** → leftover lane or Done per **Count first**. Owner Pipeline ticks live in **Your Pipeline ticks**. A required skill that is not installed is BLOCKED or a capability handoff, not writer N/A.
+
+**Capability handoff:** post the receipt defined in CONVENTIONS **Capability-limited handoff**. A missing `/start-work` or `/area-coordinator` procedure file does not waive the receipt.
 
 ## Acceptance criteria gate (before product code)
 
@@ -70,17 +78,11 @@ Commit your work to the current branch.
 
 **Migrate.** When this change adds `backend/drizzle/0xxx_*.sql`, run `project.yml` `commands.db_migrate` (the command carries its own `cd`) in the same session after the file is on disk. A migrate run before that file exists will not include it. Do not edit a file that has already been applied. Do not run migrate again when this change added no new SQL file. A missed migrate stays on this ticket. It is not a leftover.
 
-## Database test lanes
-
-Keep real-database proof honest. Do not weaken required lanes.
-
-1. **Database-only unit tests:** where the repository uses `openTestPostgres()`, use that shared helper and its existing `TEST_PG_URL`/local-socket contract. Gate optional no-database runs with `describePg = TEST_PG ? describe : describe.skip`, or the existing fake/pg backend list. When `REQUIRE_TEST_PG=1`, a missing database must fail at load, never silently skip. Do not add a missing-database `beforeAll` throw to an optional run.
-2. **Receipts / R2:** skipped database tests never count as a real-database or R2 pass. Required PostgreSQL cases must actually execute and pass; R2 also requires its configured integration checks. Record the command, database harness and executed/skipped results. An optional local green run is not proof that required database checks passed.
-3. **Harness boundaries:** follow the repository's configured separation: disposable unit PostgreSQL; isolated integration databases such as throwaway Neon branches or Testcontainers, never shared Preview/Production integration targets; and shared Preview-app end-to-end tests. Use existing helpers and safety gates, not per-file connection logic. Do not claim a database check ran merely because a particular assistant or editor was used.
-
 ## Comment cleanup
 
 One pass on this ticket before `/code-review`. Strip comments added in this change that narrate the next line, or that are leftover noise. Keep a comment that documents an intentional API or a non-obvious constraint. Do not spawn a comment-cleanup subagent. A leftover narrative comment is an in-scope `/code-review` **Standards** finding.
+
+Run it as `/deslop` scoped to **this ticket's diff only** (comments, `any` casts, odd try/catch, deep nesting; no behavior change). Always keep: why-comments, constraint notes (money, locking, auth, migrations, security pins, platform workarounds with a link), license headers, and lint/type directives (`eslint-disable*`, `@ts-expect-error`). While working a ticket you may also run `/no-comments` on that ticket's files and do its in-scope fixes (root-cause a workaround, encode a do-not-remove rule as a type/test/lint) as part of the ticket. The one batched cleanup PR is different: `/no-comments` **deletions only** there, no code fixes or encodings, keep money/locking/auth/migration guards, and list anything it wanted to fix for the founder to ticket (run when the merge queue is near empty, never a whole-repo sweep that clashes with open PRs).
 
 ## Build loop
 
@@ -104,6 +106,19 @@ A leftover lane is **not** Window full. Keep crawling.
 Completion: no in-scope remainder on the wave tickets, or Window full with that remainder on the spec.
 
 
+## Self-prove and receipts
+
+- **Pilot area only:** run this step only for the one configured pilot area named in standing product rules. If that area is not named, the step is BLOCKED. A missing name is not N/A and does not start the pilot for every area. Do not run it while the `/umbrella-mode` **Usage guard** says included cloud usage is too low, and do not run it on the box as a fallback. When the pilot area is named and that guard is clear: before Ready, run /verify-own-work on the real surface and put a `## Evidence` block in the PR body. BV still runs its own heavy set and never adopts this evidence.
+- **Receipts go on GitHub:** post every receipt as a PR comment (a ticket comment before a PR exists), not only in chat or memory.
+
+## Database test lanes
+
+Keep real-database proof honest. Do not weaken required lanes.
+
+1. **Database-only unit tests:** where the repository uses `openTestPostgres()`, use that shared helper and its existing `TEST_PG_URL`/local-socket contract. Gate optional no-database runs with `describePg = TEST_PG ? describe : describe.skip`, or the existing fake/pg backend list. When `REQUIRE_TEST_PG=1`, a missing database must fail at load, never silently skip. Do not add a missing-database `beforeAll` throw to an optional run.
+2. **Receipts / R2:** skipped database tests never count as a real-database or R2 pass. Required PostgreSQL cases must actually execute and pass; R2 also requires its configured integration checks. Record the command, database harness and executed/skipped results. An optional local green run is not proof that required database checks passed.
+3. **Harness boundaries:** follow the repository's configured separation: disposable unit PostgreSQL; isolated integration databases such as throwaway Neon branches or Testcontainers, never shared Preview/Production integration targets; and shared Preview-app end-to-end tests. Use existing helpers and safety gates, not per-file connection logic. Do not claim a database check ran merely because a particular assistant or editor was used.
+
 ## Close gate
 
 Before GitHub **close** or a **leftover-lane** move on a ticket, rewrite that ticket’s **Close gate** line into `project.yml` `paths.umbrella_cursor` (and optionally the conductor comment). Shape:
@@ -116,21 +131,13 @@ Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migra
 
 ## Count first
 
-Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`). An open issue with `ready-for-agent` is not enough to enter this count.
+Count open implement tickets whose **product** blockers are done, that are not already in-flight, and that wear **`umbrella:<slug>`** (not `parked:<slug>`, not `Later:` / `Leftover:`).
 
-**Coding eligibility, before any coding spawn.** Read this repo's configured Project Status live ([PROJECTS.md](../umbrella/PROJECTS.md) **Resolve one item**, option names from `project.yml` `status_options`). The status must be readable. Missing status, an unreadable board, or a conflict between that status and the labels → **no coding spawn**.
+**Do not pull** a handoff lane for routine new implementation. **Handoff** is **Operator**, **Desk device**, **Field**, **Live Beta**, and **GoLive** — plus **Done** / closed are out. **Leftover** is the subset **Operator**, **Desk device**, and **Field** ([PROJECTS.md](../umbrella/PROJECTS.md) **Leftover lanes**). Those three are leftover and handoff. **Live Beta** and **GoLive** are handoff and are not leftover. None of the five is a coding spawn. **Ready to merge** stays the merge wait (holds dependents), not a handoff lane; do not spawn a new coding worker for it. **Parked** stays the pre-launch shelf (not coding). **Unclaimed** and **In Progress** remain pullable when the **Coding-spawn gate** passes.
 
-Coding-eligible statuses are only **Unclaimed** and **In Progress**, and only when the implementation is not already merged. **Desk device**, **Field**, **Operator**, **Live Beta**, and **GoLive** are handoff lanes, not routine new implementation. **Done** and a closed issue are out. **Parked** and **Ready to merge** stay off this frontier.
+**Coding-spawn gate:** readable live Project Status required (missing/unreadable/conflicting → do not pull). `ready-for-agent`/open alone never sufficient. Skip when relevant merged implementation evidence covers this ticket's ACs; skip duplicate when an active PR/worker owns it. Verification-only (BV/QA) on a handoff/code lane remains allowed; an unrelated merged PR is not proof all ACs shipped.
 
-Do not spawn a second coder when an open PR or a live worker already has that ticket.
-
-Skip work that already shipped, even if Status or `ready-for-agent` is stale. Proof is the merged change and the ticket's acceptance criteria in the current code. A non-closing reference (`Refs #n` and the like) can leave the issue open; that open issue is not unfinished code. A matching title, or a pull request merely mentioned, is not that proof.
-
-Handoff lanes still allow the QA and verifier work those lanes already name. An explicitly evidenced new regression (a failing check, or a named acceptance criterion the merged code does not meet, cited from that code or that run) may be new scope. Do not recode the handoff ticket as if it had never shipped.
-
-**Do not pull** a handoff lane for routine new implementation. **Handoff** is **Operator**, **Desk device**, **Field**, **Live Beta**, and **GoLive**. **Leftover** is the subset **Operator**, **Desk device**, and **Field** ([PROJECTS.md](../umbrella/PROJECTS.md) **Leftover lanes**). Those three are leftover and handoff. **Live Beta** and **GoLive** are handoff and are not leftover. None of the five is a coding spawn. **Ready to merge** stays the merge wait, not a handoff lane. **Parked** stays the pre-launch shelf.
-
-Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next wave. Do not write “still blocked until this ticket closes.” That unlock is only the leftover subset. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds.
+Treat leftover-lane cards as **satisfied** blockers. An open GitHub `blocked_by` already on a leftover lane does **not** hold the next coding wave. Do not write “still blocked until this ticket closes.” That unlock is only the leftover subset (**Operator**, **Desk device**, **Field**). A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds.
 
 **First reply.** Before House, `/tdd`, or any product-file edit, post this table in the user-visible reply:
 
@@ -149,7 +156,7 @@ A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive 
 
 Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the other wave tickets. That split is the draft.
 
-**Spawn gate.** No product-code spawn without a live coding-eligible Project Status for that ticket (**Count first**). Product-code edits start after one of:
+**Spawn gate.** Product-code edits start after one of:
 
 - Count **1** — the table is posted.
 - Count **2+** — every extra ticket has a **live child**, or is queued past the child cap or the memory check ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**).
@@ -218,7 +225,7 @@ Typical misses: `paths.wayfinder_now`, `paths.wayfinder_maps`, the house board, 
 
 **Effect Schema inventory** (when configured). If this change adds or edits a production `JSON.parse`, webhook `data` bag, native dict, or untyped `res.json`, add or update a row in `project.yml` `paths.effect_schema_inventory` in the **same change** (P0/P1/P2). Then run `project.yml` `commands.effect_schema_inventory`. Listing is required even if Schema is later. The **Effect-TS check** still runs: a listed bag that is still hand-parsed is a remaining AC. Auth-adjacent bags still need the auth checklist before code.
 
-**Backend domain functions** (when standing-product-rules present; concrete example and scope in its **Effect domain functions** section). New backend logic in `backend/src` lands as one narrow, app-shaped domain function on Effect 3.22.1 with typed errors. Example: `claimThing(actor, resource)` does lookup, clock check, write, and notify in one fixed path. Routes, crons, and agents call that function, never the raw repository pieces. No new raw `try/catch` in `backend/src`. Run the `/codebase-design` deletion test on each new function. This lock is the exception to "do not wrap a service in `Effect.gen`" above. No Effect v4. (Matt Pocock, 2026-10-03, "Effect, but even more restrictive".) The same lock covers mobile `<mobile-pkg>/src/services/*`: narrow Effect functions with typed errors, no new raw `try/catch`. React hooks and components are exempt for now. Every empty `catch` anywhere carries a one-line comment saying why the fallback is fine.
+**Backend domain functions** (when standing-product-rules present; concrete example and scope in its **Effect domain functions** section). New backend logic in `backend/src` lands as one narrow, app-shaped domain function with typed errors on the **installed** `effect` package (read that version from the product `package.json` and lockfile — this skill does not pin a major or minor and does not assume an upgrade). **Positive conformity:** read the product's canonical Effect patterns doc when that doc is present (for example `docs/engineering/EFFECT_PATTERNS.md`, or the standing-rules Effect section) and open one actual closest sibling module in the tree; new code matches that sibling's shape. Example shape: `claimThing(actor, resource)` does lookup, clock check, write, and notify in one fixed path. Routes, crons, and agents call that function, never the raw repository pieces. No new raw `try/catch` in `backend/src`. Run the `/codebase-design` deletion test on each new function. This lock is the exception to "do not wrap a service in `Effect.gen`" above. (Matt Pocock, 2026-10-03, "Effect, but even more restrictive".) The same lock covers mobile `<mobile-pkg>/src/services/*`: narrow Effect functions with typed errors, no new raw `try/catch`. React hooks and components are exempt for now. Every empty `catch` anywhere carries a one-line comment saying why the fallback is fine. Product-only version pins and the definition of done live in standing-product-rules, not in this pack.
 
 **Cycles** (when configured). Package `verify` does not run `check-cycles`. That check is master-bar (`commands.preflight_cycles`). `/code-review` runs it when the ticket touched `backend/src` or mobile `src`. A new cycle is a Standards hard violation and a remaining AC.
 
@@ -303,7 +310,7 @@ One copy, here. Every spawn carries them by reference: name this section and [BU
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
 - Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.
-- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Database tests follow **Database test lanes** (skipped database tests are not a real-database or R2 pass). Do not run `commands.pr_ready`; the build-verifier does.
+- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Do not run `commands.pr_ready`; the build-verifier does.
 - Type check, `verify`, and multi-test runs go through the heavy gate: `. /tmp/umbrella-heavy.sh && heavy <command>` ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**).
 - The same test or check red on two fix attempts in a row → stop and report `needs_parent` with the failing output and both diffs (**Build loop** **Repeat failure**). Do not try a third fix. A fix child sent with a repeat-failure verdict stops at its first red on that check and reports `needs_parent`; it does not try again.
 - Run each check in the foreground to its exit. Do not end your turn waiting on one. Exit 137 or 143 is a kill, not a red gate: re-run it through the gate. Never report it as a failed AC.
@@ -342,3 +349,29 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
 5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `project.yml` `commands.db_migrate` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
 6. **Merge prompt (Ship mode PR only).** Soft-queue overlap check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until the founder says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. When they say merge, land one at a time per [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**: if `<dev-branch>` moved since the verdict, bring it in, run `commands.pr_ready` once, push with `HUSKY=0`, and compare patch-id with the build-verifier receipt (changed → fresh verifier); merge, then the next. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. A **House queue** with a next house does not wait on that answer — return to `/umbrella` and start that house. After they merge, set those tickets to the lane that is actually left and walk the list again.
+
+## Merge-queue pre-warm
+
+For one-at-a-time queues only (dependency bumps, or PRs that share files). Skip this section for PRs that can merge in any order.
+
+- **Pre-warm the next 1–2 PRs, never the whole queue,** on cloud agents, and only after the CoS usage gate passes. Each one gets deps installed, a merge rehearsed against `<dev-branch>` plus the PRs ahead of it in Dispatch's posted order, and checks run without pushing. Record the rehearsed merged tree SHA (`git rev-parse HEAD^{tree}`). Shut the agent down when its PR lands or leaves the queue.
+- **Re-rehearse on change.** When Dispatch says a PR ahead was amended, dropped or reordered, redo the rehearsals from that point down only.
+- **Resync.** Run the update and the recheck in parallel. Use the carry-over rules in [build-verifier](../build-verifier/SKILL.md) **Merge-queue carry-over**. A full carry-over needs the merged tree SHA to match the rehearsal. A patch-id match alone carries only lint, types and unit tests for files outside the base diff. Rerun everything if package.json, a lock file, tsconfig, jest/babel/metro config, the Expo app/eas config, `.github/workflows` or a migration changed on either side. GitHub required CI always runs on the pushed head.
+- **pr-ready receipt.** List the rehearsed tree SHA, the actual tree SHA, and each check as `carried` or `reran`. Target: green within about 10 minutes of the prior land.
+
+**Check split:**
+1. **IW pre-warm runs the light set only:** merge rehearsal, deps install, lint, tsc, and Jest on the changed files. It finds breakage early, but it isn't a certification. IW does not run full Jest, the fingerprint check or the bundle budget.
+2. **BV runs the heavy set once, on IW's rehearsed merge, as soon as it's ready** (while the PR ahead is still landing): full Jest, fingerprint, bundle budget, prebuild and migrations, on BV's cloud agents. On resync, a tree SHA match carries BV's pass over and GO is instant. A deps or config change means BV reruns once, on the new rehearsal.
+3. **BV never adopts IW's results** as its own pass. That keeps the check independent.
+4. **Bundle-budget jitter:** Metro temp-path jitter must not fail the gate. The root fix (a deterministic measurement that normalizes or strips temp paths) folds into the current PR or a related ticket, not a new ticket. Until it lands, a budget miss under 64 bytes gets one rerun, not a FAIL.
+
+## Lessons
+
+- **Native deps:** flag any native package add or drop in the PR body when it opens, as a fingerprint decision (it needs a new binary build, not OTA). Try a Linux or cloud `expo prebuild` before saying "needs a Mac".
+- **Stall alarm:** a cloud fixup with no push in 30 minutes (15 for security work) gets an ETA or a kill-and-relaunch.
+- **Migrations:** drops and renames use expand/contract. Finalize steps run in one transaction. Real-Postgres tests run in CI/BV, never local-only. Keyset cursors keep full DB precision.
+- **Tech Lead optional ideas** wait until after the land.
+
+## Your Pipeline ticks
+
+Tick your boxes as each clears, in the ticket body, not at the end: code + unit, rebase, static gates, Living docs, P* leaves. Tick an AC box only with proof. N/A = `[x]` struck with a one-line reason. Other owners: area-coordinator `## Tick owners`.

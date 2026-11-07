@@ -8,6 +8,8 @@ The probe is part of that crawl. Nobody arms a separate Device QA pass. Do **not
 
 ## When this runs
 
+Strict IN/OUT: see device-qa-agent `## Device QA IN / OUT`. If a Preview phone crawl couldn't catch a product lie in the AC, it doesn't run.
+
 Phone-visible ship, checklist exists (`project.yml` `paths.device_qa_checklist`), and product ACs are PASS.
 
 **Leaves** (desk catch-up) can run with **no** phone. That is still `/device-qa-agent` § Leaves only.
