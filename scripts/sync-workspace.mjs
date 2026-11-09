@@ -64,8 +64,8 @@
  */
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { closeSync, constants, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readlinkSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -95,6 +95,25 @@ const OVERLAY_SKILLS = [
 ];
 
 const USER_SKILL_DIRS = ['.grok/skills', '.cursor/skills', '.claude/skills', '.agents/skills', '.copilot/skills'];
+
+// Skills a tool ships for itself. An older Grok Build copied its bundled skills into
+// ~/.grok/skills, at the same bytes or as an older copy. A skill in a tool's own root
+// whose name is in that tool's bundle, or on its retired list (an older release put it
+// there and the bundle no longer ships it), is the tool's: sync does not mirror it as a
+// personal skill and never overwrites it. A pack skill of the same name is reported as a
+// known collision, not refused (#67).
+const TOOL_OWN_SKILLS = [
+  { tool: 'Grok Build', root: '.grok/skills', bundled: '.grok/bundled/skills', retired: ['check-work', 'help'] },
+];
+function toolOwnerOf(dir) {
+  const parent = path.resolve(path.dirname(dir));
+  const name = path.basename(dir);
+  for (const { tool, root, bundled, retired } of TOOL_OWN_SKILLS) {
+    if (path.resolve(homedir(), root) !== parent) continue;
+    if (retired.includes(name) || existsSync(path.join(homedir(), bundled, name, 'SKILL.md'))) return tool;
+  }
+  return null;
+}
 
 // Grok Bot box: skills (workflows) live in one flat root, not under ~/.grok.
 const BOX_SKILLS_ROOT = '/home/box/agent-data/workflows';
@@ -212,13 +231,21 @@ function listSwarmSkills(swarmRoot) {
     .sort();
 }
 
-function copySwarmInto(destRoot, swarmRoot, names) {
+let swarmSkillNames = new Set();
+
+function copySwarmInto(destRoot, swarmRoot, names, overlayRoot = '') {
   mkdirSync(destRoot, { recursive: true });
+  let ok = true;
   for (const name of names) {
-    const to = path.join(destRoot, name);
-    rmSync(to, { recursive: true, force: true });
-    cpSync(path.join(swarmRoot, 'skills', name), to, { recursive: true });
+    const from = path.join(swarmRoot, 'skills', name);
+    let overlayDir = '';
+    if (overlayRoot) {
+      const dir = path.join(overlayRoot, name);
+      if (existsSync(dir) && lstatSync(dir).isDirectory()) overlayDir = dir;
+    }
+    if (!placePackSkill(from, path.join(destRoot, name), overlayDir)) ok = false;
   }
+  return ok;
 }
 
 function loadProjectConfig() {
@@ -295,11 +322,6 @@ const packSkillNames = new Set([
   ...OVERLAY_SKILLS,
   ...VENDOR_SKILLS.map((v) => v.name),
 ]);
-// Skills successfully replaced in this run, keyed by destination root.
-// The private overlay is merged only onto those skills, then the baseline is
-// rewritten to the merged tree. A refused skill is not merged onto.
-const placedThisRun = new Map();
-
 const PACK_BASELINE = '.sync-workspace-baseline';
 
 function treeHash(dir) {
@@ -338,83 +360,180 @@ function treeHash(dir) {
   return hash.digest('hex');
 }
 
-function packDestState(dest, from) {
-  if (!existsSync(dest)) return 'absent';
-  const info = lstatSync(dest);
-  if (!info.isDirectory()) return 'not-a-directory';
-  const destHash = treeHash(dest);
-  if (destHash === null) return 'unsupported';
-  const baseline = path.join(dest, PACK_BASELINE);
-  if (!existsSync(baseline) || !lstatSync(baseline).isFile()) {
-    const srcHash = treeHash(from);
-    if (srcHash === null) return 'unsupported';
-    return destHash === srcHash ? 'identical' : 'differ';
+function baselineLstat(skillDir) {
+  try {
+    return lstatSync(path.join(skillDir, PACK_BASELINE));
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return null;
+    throw error;
   }
-  return readFileSync(baseline, 'utf8').trim() === destHash ? 'clean' : 'dirty';
 }
 
+// A symlink is not a baseline. writeFileSync would follow it and replace the
+// file outside this skill. Open the path with O_NOFOLLOW so a link that appears
+// after the lstat is a failed write, not an outside overwrite.
 function recordPackBaseline(skillDir) {
+  const existing = baselineLstat(skillDir);
+  if (existing && !existing.isFile()) return false;
   const installed = treeHash(skillDir);
   if (installed === null) return false;
-  writeFileSync(path.join(skillDir, PACK_BASELINE), `${installed}\n`);
+  const baselinePath = path.join(skillDir, PACK_BASELINE);
+  const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW;
+  let fd;
+  try {
+    fd = openSync(baselinePath, flags, 0o644);
+  } catch (error) {
+    if (error && (error.code === 'ELOOP' || error.code === 'EEXIST')) return false;
+    throw error;
+  }
+  try {
+    writeFileSync(fd, `${installed}\n`);
+  } finally {
+    closeSync(fd);
+  }
   return true;
 }
 
-function placePackSkill(from, to) {
-  const state = packDestState(to, from);
-  if (state !== 'absent' && state !== 'clean' && state !== 'identical') {
-    console.error(`sync: refuse to replace ${label(to)} (${state}). Not deleted.`);
-    return false;
-  }
-  rmSync(to, { recursive: true, force: true });
-  cpSync(from, to, { recursive: true });
-  if (!recordPackBaseline(to)) {
-    console.error(`sync: refuse to replace ${label(to)} (unsupported). Not deleted.`);
-    return false;
+// Pack source plus that skill's overlay slice, when the slice exists. The
+// comparison target is this installed result, not the pack directory alone.
+function desiredSkill(from, overlayDir) {
+  if (!overlayDir) return { root: from, cleanup() {} };
+  const tmp = mkdtempSync(path.join(tmpdir(), 'sync-desired-'));
+  const root = path.join(tmp, 'skill');
+  cpSync(from, root, { recursive: true });
+  deepMergeDir(overlayDir, root);
+  return {
+    root,
+    cleanup() {
+      rmSync(tmp, { recursive: true, force: true });
+    },
+  };
+}
+
+const refusedDestinations = new Set();
+const LEGACY_MIRROR_NAMES = new Set(['swarm', 'swarm-mode']);
+
+function refusePack(to, state) {
+  refusedDestinations.add(path.resolve(to));
+  console.error(`sync: refuse to replace ${label(to)} (${state}). Not deleted.`);
+  return false;
+}
+
+// A tool's own built-in holds this pack skill's name in that tool's root. It stays
+// byte-identical and gains no baseline; later steps skip the path. Not a failure.
+const knownCollisions = new Set();
+function knownCollision(to, tool) {
+  const key = path.resolve(to);
+  refusedDestinations.add(key);
+  if (!knownCollisions.has(key)) {
+    knownCollisions.add(key);
+    console.log(`sync: known collision ${label(to)} is ${tool}'s own skill; the pack copy is not installed there (MAINTAINING.md, tool built-ins).`);
   }
   return true;
+}
+
+function installDesired(from, to) {
+  rmSync(to, { recursive: true, force: true });
+  mkdirSync(path.dirname(to), { recursive: true });
+  cpSync(from, to, { recursive: true });
+  if (!recordPackBaseline(to)) return refusePack(to, 'unsupported');
+  return true;
+}
+
+// absent: no directory entry at all. A symlink is not absent, including when
+// its target is missing. Install only when lstat reports nothing there.
+// an existing symlink or any other non-directory: refuse before any remove.
+// The link text stays, and a missing target is not created.
+// dest already equals that tree: write a missing baseline only. Do not replace.
+// baseline matches dest and desired moved: replace. The previous bytes were ours.
+// no baseline and dest equals the pack source exactly: install desired. An extra
+// file would have changed the hash, so this replace does not drop a local edit.
+// a baseline symlink, or any baseline that is not a regular file: refuse before
+// any copy or write. The link and the file it names stay.
+// anything else: differ (no baseline) or dirty (baseline mismatch). No write,
+// and no baseline is created on differ.
+function placePackSkill(from, to, overlayDir = '') {
+  const desired = desiredSkill(from, overlayDir);
+  try {
+    const desiredHash = treeHash(desired.root);
+    const packHash = treeHash(from);
+    if (desiredHash === null || packHash === null) return refusePack(to, 'unsupported');
+    let info = null;
+    try {
+      info = lstatSync(to);
+    } catch (error) {
+      if (!error || error.code !== 'ENOENT') throw error;
+    }
+    if (!info) {
+      console.log(`sync: installed ${label(to)}`);
+      return installDesired(desired.root, to);
+    }
+    if (!info.isDirectory()) return refusePack(to, 'not-a-directory');
+    const baselineInfo = baselineLstat(to);
+    if (baselineInfo && baselineInfo.isSymbolicLink()) return refusePack(to, 'baseline-link');
+    if (baselineInfo && !baselineInfo.isFile()) return refusePack(to, 'unsupported');
+    const destHash = treeHash(to);
+    if (destHash === null) return refusePack(to, 'unsupported');
+    const baseline = baselineInfo ? readFileSync(path.join(to, PACK_BASELINE), 'utf8').trim() : null;
+    if (destHash === desiredHash) {
+      if (baseline !== desiredHash && !recordPackBaseline(to)) return refusePack(to, 'unsupported');
+      console.log(`sync: unchanged ${label(to)}`);
+      return true;
+    }
+    if (baseline !== null && baseline === destHash) {
+      console.log(`sync: updated ${label(to)}`);
+      return installDesired(desired.root, to);
+    }
+    if (baseline === null && destHash === packHash) {
+      console.log(`sync: updated ${label(to)}`);
+      return installDesired(desired.root, to);
+    }
+    const tool = toolOwnerOf(to);
+    if (tool) return knownCollision(to, tool);
+    return refusePack(to, baseline === null ? 'differ' : 'dirty');
+  } finally {
+    desired.cleanup();
+  }
 }
 
 // Each pack skill is decided on its own. A refusal does not undo an earlier
 // skill in the same call; this is not a transaction. A directory is replaced
-// only when it is absent, when its baseline still matches, or when it has no
-// baseline and its tree hash equals the source. Symlink targets are part of
-// that hash and are not followed. Anything else is left in place.
+// only when no entry is there, when its baseline still matches, or when it has no
+// baseline and its tree hash equals the pack source. A symlink is an entry.
+// A tree that already matches the installed result, including its overlay slice, is not replaced.
+// Symlink targets are part of that hash and are not followed. Anything else
+// is left in place.
 // --fixture-root returns before overlay project writes, repo-own copies, and repo share.
-function copyOverlayInto(destRoot) {
+function copyOverlayInto(destRoot, overlayRoot = '') {
   mkdirSync(destRoot, { recursive: true });
+  const overlaySlice = (name) => {
+    if (!overlayRoot) return '';
+    const dir = path.join(overlayRoot, name);
+    return existsSync(dir) && lstatSync(dir).isDirectory() ? dir : '';
+  };
   let ok = true;
-  const placed = new Set();
   for (const { name, from } of VENDOR_SKILLS) {
-    if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
-    else placed.add(name);
+    if (!placePackSkill(from, path.join(destRoot, name), overlaySlice(name))) ok = false;
   }
   for (const name of OVERLAY_SKILLS) {
     const from = path.join(srcRoot, name);
     if (!existsSync(from)) throw new Error(`Missing overlay skill: ${from}`);
-    if (!placePackSkill(from, path.join(destRoot, name))) ok = false;
-    else placed.add(name);
+    if (!placePackSkill(from, path.join(destRoot, name), overlaySlice(name))) ok = false;
   }
-  placedThisRun.set(path.resolve(destRoot), placed);
   return ok;
 }
 
-// Pack skills this run refused stay byte-identical. Everything else in the
-// overlay is merged as before. A merged pack skill then records the post-merge
-// tree as its clean baseline, so the same overlay does not look dirty next run.
+// Pack skills are already final, including their overlay slice. A refused pack
+// skill stays as it was. Other overlay entries (swarm patches, extra files) still merge.
 function applySkillsOverlay(dest, skillsOverlay) {
-  const placed = placedThisRun.get(path.resolve(dest)) || new Set();
   let merged = false;
   for (const ent of readdirSync(skillsOverlay, { withFileTypes: true })) {
-    if (packSkillNames.has(ent.name) && !placed.has(ent.name)) continue;
+    if (packSkillNames.has(ent.name) || swarmSkillNames.has(ent.name)) continue;
     const from = path.join(skillsOverlay, ent.name);
     const to = path.join(dest, ent.name);
+    if (refusedDestinations.has(path.resolve(to))) continue;
     if (ent.isDirectory()) deepMergeDir(from, to);
     else copyFile(from, to);
-    if (placed.has(ent.name) && !recordPackBaseline(to)) {
-      console.error(`sync: baseline not recorded for ${label(to)} (unsupported). Not deleted.`);
-      installRefused += 1;
-    }
     merged = true;
   }
   return merged;
@@ -494,6 +613,10 @@ else console.log(`Private overlay: (none${overlayPackName ? ` at ../${overlayPac
 const skillDests = [];
 let installRefused = 0;
 
+const skillsOverlayRoot = hasPrivate && existsSync(path.join(privateRoot, 'skills-overlay'))
+  ? path.join(privateRoot, 'skills-overlay')
+  : '';
+
 if (FIXTURE_ROOT) {
   if (!copyOverlayInto(FIXTURE_ROOT)) process.exit(1);
   const ownedSkill = path.join(FIXTURE_ROOT, 'wip-owned', 'SKILL.md');
@@ -523,7 +646,7 @@ if (FIXTURE_ROOT) {
   process.exit(0);
 } else for (const rel of USER_SKILL_DIRS) {
   const dest = path.join(homedir(), rel);
-  if (!copyOverlayInto(dest)) installRefused += 1;
+  if (!copyOverlayInto(dest, skillsOverlayRoot)) installRefused += 1;
   skillDests.push(dest);
   console.log(`  user  ${label(dest)}`);
 }
@@ -536,7 +659,7 @@ if (!FIXTURE_ROOT) for (const { repo, dirs } of WORKSPACE_TARGETS) {
   }
   for (const rel of dirs) {
     const dest = path.join(repoRoot, rel);
-    if (!copyOverlayInto(dest)) installRefused += 1;
+    if (!copyOverlayInto(dest, skillsOverlayRoot)) installRefused += 1;
     skillDests.push(dest);
     console.log(`  repo  ${repo}/${rel}`);
   }
@@ -548,7 +671,7 @@ if (!FIXTURE_ROOT) for (const { dir: dest, box } of EXTRA_DESTS) {
     console.log(`  skip  ${label(dest)} (--box: parent folder missing; not the Grok Bot box?)`);
     continue;
   }
-  if (!copyOverlayInto(dest)) installRefused += 1;
+  if (!copyOverlayInto(dest, skillsOverlayRoot)) installRefused += 1;
   skillDests.push(dest);
   console.log(`  extra ${label(dest)}`);
 }
@@ -567,18 +690,25 @@ if (!SYNC_SWARM) {
   const names = all.filter((n) => !OVERLAY_SKILLS.includes(n));
   console.log(`Swarm pack: ${label(swarmRoot)} (${names.join(', ')})`);
   if (clash.length) console.log(`  swarm WARNING: skipped ${clash.join(', ')} (same name as an overlay skill; v1 wins)`);
+  swarmSkillNames = new Set(names);
   const swarmDests = [...new Set(skillDests.map((d) => path.resolve(d)))];
   for (const dest of swarmDests) {
-    copySwarmInto(dest, swarmRoot, names);
-    for (const retired of ['swarm', 'swarm-mode']) {
+    if (!copySwarmInto(dest, swarmRoot, names, skillsOverlayRoot)) installRefused += 1;
+    // Older directory names are not current swarm skills. Words inside a skill
+    // file do not make the tree disposable. Leave the entry, including a symlink.
+    for (const retired of LEGACY_MIRROR_NAMES) {
       const dir = path.join(dest, retired);
-      const skillFile = path.join(dir, 'SKILL.md');
-      if (!existsSync(skillFile)) continue;
-      const text = readText(skillFile);
-      const ours = text.includes('product swarm') || text.includes('area coordinators');
-      if (!ours) continue;
-      rmSync(dir, { recursive: true, force: true });
-      console.log(`  pack  retired old /${retired} copy at ${label(dir)}`);
+      let present = true;
+      try {
+        lstatSync(dir);
+      } catch (error) {
+        if (error && error.code === 'ENOENT') present = false;
+        else throw error;
+      }
+      if (!present) continue;
+      refusedDestinations.add(path.resolve(dir));
+      console.error(`sync: refuse to replace ${label(dir)} (legacy). Not deleted.`);
+      installRefused += 1;
     }
     console.log(`  pack  ${label(dest)}: swarm skills`);
   }
@@ -676,7 +806,18 @@ function sourceNote(p) {
   return label(rel(workspaceRoot, '') || rel(homedir(), '~/') || p);
 }
 function mirrorSkill(from, to, note) {
-  if (existsSync(to) && !isMirrorCopy(to)) return false; // another installer owns it
+  // A path refused earlier stays. An existing symlink is not a missing
+  // directory, including when its target is missing. Skipping this write
+  // does not make the rest of the run atomic.
+  if (refusedDestinations.has(path.resolve(to))) return false;
+  let info = null;
+  try {
+    info = lstatSync(to);
+  } catch (error) {
+    if (!error || error.code !== 'ENOENT') throw error;
+  }
+  if (info && !info.isDirectory()) return false;
+  if (info && !isMirrorCopy(to)) return false; // another installer owns it
   rmSync(to, { recursive: true, force: true });
   cpSync(from, to, { recursive: true, dereference: true });
   for (const m of LEGACY_MARKERS) rmSync(path.join(to, m), { force: true });
@@ -696,9 +837,9 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
   const kept = [];
   for (const srcRel of [...new Set([...own, ...dirs])]) {
     for (const name of skillNames(path.join(repoRoot, srcRel))) {
-      if (seen.has(name) || packOwned.has(name) || mirrorExclude.has(name)) continue;
+      if (seen.has(name) || packOwned.has(name) || mirrorExclude.has(name) || LEGACY_MIRROR_NAMES.has(name)) continue;
       const from = path.join(repoRoot, srcRel, name);
-      if (isMirrorCopy(from)) continue; // a copy this script made, not a source
+      if (isMirrorCopy(from) || refusedDestinations.has(path.resolve(from))) continue; // a copy, or a path already refused
       seen.add(name);
       for (const rel of dirs) {
         if (path.resolve(repoRoot, rel) === path.resolve(repoRoot, srcRel)) continue;
@@ -727,7 +868,8 @@ for (const { repo, dirs, own } of WORKSPACE_TARGETS) {
   for (const rel of [...new Set([...own, ...dirs])]) {
     for (const name of skillNames(path.join(repoRoot, rel))) {
       const dir = path.join(repoRoot, rel, name);
-      if (packOwned.has(name) || mirrorExclude.has(name) || isMirrorCopy(dir)) continue;
+      if (packOwned.has(name) || mirrorExclude.has(name) || LEGACY_MIRROR_NAMES.has(name) || isMirrorCopy(dir)) continue;
+      if (refusedDestinations.has(path.resolve(dir))) continue;
       if (!found.has(name)) found.set(name, new Map());
       found.get(name).set(path.normalize(rel), dir);
     }
@@ -750,7 +892,14 @@ for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
     if (found.has(name)) continue; // the repo's own skill, not a shared copy
     for (const rel of dirs) {
       const dir = path.join(workspaceRoot, repo, rel, name);
-      if (existsSync(dir) && isMirrorCopy(dir)) { rmSync(dir, { recursive: true, force: true }); removed.push(`${rel}/${name}`); }
+      if (refusedDestinations.has(path.resolve(dir))) continue;
+      let info = null;
+      try {
+        info = lstatSync(dir);
+      } catch (error) {
+        if (!error || error.code !== 'ENOENT') throw error;
+      }
+      if (info && info.isDirectory() && isMirrorCopy(dir)) { rmSync(dir, { recursive: true, force: true }); removed.push(`${rel}/${name}`); }
     }
   }
   if (removed.length) console.log(`  skip  ${repo}: removed ${removed.length} earlier shared cop${removed.length === 1 ? 'y' : 'ies'} (${removed.join(', ')})`);
@@ -788,11 +937,14 @@ const repoOwnNames = new Set(
 if (SYNC_PERSONAL) {
   const roots = USER_SKILL_DIRS.map((rel) => path.join(homedir(), rel));
   const sources = new Map(); // name -> first original (non-copy) folder
+  const toolOwn = [];
   for (const root of roots) {
     for (const name of skillNames(root)) {
-      if (packOwned.has(name) || mirrorExclude.has(name) || sources.has(name)) continue;
+      if (packOwned.has(name) || mirrorExclude.has(name) || LEGACY_MIRROR_NAMES.has(name) || sources.has(name)) continue;
       const dir = path.join(root, name);
-      if (!isMirrorCopy(dir)) sources.set(name, dir);
+      if (isMirrorCopy(dir) || refusedDestinations.has(path.resolve(dir))) continue;
+      if (toolOwnerOf(dir)) { toolOwn.push(label(dir)); continue; }
+      sources.set(name, dir);
     }
   }
   let n = 0;
@@ -806,6 +958,7 @@ if (SYNC_PERSONAL) {
     }
   }
   console.log(`Personal skills: ${sources.size} found, ${n} copies written to user roots and repo skill dirs (--no-personal skips)`);
+  if (toolOwn.length) console.log(`  tool  ${toolOwn.length} skill(s) a tool installed for itself, not mirrored: ${toolOwn.join(', ')}`);
 } else {
   console.log('Personal skills: (skipped, --no-personal)');
 }

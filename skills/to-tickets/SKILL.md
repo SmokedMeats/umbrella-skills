@@ -172,6 +172,6 @@ Parked (`Later:`) tickets omit Exclusive / Wave / `ready-for-agent`. They includ
 
 In either form, avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
 
-## Native links and checklist at publish
+## Native links and checklist at publish (Jacob 5:17 AM CT 2026-11-05)
 
 When publishing: add each child as a native GitHub sub-issue of the parent and each real blocker as a native Blocked by dependency (body sections mirror them, they are not the source of truth). Add the fitted Pipeline checklist and set the QA lane per device-qa-agent `## Device QA IN / OUT`. Never create sub-issues to mirror checklist steps. Tick owners and remediation rules: area-coordinator `## Tick owners` and `## Native GitHub structure`.

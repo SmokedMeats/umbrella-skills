@@ -194,11 +194,11 @@ The phone is exclusive. The worktree is shared: you dirty the checklist (**Leave
 
 Android-first. **iPhone:** leaves → **N/A** on an Android kit. After a declared-done full pass or an OTA smoke, archive per `PRODUCT.md`.
 
-## Device QA IN / OUT
+## Device QA IN / OUT (Jacob 5:17 AM CT 2026-11-05)
 
 Test: could a Preview phone crawl catch a product lie in this ticket's AC? If no, no Device QA.
-- **Desk IN:** phone-visible UI, auth/sign-in, boot/splash/theme, on-screen chrome the product checklist names, push on the device, sync between devices the product configures, an explicit phone AC, or a Device QA Fail / P* leaf.
+- **Desk IN:** phone-visible UI, auth/sign-in, boot/splash/theme, maps/HUD/record chrome, push on phone, phone↔watch sync, an explicit phone AC, or a Device QA Fail / P* leaf.
 - **Field IN:** only real GPS, outdoor or on-wrist proof.
-- **OUT:** backend/SQL, CI and deploy config, types/hardening, pure math with unit proof, website-only, cron/admin reports, research/decision, dep/runtime bumps (unless the founder asks for an OTA smoke).
+- **OUT:** backend/SQL/Drizzle, CI/Railway/IaC, types/hardening, pure math with unit proof, website-only, cron/admin reports, research/decision, dep/runtime bumps (unless Jacob asks for an OTA smoke).
 - No phone-visible/outdoor tag → default desk-only. No phone-visible AC → Done after merge gates (or Operator/GoLive), never Desk device or Field.
 - Tick only the phone/Field boxes you actually ran.

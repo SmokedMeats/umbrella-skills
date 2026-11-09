@@ -38,7 +38,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 2. **House** and claim each wave ticket (Parent, labels, map child, milestone, Project **In Progress**), then rewrite the cursor. proof: the assignees and the cursor rewrite.
 3. **Spawn gate**: every extra ticket has a live child, or is queued past the cap. proof: the child ids, or `skip: count 1`.
 4. **Acceptance criteria gate**: the ticket has real `## Acceptance criteria`; empty → `needs_parent`. proof: the AC count.
-5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, harness run. proof: the commits, the test file, and the harness line.
+5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, database test lanes, harness run. proof: the commits, the test file, the harness line, and the database-lane receipt when a database test ran.
 6. **Gap check** on this ticket. PARTIAL or FAIL → back to step 5. proof: the PASS/PARTIAL/FAIL table on the ticket.
 7. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
 8. **Living docs** comment (and the **P\*** leaf when phone-visible), build-verifier Pass, the **Close gate** line, then the lane or close, and **Crawl** (recount). proof: the Living docs URL, the verdict, and the Close gate line.
@@ -82,7 +82,7 @@ Commit your work to the current branch.
 
 One pass on this ticket before `/code-review`. Strip comments added in this change that narrate the next line, or that are leftover noise. Keep a comment that documents an intentional API or a non-obvious constraint. Do not spawn a comment-cleanup subagent. A leftover narrative comment is an in-scope `/code-review` **Standards** finding.
 
-Run it as `/deslop` scoped to **this ticket's diff only** (comments, `any` casts, odd try/catch, deep nesting; no behavior change). Always keep: why-comments, constraint notes (money, locking, auth, migrations, security pins, platform workarounds with a link), license headers, and lint/type directives (`eslint-disable*`, `@ts-expect-error`). While working a ticket you may also run `/no-comments` on that ticket's files and do its in-scope fixes (root-cause a workaround, encode a do-not-remove rule as a type/test/lint) as part of the ticket. The one batched cleanup PR is different: `/no-comments` **deletions only** there, no code fixes or encodings, keep money/locking/auth/migration guards, and list anything it wanted to fix for the founder to ticket (run when the merge queue is near empty, never a whole-repo sweep that clashes with open PRs).
+Run it as `/deslop` scoped to **this ticket's diff only** (comments, `any` casts, odd try/catch, deep nesting; no behavior change). Always keep: why-comments, constraint notes (money, locking, auth, migrations, security pins, platform workarounds with a link), license headers, and lint/type directives (`eslint-disable*`, `@ts-expect-error`). While working a ticket you may also run `/no-comments` on that ticket's files and do its in-scope fixes (root-cause a workaround, encode a do-not-remove rule as a type/test/lint) as part of the ticket. The one batched cleanup PR is different: `/no-comments` **deletions only** there, no code fixes or encodings, keep money/locking/auth/migration guards, and list anything it wanted to fix for Jacob to ticket (Jacob 2026-10-22; run when the merge queue is near empty, never a whole-repo sweep that clashes with open PRs).
 
 ## Build loop
 
@@ -106,9 +106,9 @@ A leftover lane is **not** Window full. Keep crawling.
 Completion: no in-scope remainder on the wave tickets, or Window full with that remainder on the spec.
 
 
-## Self-prove and receipts
+## Self-prove and receipts (Jacob 1:35 PM CT 2026-11-02)
 
-- **Pilot area only:** run this step only for the one configured pilot area named in standing product rules. If that area is not named, the step is BLOCKED. A missing name is not N/A and does not start the pilot for every area. Do not run it while the `/umbrella-mode` **Usage guard** says included cloud usage is too low, and do not run it on the box as a fallback. When the pilot area is named and that guard is clear: before Ready, run /verify-own-work on the real surface and put a `## Evidence` block in the PR body. BV still runs its own heavy set and never adopts this evidence.
+- **Pilot area only, after the usage reset:** before Ready, run /verify-own-work on the real surface and put a `## Evidence` block in the PR body. BV still runs its own heavy set and never adopts this evidence.
 - **Receipts go on GitHub:** post every receipt as a PR comment (a ticket comment before a PR exists), not only in chat or memory.
 
 ## Database test lanes
@@ -156,7 +156,7 @@ A named ticket (`/umbrella t5`, `/implement #243`) is the conductor's exclusive 
 
 Shared overlap (one View, one controller, one board) goes on the **conductor exclusive** list. New or disjoint files stay on the other wave tickets. That split is the draft.
 
-**Spawn gate.** Product-code edits start after one of:
+**Spawn gate.** No product-code spawn without a live coding-eligible Project Status for that ticket (**Count first**). Product-code edits start after one of:
 
 - Count **1** — the table is posted.
 - Count **2+** — every extra ticket has a **live child**, or is queued past the child cap or the memory check ([DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**).
@@ -310,7 +310,7 @@ One copy, here. Every spawn carries them by reference: name this section and [BU
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
 - Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.
-- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Do not run `commands.pr_ready`; the build-verifier does.
+- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Database tests follow **Database test lanes** (skipped database tests are not a real-database or R2 pass). Do not run `commands.pr_ready`; the build-verifier does.
 - Type check, `verify`, and multi-test runs go through the heavy gate: `. /tmp/umbrella-heavy.sh && heavy <command>` ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**).
 - The same test or check red on two fix attempts in a row → stop and report `needs_parent` with the failing output and both diffs (**Build loop** **Repeat failure**). Do not try a third fix. A fix child sent with a repeat-failure verdict stops at its first red on that check and reports `needs_parent`; it does not try again.
 - Run each check in the foreground to its exit. Do not end your turn waiting on one. Exit 137 or 143 is a kill, not a red gate: re-run it through the gate. Never report it as a failed AC.
@@ -350,28 +350,28 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `project.yml` `commands.db_migrate` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
 6. **Merge prompt (Ship mode PR only).** Soft-queue overlap check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until the founder says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. When they say merge, land one at a time per [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**: if `<dev-branch>` moved since the verdict, bring it in, run `commands.pr_ready` once, push with `HUSKY=0`, and compare patch-id with the build-verifier receipt (changed → fresh verifier); merge, then the next. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. A **House queue** with a next house does not wait on that answer — return to `/umbrella` and start that house. After they merge, set those tickets to the lane that is actually left and walk the list again.
 
-## Merge-queue pre-warm
+## Merge-queue pre-warm (Jacob 11:57 + 12:02 CT 2026-10-23, adjusted 12:07)
 
 For one-at-a-time queues only (dependency bumps, or PRs that share files). Skip this section for PRs that can merge in any order.
 
-- **Pre-warm the next 1–2 PRs, never the whole queue,** on cloud agents, and only after the CoS usage gate passes. Each one gets deps installed, a merge rehearsed against `<dev-branch>` plus the PRs ahead of it in Dispatch's posted order, and checks run without pushing. Record the rehearsed merged tree SHA (`git rev-parse HEAD^{tree}`). Shut the agent down when its PR lands or leaves the queue.
+- **Pre-warm the next 1–2 PRs, never the whole queue,** on cloud agents, and only after the CoS usage gate passes. Each one gets deps installed, a merge rehearsed against Development plus the PRs ahead of it in Dispatch's posted order, and checks run without pushing. Record the rehearsed merged tree SHA (`git rev-parse HEAD^{tree}`). Shut the agent down when its PR lands or leaves the queue.
 - **Re-rehearse on change.** When Dispatch says a PR ahead was amended, dropped or reordered, redo the rehearsals from that point down only.
 - **Resync.** Run the update and the recheck in parallel. Use the carry-over rules in [build-verifier](../build-verifier/SKILL.md) **Merge-queue carry-over**. A full carry-over needs the merged tree SHA to match the rehearsal. A patch-id match alone carries only lint, types and unit tests for files outside the base diff. Rerun everything if package.json, a lock file, tsconfig, jest/babel/metro config, the Expo app/eas config, `.github/workflows` or a migration changed on either side. GitHub required CI always runs on the pushed head.
 - **pr-ready receipt.** List the rehearsed tree SHA, the actual tree SHA, and each check as `carried` or `reran`. Target: green within about 10 minutes of the prior land.
 
-**Check split:**
+**Check split (Jacob 12:53 CT 2026-10-23):**
 1. **IW pre-warm runs the light set only:** merge rehearsal, deps install, lint, tsc, and Jest on the changed files. It finds breakage early, but it isn't a certification. IW does not run full Jest, the fingerprint check or the bundle budget.
 2. **BV runs the heavy set once, on IW's rehearsed merge, as soon as it's ready** (while the PR ahead is still landing): full Jest, fingerprint, bundle budget, prebuild and migrations, on BV's cloud agents. On resync, a tree SHA match carries BV's pass over and GO is instant. A deps or config change means BV reruns once, on the new rehearsal.
 3. **BV never adopts IW's results** as its own pass. That keeps the check independent.
 4. **Bundle-budget jitter:** Metro temp-path jitter must not fail the gate. The root fix (a deterministic measurement that normalizes or strips temp paths) folds into the current PR or a related ticket, not a new ticket. Until it lands, a budget miss under 64 bytes gets one rerun, not a FAIL.
 
-## Lessons
+## Lessons (Jacob 2026-10-23)
 
 - **Native deps:** flag any native package add or drop in the PR body when it opens, as a fingerprint decision (it needs a new binary build, not OTA). Try a Linux or cloud `expo prebuild` before saying "needs a Mac".
 - **Stall alarm:** a cloud fixup with no push in 30 minutes (15 for security work) gets an ETA or a kill-and-relaunch.
 - **Migrations:** drops and renames use expand/contract. Finalize steps run in one transaction. Real-Postgres tests run in CI/BV, never local-only. Keyset cursors keep full DB precision.
 - **Tech Lead optional ideas** wait until after the land.
 
-## Your Pipeline ticks
+## Your Pipeline ticks (Jacob 5:17 AM CT 2026-11-05)
 
 Tick your boxes as each clears, in the ticket body, not at the end: code + unit, rebase, static gates, Living docs, P* leaves. Tick an AC box only with proof. N/A = `[x]` struck with a one-line reason. Other owners: area-coordinator `## Tick owners`.
