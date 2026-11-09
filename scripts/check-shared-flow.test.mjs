@@ -911,6 +911,38 @@ test('a pack skill whose name is a tool built-in is one known collision, not a r
   }
 });
 
+test('an earlier mirror copy of a skill that is now a pack skill is replaced, not refused', () => {
+  const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-mirror-to-pack-'));
+  try {
+    const { pack, home, repo } = layRepeatSyncWorkspace(sandbox);
+    const first = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(first.status, 0, first.text);
+    const dirs = [path.join(repo, '.cursor', 'skills', 'how'), path.join(home, '.agents', 'skills', 'how')];
+    for (const dir of dirs) {
+      rmSync(dir, { recursive: true, force: true });
+      writeSkill(dir, 'older personal copy of how\n');
+      writeFileSync(path.join(dir, 'extra.md'), 'only in the old copy\n');
+      writeFileSync(path.join(dir, '.synced-by-sync-workspace'), 'Copied by sync-workspace.mjs from ~/.claude/skills/how.\n');
+    }
+    const again = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(again.status, 0, again.text);
+    assert.equal(again.text.includes('refuse to replace'), false, again.text);
+    assert.equal(again.text.split('earlier mirror copy, now a pack skill').length - 1, 2, again.text);
+    const packSkill = readFileSync(path.join(pack, 'skills', 'how', 'SKILL.md'), 'utf8');
+    for (const dir of dirs) {
+      assert.equal(readFileSync(path.join(dir, 'SKILL.md'), 'utf8'), packSkill);
+      assert.equal(existsSync(path.join(dir, 'extra.md')), false);
+      assert.equal(existsSync(path.join(dir, '.synced-by-sync-workspace')), false);
+      assert.equal(existsSync(path.join(dir, '.sync-workspace-baseline')), true);
+    }
+    const third = runSync(pack, '--no-rules --no-vendor', home);
+    assert.equal(third.status, 0, third.text);
+    assert.equal(third.text.includes('earlier mirror copy'), false, third.text);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
 test('a pack-identical tree with no baseline receives its overlay', () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-partial-'));
   try {

@@ -16,7 +16,7 @@
  *
  * Sources:
  *   review (report only; bump by hand, vendor/README.md "Bump a pin"):
- *     mattpocock-skills, simple-english, pstack-reference  (vendor/pins.json)
+ *     mattpocock-skills, simple-english, pstack-reference, pstack-skills  (vendor/pins.json)
  *   auto (--update installs them):
  *     every skill in a product repo's skills-lock.json (npx skills: Stripe, Neon, ...)
  *     graphify (an original folder with .graphify_version in a product repo)
@@ -348,6 +348,33 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       });
       r.status = r.diff ? 'behind' : 'current';
       if (!r.diff) r.note = `cursor/plugins moved (${head.slice(0, 7)}), pstack unchanged; bump pins.json commit when convenient`;
+    });
+  }
+
+  // The few pstack skills the overlay calls by name, installed from vendor/pstack-skills.
+  if (pins?.['pstack-skills']) {
+    await source('pstack-skills', 'review', async (r) => {
+      const pin = pins['pstack-skills'];
+      r.current = pin.version;
+      const head = gitLsRemote(pin.repo, 'HEAD')[0]?.[0] || pin.commit;
+      r.latest = pin.version;
+      if (head === pin.commit) return;
+      const src = path.join(work, 'pstack-skills');
+      cloneHistory(pin.repo, src, { sparse: [pin.path] });
+      const upstream = path.join(src, pin.path);
+      const manifest = path.join(upstream, '.cursor-plugin', 'plugin.json');
+      if (existsSync(manifest)) r.latest = JSON.parse(readFileSync(manifest, 'utf8')).version || r.latest;
+      const latest = path.join(work, 'pstack-skills-latest');
+      const omit = (pin.omit || []).map((rel) => path.join(upstream, 'skills', rel));
+      for (const name of pin.skills) {
+        copyFiltered(path.join(upstream, 'skills', name), path.join(latest, 'skills', name), (p) => omit.some((o) => p === o || p.startsWith(o + path.sep)));
+      }
+      copyFiltered(path.join(upstream, 'LICENSE'), path.join(latest, 'LICENSE'));
+      r.diff = diff('pstack-skills', path.join(vendorRoot, 'pstack-skills'), latest, {
+        dir: src, from: pin.commit, pathFor: (rel) => `${pin.path}/${rel}`,
+      });
+      r.status = r.diff ? 'behind' : 'current';
+      if (!r.diff) r.note = `cursor/plugins moved (${head.slice(0, 7)}), these pstack skills unchanged; bump pins.json commit when convenient`;
     });
   }
 

@@ -33,8 +33,8 @@
  * a folder that carries it; a folder another installer owns is left alone.
  *
  * Vendored packs (vendor/<pack>/skills/<skill>, private clone only; the public snapshot
- * leaves vendor/ out): pinned, unedited copies of Matt's pack and SimpleEnglish
- * (vendor/README.md). They go to every root first, so an overlay skill of the
+ * leaves vendor/ out): pinned, unedited copies of Matt's pack, SimpleEnglish, and the
+ * pstack skills the overlay calls by name (vendor/README.md). They go to every root first, so an overlay skill of the
  * same name (grill-me, implement, teach, ...) still replaces Matt's.
  *
  * Swarm companion (when a sibling clone ships skills/swarmy/SKILL.md +
@@ -323,6 +323,13 @@ const packSkillNames = new Set([
   ...VENDOR_SKILLS.map((v) => v.name),
 ]);
 const PACK_BASELINE = '.sync-workspace-baseline';
+// A copy this script made carries MIRROR_MARKER. Only a missing folder or one that
+// carries the marker (or the old sync:claude-skills marker) is ever replaced.
+const MIRROR_MARKER = '.synced-by-sync-workspace';
+const LEGACY_MARKERS = ['.synced-by-sync-claude-skills'];
+function isMirrorCopy(dir) {
+  return [MIRROR_MARKER, ...LEGACY_MARKERS].some((m) => existsSync(path.join(dir, m)));
+}
 
 function treeHash(dir) {
   const hash = createHash('sha256');
@@ -486,6 +493,12 @@ function placePackSkill(from, to, overlayDir = '') {
     }
     if (baseline === null && destHash === packHash) {
       console.log(`sync: updated ${label(to)}`);
+      return installDesired(desired.root, to);
+    }
+    // A mirror copy this script wrote earlier, for a skill that is now a pack skill
+    // (a personal skill that moved into vendor/ or the overlay). Its bytes were ours.
+    if (baseline === null && isMirrorCopy(to)) {
+      console.log(`sync: updated ${label(to)} (earlier mirror copy, now a pack skill)`);
       return installDesired(desired.root, to);
     }
     const tool = toolOwnerOf(to);
@@ -774,10 +787,6 @@ if (hasPrivate) {
 }
 
 // ---------- steps 2-4: repo-own skills, personal skills, rules ----------
-// A copy this script made carries MIRROR_MARKER. Only a missing folder or one that
-// carries the marker (or the old sync:claude-skills marker) is ever replaced.
-const MIRROR_MARKER = '.synced-by-sync-workspace';
-const LEGACY_MARKERS = ['.synced-by-sync-claude-skills'];
 const packOwned = new Set([
   ...OVERLAY_SKILLS,
   ...VENDOR_SKILLS.map((v) => v.name),
@@ -793,9 +802,6 @@ function skillNames(root) {
   return readdirSync(root, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(path.join(root, e.name, 'SKILL.md')))
     .map((e) => e.name);
-}
-function isMirrorCopy(dir) {
-  return [MIRROR_MARKER, ...LEGACY_MARKERS].some((m) => existsSync(path.join(dir, m)));
 }
 // Machine-independent source for the marker, so syncs on different machines write the same file.
 function sourceNote(p) {
