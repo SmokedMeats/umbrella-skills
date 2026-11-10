@@ -47,6 +47,7 @@ Step 4 is usually one small script that imports the same library the app ships a
 - **Risks.** Each names how it breaks, the `file:line`, how likely and how bad, and how to check. Paste the proof for the ones that matter.
 - **Cleared.** What you checked and why it is fine.
 - **Before you merge.** The cheapest test or repro that catches the real bug, including the script you wrote.
+- **Touched names.** Before PR-ready, grep the tests and gate scripts for every new or renamed table, column, cron service, route, or export the diff touches. Run those suites too, including postgresOnly suites against a real throwaway Postgres (never production), plus `check:unused-exports`. Repeated misses for this product are on the private binding.
 
 Cite real code. Strip anything private before it goes anywhere public.
 

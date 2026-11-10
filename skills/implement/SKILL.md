@@ -109,6 +109,7 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 ## Self-prove and receipts (Jacob 1:35 PM CT 2026-11-02)
 
 - **Pilot area only, after the usage reset:** before Ready, run /verify-own-work on the real surface and put a `## Evidence` block in the PR body. BV still runs its own heavy set and never adopts this evidence.
+- **Scan or ratchet gate:** when that gate changes, add fixtures for the spellings it should catch, including SQL case, multiline joins, ORM/Drizzle reads, and service-entry paths, and prove the gate fails on a real past violation. Repeated misses for this product are on the private binding.
 - **Receipts go on GitHub:** post every receipt as a PR comment (a ticket comment before a PR exists), not only in chat or memory.
 
 ## Database test lanes
@@ -371,6 +372,7 @@ For one-at-a-time queues only (dependency bumps, or PRs that share files). Skip 
 - **Stall alarm:** a cloud fixup with no push in 30 minutes (15 for security work) gets an ETA or a kill-and-relaunch.
 - **Migrations:** drops and renames use expand/contract. Finalize steps run in one transaction. Real-Postgres tests run in CI/BV, never local-only. Keyset cursors keep full DB precision.
 - **Tech Lead optional ideas** wait until after the land.
+- **Parity table:** on a viewer-rules check or a module-intent parity table, classify owner-self, grace-period self, safety/SOS, and race-start/payout paths as exempt or restricted according to the locked spec. No blanket exemption. Repeated misses for this product are on the private binding.
 
 ## Your Pipeline ticks (Jacob 5:17 AM CT 2026-11-05)
 

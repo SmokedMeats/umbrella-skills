@@ -32,6 +32,7 @@ None of these → skip; plain tickets push after preflight.
    - Migration: reversible or explicitly forward-only, safe on existing rows, no long table lock, deploy order with code is safe. A new migration still stops before `commands.db_migrate` (founder gate).
    - Schema change: every reader and writer updated; old clients still parse.
    - Compete / seasons: boundary times, time zones, rollover, ties, empty season, late events.
+   - Parity table, on a viewer-rules check or a module-intent parity table: classify owner-self, grace-period self, safety/SOS, and race-start/payout paths as exempt or restricted according to the locked spec. No blanket exemption. Repeated misses for this product are on the private binding.
 4. **Evidence.** Tests that actually exercise the risky path exist and passed in this preflight. No test for a money, lock, or migration path → FAIL. Optional: if the repo's graph freshness check passes, query affected symbols for reverse impact; skip silently if stale. Never build the graph.
 5. **Verdict.** Output exactly one:
 
