@@ -76,7 +76,7 @@ Nesting: phase child may spawn explore/bash; it must not spawn another umbrella 
 - `## Scope` — always present. What this PR covers and what it deliberately leaves out. Not a file list.
 - `## Tradeoffs` — only a rejected alternative a reviewer would ask about.
 - `## Blast Radius` — one or two sentences on who or what the change touches, and why that is safe or risky.
-- `## Verification` — one to three bullets. Each names a real run and its outcome. A performance change reports one primary number with its unit as `before → after`. Put runs, range, and the limiter in a linked note. Do not report a number that skipped **explain-the-number**. A pull request to this pack includes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs`. A docs-only pull request merges on that line. The exact-head build-verifier plus `## Evidence` stand-in is retired.
+- `## Verification` — one to three bullets. Each names a real run and its outcome. A performance change reports one primary number with its unit as `before → after`. Put runs, range, and the limiter in a linked note. Do not report a number that skipped **explain-the-number**. A pull request to this pack includes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs`. On the public snapshot, pass `--public`. That line is `pr-ready: PASS (public) <sha>`. A docs-only pull request merges on that line. The exact-head build-verifier plus `## Evidence` stand-in is retired.
 
 Do not use `## Summary` or `## Test plan`. Keep the body under 8 KB. The one verification receipt stays under `## Verification`. Review-round history and raw harness output go in comments or linked notes, not the body. A commit body does not restate its subject. Open the PR ready, not draft. Do not merge from this section.
 

@@ -3,10 +3,14 @@
 // implement, with the conditional trigger table. sync-workspace runs this with
 // check-steps. A missing phrase or a forbidden pin is a problem string.
 //
-//   node scripts/check-shared-flow.mjs [--public] [packRoot]
+//   node scripts/check-shared-flow.mjs [--public] [--from-head] [packRoot]
 //   Omitting --public keeps source mode and fails closed when the binding
 //   file is missing. --public is explicit. A missing file does not select it.
 //   Public mode refuses the binding file when that file is present.
+//   --from-head reads skills/umbrella/private-bindings.md from the git blob
+//   at HEAD. A symlink or a worktree-only copy does not count. pr-ready
+//   source mode passes this flag.
+import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -227,10 +231,11 @@ export function sharedFlowProblems(docs) {
   const published = [docs.toSpec, docs.buildVerifier, docs.implement, docs.conventions, docs.umbrella].join('\n');
   const dangling = DANGLING_BINDING.filter((token) => published.includes(token));
   const publicArchive = docs.packMode === 'public';
+  if (docs.bindingProblem) problems.push(docs.bindingProblem);
   if (publicArchive && (docs.bindingPresent || bindings)) {
     problems.push('public archive must omit private bindings');
   }
-  if (!publicArchive && !bindings) {
+  if (!publicArchive && !bindings && !docs.bindingProblem) {
     problems.push('required binding missing; fail closed');
   }
   if (dangling.length > 0) {
@@ -278,8 +283,45 @@ export function sharedFlowProblems(docs) {
   return problems;
 }
 
-export function loadPack(packRoot) {
+function readBindingFromHead(packRoot) {
+  const listed = spawnSync('git', ['ls-tree', '-z', 'HEAD', '--', INSTALLED_BINDING], {
+    cwd: packRoot,
+    encoding: 'utf8',
+  });
+  if (listed.status !== 0) {
+    return { present: false, text: '', problem: 'private bindings: could not read HEAD' };
+  }
+  const entry = listed.stdout.split('\0').find(Boolean);
+  if (!entry) return { present: false, text: '', problem: '' };
+  const mode = entry.slice(0, 6);
+  if (mode === '120000') {
+    return { present: true, text: '', problem: 'private bindings: HEAD entry is a symlink' };
+  }
+  if (!mode.startsWith('100')) {
+    return { present: true, text: '', problem: 'private bindings: HEAD entry is not a regular file' };
+  }
+  const shown = spawnSync('git', ['show', `HEAD:${INSTALLED_BINDING}`], {
+    cwd: packRoot,
+    encoding: 'utf8',
+    maxBuffer: 1 << 20,
+  });
+  if (shown.status !== 0) {
+    return { present: false, text: '', problem: 'private bindings: could not read HEAD' };
+  }
+  return { present: true, text: shown.stdout, problem: '' };
+}
+
+export function loadPack(packRoot, options = {}) {
   const read = (rel) => readFileSync(path.join(packRoot, rel), 'utf8');
+  let bindingPresent = existsSync(path.join(packRoot, INSTALLED_BINDING));
+  let privateBindings = bindingPresent ? read(INSTALLED_BINDING) : '';
+  let bindingProblem = '';
+  if (options.bindingFromHead) {
+    const fromHead = readBindingFromHead(packRoot);
+    bindingProblem = fromHead.problem;
+    bindingPresent = fromHead.present && !fromHead.problem;
+    privateBindings = fromHead.problem ? '' : fromHead.text;
+  }
   return {
     conventions: read('skills/umbrella/CONVENTIONS.md'),
     implement: read('skills/implement/SKILL.md'),
@@ -290,10 +332,9 @@ export function loadPack(packRoot) {
     buildVerifier: read('skills/build-verifier/SKILL.md'),
     deviceQa: read('skills/device-qa-agent/SKILL.md'),
     deviceQaDoc: read('skills/umbrella/DEVICE-QA.md'),
-    bindingPresent: existsSync(path.join(packRoot, INSTALLED_BINDING)),
-    privateBindings: existsSync(path.join(packRoot, INSTALLED_BINDING))
-      ? read(INSTALLED_BINDING)
-      : '',
+    bindingPresent,
+    privateBindings,
+    bindingProblem,
     hasStartWork: existsSync(path.join(packRoot, 'skills/start-work')),
     hasAreaCoordinator: existsSync(path.join(packRoot, 'skills/area-coordinator')),
     hasSharedSkill: existsSync(path.join(packRoot, 'skills/shared-full-flow')),
@@ -309,7 +350,7 @@ export function checkSharedFlow(packRoot, options = {}) {
   if (packMode !== undefined && packMode !== 'public' && packMode !== 'source') {
     return [{ skill: 'shared-flow', problems: [`unknown pack mode ${packMode}`] }];
   }
-  const pack = loadPack(packRoot);
+  const pack = loadPack(packRoot, { bindingFromHead: options.bindingFromHead === true });
   if (packMode === 'public' || packMode === 'source') pack.packMode = packMode;
   const problems = sharedFlowProblems(pack);
   return problems.length === 0 ? [] : [{ skill: 'shared-flow', problems }];
@@ -325,9 +366,10 @@ export function reportSharedFlow(failures) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = process.argv.slice(2).filter((arg) => arg !== '--public');
+  const fromHead = process.argv.includes('--from-head');
+  const args = process.argv.slice(2).filter((arg) => arg !== '--public' && arg !== '--from-head');
   const packMode = process.argv.includes('--public') ? 'public' : 'source';
   const root = path.resolve(args[0] || path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
-  if (!reportSharedFlow(checkSharedFlow(root, { packMode }))) process.exit(1);
+  if (!reportSharedFlow(checkSharedFlow(root, { packMode, bindingFromHead: fromHead }))) process.exit(1);
   console.log(`check-shared-flow: OK (${packMode})`);
 }
