@@ -88,7 +88,7 @@ pstack ideas folded inline (no folder; diff these too when upstream changes):
 | `reflect` → `/correct` | CONVENTIONS **Repeated corrections** |
 | `unslop` | house style in `teach` and the ported skills |
 | poteto-mode `opening-a-pr.md` | BUILD-STANDING **PR briefing (Ship mode PR)** |
-| poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; build-verifier **Which of the two** |
+| poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; CONVENTIONS **Land gate**; build-verifier **When** |
 | poteto-mode **Playbooks** (steps copied into the todo, `skip: <reason>`) | CONVENTIONS **Steps**: a `## Steps` list per phase skill, `STEPS` / `STEPS_DONE` in DELEGATION packets, `scripts/check-steps.mjs`. The spine stays fixed: no free playbook matcher |
 
 When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.17** (the snapshot); the next pull starts from there. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.

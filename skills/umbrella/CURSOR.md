@@ -62,7 +62,7 @@ Overwrite the file when any of these happen. Same change as the work when you ar
 | This house's coding crawl is done, and the queue has a next house | Drop the finished slug. **House** is the new head. **Next** is that house's skill. Do not clear **Ship mode** |
 | Ticket close / Window full | Remaining tickets on **this** house, or the next queued house if this house's coding crawl is done. `idle` only when the queue has no next house and nothing is in flight |
 | Long crawl (multi-ticket, or a **House queue**) | Decision trail: path to `decisions.tsv` in the house notes, or short bullets here. Default on. Do not wait on the founder |
-| About to close ticket or move to leftover lane | Rewrite **Close gate** for that ticket. Parent refuses close/lane if the line is incomplete (AC / BV / code-review empty / Living docs / migrate when applicable) |
+| About to close ticket or move to leftover lane | Rewrite **Close gate** for that ticket. Parent refuses close/lane if the line is incomplete (land gate / BV when risk is high or missing / code-review empty / Living docs / migrate when applicable) |
 | Window full / session end / next agent | **Recall** brief: **House queue**, **Ship mode**, now-on tickets, decisions trail path, blockers, corrections this session (none / encoded as `<lint|test|skill line>`). Follow `/handoff` when that skill is installed. The brief does not start the next house |
 
 Keep it short. No chat dump. No secrets.
@@ -70,10 +70,10 @@ Keep it short. No chat dump. No secrets.
 **Close gate protocol.** On the event *about to close a ticket or move it to a leftover lane*, rewrite that ticket’s **Close gate** line first. Shape:
 
 ```text
-Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migrate N/A|done | lane=<lane>
+Close gate (#N): land-gate <sha> risk=<low|high|missing> | BV pass|n/a | code-review empty | Living docs | migrate N/A|done | lane=<lane>
 ```
 
-Parent refuses close and leftover-lane until the line is complete. Parent alone closes or lanes after Close gate complete **and** build-verifier Pass.
+`BV n/a` only when `risk=low`. Parent refuses close and leftover-lane until the line is complete. Parent alone closes or lanes after the land gate for that head is satisfied.
 
 **Resume brief.** On Window full, session end, or the next agent, the file carries **House queue** (keep later houses), **Ship mode**, now-on tickets, the decisions trail path, blockers, and corrections this session (none, or each one encoded as `<lint|test|skill line>`). If `handoff/SKILL.md` is in the parent skills directory, follow `/handoff` and include that brief. Do not add a `/recall` skill.
 

@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Build work from a spec or from tickets filed after a locked grill. Use when those tickets exist, the /umbrella house crawl is in progress, or a build-loop remainder is still open. Count the frontier, house each ticket, spawn extras, crawl newly unblocked tickets. When a Build loop is empty, set the lane from what is left. Before a terminal lane: gap-check against the lock, living-doc verify, and /code-review including blast-radius."
+description: "Build work from a spec or from tickets filed after a locked grill. Use when those tickets exist, the /umbrella house crawl is in progress, or a build-loop remainder is still open. Count the frontier, house each ticket, spawn extras, crawl newly unblocked tickets. When a Build loop is empty, set the lane from what is left. Before a terminal lane: living-doc verify, /code-review including blast-radius, and the land gate (check:pr-ready on the current head)."
 ---
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
@@ -27,7 +27,7 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Before a new module or seam.** Read [/codebase-design](../codebase-design/SKILL.md) and apply its deletion test and its adapter rule (one adapter is a hypothetical seam, two is a real one) before writing it. Fails either → fold it into the caller or the existing module. Do not copy that skill here.
 
-**Per ticket, before close or a terminal lane:** gap check on **that** ticket, then **Comment cleanup**, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**). Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
+**Per ticket, before close or a terminal lane:** **Comment cleanup**, then `/code-review` **to completion** for **that** ticket (two-axis report on the ticket **and** the **build loop**), then the land gate. Do not defer review until siblings land. In-scope findings return here on the same ticket. The empty loop then sets Operator, Desk device, Field, Ready to merge, Live Beta, GoLive, or Done from what is left.
 
 
 ## Steps
@@ -38,16 +38,16 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 2. **House** and claim each wave ticket (Parent, labels, map child, milestone, Project **In Progress**), then rewrite the cursor. proof: the assignees and the cursor rewrite.
 3. **Spawn gate**: every extra ticket has a live child, or is queued past the cap. proof: the child ids, or `skip: count 1`.
 4. **Acceptance criteria gate**: the ticket has real `## Acceptance criteria`; empty → `needs_parent`. proof: the AC count.
-5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, database test lanes, harness run. proof: the commits, the test file, the harness line, and the database-lane receipt when a database test ran.
-6. **Gap check** on this ticket. PARTIAL or FAIL → back to step 5. proof: the PASS/PARTIAL/FAIL table on the ticket.
-7. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
-8. **Living docs** comment (and the **P\*** leaf when phone-visible), build-verifier Pass, the **Close gate** line, then the lane or close, and **Crawl** (recount). proof: the Living docs URL, the verdict, and the Close gate line.
+5. Build to the **Rule card** with `/tdd` at the seams: seam test, errors fixed, migrate for a new SQL file, database tests per [build-verifier](../build-verifier/SKILL.md) **Database test lanes**, harness run. Stack or split per **Small PRs**. proof: the commits, the test file, the harness line, and the database-lane receipt when a database test ran.
+6. **Comment cleanup**, then `/code-review` to completion. In-scope findings → back to step 5 (two rounds per ticket). proof: the review comment URL.
+7. **Living docs** comment (and the **P\*** leaf when phone-visible). proof: the Living docs URL.
+8. **Land gate** on the current head, then the **Close gate** line, the lane or close, and **Crawl** (recount). proof: the `commands.pr_ready` pass line, the BV verdict when `risk:` is high or missing, and the Close gate line.
 
 ## Shared full-flow entry (no new skill)
 
 **Entry:** If `/start-work` is installed, use it to route. If it is not, enter this skill when product discovery, the house crawl, or an explicit ticket Start already selected the work. You still run **Acceptance criteria gate**, **House** claim, and **Coding-spawn gate**. A missing `/start-work` does not waive those guards. Do not add a skill folder for this entry. The conditional trigger table is [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Shared full-flow entry**.
 
-**Obligatory Build-loop chain (existing sections of this skill — the owner ticks a gate only when it clears, with evidence):** **Acceptance criteria gate** → **Rule card and harness** (seam test when behavior changes) → product code → **Gap check** (PASS / PARTIAL / FAIL on that ticket) → **Living docs** (including **Effect-TS check**, **Effect Schema inventory** when configured, and **Backend domain functions** when standing-product-rules are present) → **Comment cleanup** (`/deslop` on this ticket's diff) → `/code-review` two-axis Standards and Spec, including blast-radius and cycles when that skill's rules say to run them → same-ticket **Build loop** for in-scope findings (two rounds; a missing Rule card rule is one grill question) → **Repeat failure** when the same check fails twice → independent `/build-verifier` (the writer does not mark it N/A) → **Close gate** → leftover lane or Done per **Count first**. Owner Pipeline ticks live in **Your Pipeline ticks**. A required skill that is not installed is BLOCKED or a capability handoff, not writer N/A.
+**Obligatory Build-loop chain (existing sections of this skill — the owner ticks a gate only when it clears, with evidence):** **Acceptance criteria gate** → **Rule card and harness** (seam test when behavior changes) → product code → **Living docs** (including **Effect-TS check**, **Effect Schema inventory** when configured, and **Backend domain functions** when standing-product-rules are present) → **Comment cleanup** (`/deslop` on this ticket's diff) → `/code-review` two-axis Standards and Spec, including blast-radius and cycles when that skill's rules say to run them → same-ticket **Build loop** for in-scope findings (two rounds; a missing Rule card rule is one grill question) → **Repeat failure** when the same check fails twice → **Land gate** ([CONVENTIONS.md](../umbrella/CONVENTIONS.md), pending the product `check:pr-ready` change). `risk: low` merges on that pass line. `risk: high`, or a pass line with no `risk:` field, adds one independent `/build-verifier` (the writer does not mark it N/A) which posts PASS / PARTIAL / FAIL on that ticket, and `/tech-lead-review` only when the diff touches money, auth, or migrations → **Close gate** → leftover lane or Done per **Count first**. **Small PRs** applies before the PR opens. Owner Pipeline ticks live in **Your Pipeline ticks**. A required skill that is not installed is BLOCKED or a capability handoff, not writer N/A.
 
 **Capability handoff:** post the receipt defined in CONVENTIONS **Capability-limited handoff**. A missing `/start-work` or `/area-coordinator` procedure file does not waive the receipt.
 
@@ -63,16 +63,9 @@ When the card names a harness (a fixed-seed sweep, shared fixtures, contract tes
 
 ## Gap check
 
-After product code is in the tree, **before** you close a ticket, move it to a leftover lane, or say ACs hold. Run this **on each ticket**, not once for the wave.
+`/build-verifier` check 1 is the only acceptance-criteria audit. It posts PASS / PARTIAL / FAIL on that ticket when the land gate calls for BV. The writer does not post a second table. A missing `## Acceptance criteria` section is still remaining work: repair or escalate before close or a leftover lane.
 
-1. Load remaining ACs from **that ticket’s body** (and any Done vs remaining comment), the spec, **and** the grill lock that ticket names. Chat memory is not the list. The locked page wins when the ticket bullets are thinner. This check is against that lock. It is not a second pre-grill survey of every doc. **Missing `## Acceptance criteria` section (or zero checkboxes) is remaining work — do not close and do not leftover-lane; repair or escalate first.**
-2. For each AC, grep/read **current code** in the folder the editor is watching. Mark PASS / PARTIAL / FAIL with a path. Code that disagrees with the locked page is FAIL. Do not invent a softer reading of a line that is already decided.
-3. FAIL, or PARTIAL the ticket still requires → **do not close** and **do not** Desk-device it. "Keep going" does not move it. Post Done vs remaining on the ticket. Stay on **that** ticket and keep building. Then run this gap check again. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Write the question on that ticket in runner language. Read `/simple-english` when that skill is installed. The parent says which part is the phone and which part is the leftover.
-4. A spec that said “behind the flag” is PASS when the wire is flag-gated even if the flag is off.
-5. Post the PASS / PARTIAL / FAIL table on **that** ticket.
-6. Behavior in the diff that the grill, the spec, and the tickets did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not close the ticket as if that scope shipped. Do not merge it as done.
-
-Completion: that ticket is PASS in current code, or **Window full** with the remaining ACs written on the spec. No close or leftover-lane on chat memory.
+A spec that said “behind the flag” holds when the wire is flag-gated even if the flag is off. Behavior the grill, the spec, and the tickets did not ask for is invented scope. Park it as new fog (`Later:` or a wayfinder line) and re-grill that slice. Do not close the ticket as if that scope shipped.
 
 Commit your work to the current branch.
 
@@ -86,12 +79,12 @@ Run it as `/deslop` scoped to **this ticket's diff only** (comments, `any` casts
 
 ## Build loop
 
-Gap check, **Comment cleanup**, and `/code-review` feed the **same** tickets until they are empty.
+**Comment cleanup** and `/code-review` feed the **same** tickets until they are empty. The acceptance-criteria audit is `/build-verifier` check 1 when the land gate calls for it.
 
 Do this **per ticket** as that ticket’s product lands. Do not wait for the rest of the wave.
 
-1. Gap check on **this** ticket. PARTIAL or FAIL → keep building it → gap check again.
-2. When every AC is PASS: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
+1. Keep building **this** ticket until its ACs hold in current code. A fact the code cannot see, and that you cannot invent, is its own leftover ticket. Invented scope stays parked (**Gap check**).
+2. When the ACs hold: **Living docs** (update/verify docs this change touched, not a second pre-grill survey), then **Migrate** if this ticket added a new `backend/drizzle/0xxx_*.sql`, then **Comment cleanup**, then `/code-review` to the two-axis report (`## Standards` / `## Spec`, including `/blast-radius`) **on this ticket**. Fixed point = this ticket’s first ship SHA (parent of that commit). Do not ask the user.
 3. In-scope review findings become the new remaining-AC list on **this** ticket. Return to step 1 in this session. **Two review rounds per ticket.** If round 2 still has a hard Spec or Standards finding, do not start round 3: the card is missing a rule. Write one grill question (`/grilling` shape) for it. A child puts it in ESCALATE and the parent asks it. Amend the card on the answer, and build to that. A round with no hard finding ends the loop. Nits and code-shape notes go to a follow-up ticket, not another round. Each fix round and each review round is a fresh child with a short brief ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) §10).
 4. When this ticket’s list is empty, write **Close gate** for this ticket into `project.yml` `paths.umbrella_cursor` (refuse if incomplete), then set Project Status from what is actually left ([PROJECTS.md](../umbrella/PROJECTS.md)): **Operator**, **Desk device**, **Field**, **Ready to merge**, **Live Beta**, **GoLive**, or **Done**. Ready to merge is one of those lanes. Filing a leftover issue is the same step. Phone-visible work sits on **Desk device** when `adb devices` is not exactly one, when this runner cannot see that USB, or when another actor owns the phone ([DEVICE-QA.md](../umbrella/DEVICE-QA.md)). Do not close that ticket. Then **Crawl in this session** — the next unblocked coding ticket. Do not end the turn on the leftover.
 5. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next coding wave. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds. **Ready to merge** holds until the founder merges.
@@ -106,29 +99,19 @@ A leftover lane is **not** Window full. Keep crawling.
 Completion: no in-scope remainder on the wave tickets, or Window full with that remainder on the spec.
 
 
-## Self-prove and receipts (Jacob 1:35 PM CT 2026-11-02)
+## Self-prove and receipts
 
-- **Pilot area only, after the usage reset:** before Ready, run /verify-own-work on the real surface and put a `## Evidence` block in the PR body. BV still runs its own heavy set and never adopts this evidence.
-- **Scan or ratchet gate:** when that gate changes, add fixtures for the spellings it should catch, including SQL case, multiline joins, ORM/Drizzle reads, and service-entry paths, and prove the gate fails on a real past violation. Repeated misses for this product are on the private binding.
-- **Receipts go on GitHub:** post every receipt as a PR comment (a ticket comment before a PR exists), not only in chat or memory.
-
-## Database test lanes
-
-Keep real-database proof honest. Do not weaken required lanes.
-
-1. **Database-only unit tests:** where the repository uses `openTestPostgres()`, use that shared helper and its existing `TEST_PG_URL`/local-socket contract. Gate optional no-database runs with `describePg = TEST_PG ? describe : describe.skip`, or the existing fake/pg backend list. When `REQUIRE_TEST_PG=1`, a missing database must fail at load, never silently skip. Do not add a missing-database `beforeAll` throw to an optional run.
-2. **Receipts / R2:** skipped database tests never count as a real-database or R2 pass. Required PostgreSQL cases must actually execute and pass; R2 also requires its configured integration checks. Record the command, database harness and executed/skipped results. An optional local green run is not proof that required database checks passed.
-3. **Harness boundaries:** follow the repository's configured separation: disposable unit PostgreSQL; isolated integration databases such as throwaway Neon branches or Testcontainers, never shared Preview/Production integration targets; and shared Preview-app end-to-end tests. Use existing helpers and safety gates, not per-file connection logic. Do not claim a database check ran merely because a particular assistant or editor was used.
+Pilot area only: do not spawn `/verify-own-work` as a default extra verifier when `/build-verifier` will rerun the same checks. Receipts go on the PR (a ticket comment before a PR exists). When a scan or ratchet gate changes, add fixtures for the spellings it should catch and prove the gate fails on a real past violation. Repeated misses for this product are on the private binding.
 
 ## Close gate
 
 Before GitHub **close** or a **leftover-lane** move on a ticket, rewrite that ticket’s **Close gate** line into `project.yml` `paths.umbrella_cursor` (and optionally the conductor comment). Shape:
 
 ```text
-Close gate (#N): AC all PASS | BV pass | code-review empty | Living docs | migrate N/A|done | lane=<lane>
+Close gate (#N): land-gate <sha> risk=<low|high|missing> | BV pass|n/a | code-review empty | Living docs | migrate N/A|done | lane=<lane>
 ```
 
-**Refuse** close and leftover-lane if any of AC / build-verifier / code-review empty / Living docs is incomplete, or migrate is neither `N/A` nor `done` when this ticket added a new `backend/drizzle/0xxx_*.sql`. Parent alone closes or lanes after Close gate is complete **and** build-verifier Pass ([CURSOR.md](../umbrella/CURSOR.md), [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md)).
+`BV n/a` only when `risk=low`. **Refuse** close and leftover-lane when the land-gate line is missing, when `risk` is `high` or `missing` and BV is not `pass`, when code-review or Living docs is incomplete, or when migrate is neither `N/A` nor `done` and this ticket added a new `backend/drizzle/0xxx_*.sql`. Parent alone closes or lanes after that line is complete ([CURSOR.md](../umbrella/CURSOR.md), [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md)).
 
 ## Count first
 
@@ -205,7 +188,7 @@ On close **or** a terminal lane: **Living docs** comment must already be on the 
 
 ## Living docs
 
-Hard gate. After gap check PASS, **before** GitHub close **or** a leftover-lane move. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`. Update and verify docs this change touched. Do not re-survey every GLOSSARY and ADR.
+Hard gate. After the ticket's ACs hold in current code, **before** GitHub close **or** a leftover-lane move. Same change as the ticket (conductor commits it). Children name the hits; they do not edit `docs/`. Update and verify docs this change touched. Do not re-survey every GLOSSARY and ADR.
 
 1. Grep `docs/` (including `docs/trackers/`) for **this ticket number**, the spec number, and `umbrella:<slug>`. Also grep house encyclopedias the ticket names (house boards in `paths.house_boards`, admin guides, `paths.wayfinder_now`, `paths.wayfinder_maps`, module-intent).
 2. For each hit that still reads as open / **Do now** / unchecked work: mark it shipped (strikethrough, SHA, or leftover-lane). Point a now-list at the next **open product** child, not this leftover card.
@@ -272,11 +255,15 @@ Also: Device QA runs only when this runner can see the USB phone (local <local-d
 
 ### Mode B — `Ship mode: PR`
 
+#### Small PRs
+
+Stack or split above ~800 real added lines. Generated snapshots, such as drizzle meta, do not count. A backfill or data script ships as its own PR with its dry-run output.
+
 - **One ticket -> one branch -> one PR** into `<dev-branch>`, or **serialize**. Do not parallel-commit multiple tickets into one PR / one worktree tip.
 - Push **only** to the PR branch. Never push to `<dev-branch>` tip, Preview, or `master`. Never merge, Preview fast-forward, migrate, OTA, or master promote unattended. The founder does those. `project.yml` `commands.db_migrate` for a new drizzle file in this change stays in the Build loop.
 - After each verifiable unit, push that PR branch with hooks on. A WIP commit on that branch is allowed. Do not force-push a shared branch. The body follows [BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **PR briefing** (`##` sections, open ready, not draft).
 - When PR is open, checks green, waiting on the founder: Status **Ready to merge** ([PROJECTS.md](../umbrella/PROJECTS.md)). Dependents **WAIT** while it is Ready to merge. After the founder merges, set the lane from what is left. **Done** only when applicable checks and QA are done. A leftover lane after that merge does not hold dependents. Ready to merge is **not** a leftover lane. Parked is not a verification hold.
-- Before **Ready to merge** (Mode B, when `commands.pr_ready` is set): merge or rebase current `origin/<dev-branch>` into the PR branch, then the ticket's `/build-verifier` runs `project.yml` `commands.pr_ready` (fails if the branch is behind, then runs the backend and mobile typecheck) at its verdict SHA. Paste its PASS line (literal `commands.pr_ready_pass`, naming the current `<dev-branch>` tip) in the PR body. <dev-branch> moved before merge → [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge** runs it once more. Dispatch checks for that line before merge. No pass line, not Ready.
+- Before **Ready to merge** (Mode B, when `commands.pr_ready` is set): bring current `origin/<dev-branch>` into the PR branch, then follow [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate** (pending the product `check:pr-ready` change). Paste the pass line for the current head in the PR body. No pass line, not Ready. The head moved before merge → [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**.
 - PR into a **public** repo (or one slated to go public): run `node scripts/check-public-safe.mjs` (`--base <ref>` for a stacked PR) on the branch tip and paste its `check:public-safe PASS <repo>@<sha> (gitleaks 0, denylist 0)` line in the PR body. Tip moved since → run it again. A FAIL is fixed in content, never bypassed. No pass line, not Ready.
 - If the ticket waits on another, set the GitHub blocked-by link in that same session. Do not leave the wait only in the body. Do not pull the dependent while the blocker is open, unless the blocker is on a leftover lane.
 - A later production switch (class, weapon, flag) is **GoLive**, not Parked. GoLive stays held while its blocker is open.
@@ -296,7 +283,7 @@ Obey **Ship mode** above. Mode A: same worktree on <dev-branch>. Mode B: one tic
 4. **Dispatch.** Spawn one implement subagent per extra ticket **before** this session writes product code. Do not skip the spawn and write the extras yourself. Each prompt includes: ticket URL + body, exclusive globs, frozen shared, `SHARED_HELPERS`, this repo's standing rules (branch, verify, no type workarounds), and the child rules below. Pick each child's shape (in-process, sibling session, or Cursor Task / cloud) and stay under the one child cap per [DELEGATION.md](../umbrella/DELEGATION.md) **Child shape by runtime**; a ticket past the cap or the memory check queues. A ticket whose blocker is still open is not spawned. Completion: the **spawn gate** is met. Then this session may edit the conductor exclusive.
 5. **Own shared.** Only the conductor edits frozen shared files (append-only barrels, re-exports, defaults). Children consume them.
 6. **Serialize git.** Children never run git (a sibling session pushes only its own ticket branch; fetch it). When a child reports done, scan its new files under shared folders (`utils/`, `lib/`, `helpers/`, `services/`, test fixtures) against `SHARED_HELPERS` and the other children's new files. A second copy goes back to that child before review. Then the conductor stages **only** that ticket's exclusive files and commits. Then the next child. Completion: one commit per ticket, exclusive files only.
-7. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (gap check → **Comment cleanup** → `/code-review` two-axis on the ticket → remainder back here). Its `/build-verifier` is a child that did not write the ticket, one per ticket. When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave, and do not run one combined pre-merge check over the wave's diff. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
+7. **Review (per ticket).** As each child’s product lands, run the **Build loop** on **that** ticket (**Comment cleanup** → `/code-review` two-axis on the ticket → remainder back here → **Land gate**). When the land gate calls for `/build-verifier`, that child did not write the ticket, one per ticket. When **its** loop is empty, set the lane from what is left. Do not batch one review for the whole wave, and do not run one combined pre-merge check over the wave's diff. **Living docs**. On a leftover lane or Done, remove `ready-for-agent` and leave the other labels. Keep `ready-for-agent` on Live Beta and GoLive. Append a named line to the map.
 8. **Recount.** Return to **Count first** **immediately** (close **or** leftover lane). Newly unblocked tickets are the next wave of **this** house. Repeat until **Crawl** says this house is done. A **House queue** with a next house returns to `/umbrella` after **End of house**. Do not pull that house's tickets here.
 
 ### Child rules
@@ -311,7 +298,7 @@ One copy, here. Every spawn carries them by reference: name this section and [BU
 - Leave living docs (`docs/`, trackers, architecture map, Device QA **P\*** leaf) to the conductor. If a grep hit still lists this ticket as open, name the path. If the ticket is phone-visible, say so in the report.
 - Do not run `git add`, `git commit`, `git checkout`, `git restore`, or `git clean` unless the conductor spawn explicitly allows Mode B solo (one ticket / one branch). Default: report a file list + test output when done.
 - Mode A: same branch, same worktree. Mode B: conductor owns the PR branch; no extra checkout unless spawn says solo.
-- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Database tests follow **Database test lanes** (skipped database tests are not a real-database or R2 pass). Do not run `commands.pr_ready`; the build-verifier does.
+- Prove your own ticket: run the package `verify` for each package you touched, and the tests for your touched files and their direct callers, one file at a time. No directory or whole-suite sweep. Database tests follow [build-verifier](../build-verifier/SKILL.md) **Database test lanes**. Do not run `commands.pr_ready`; the land gate does.
 - Type check, `verify`, and multi-test runs go through the heavy gate: `. /tmp/umbrella-heavy.sh && heavy <command>` ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**).
 - The same test or check red on two fix attempts in a row → stop and report `needs_parent` with the failing output and both diffs (**Build loop** **Repeat failure**). Do not try a third fix. A fix child sent with a repeat-failure verdict stops at its first red on that check and reports `needs_parent`; it does not try again.
 - Run each check in the foreground to its exit. Do not end your turn waiting on one. Exit 137 or 143 is a kill, not a red gate: re-run it through the gate. Never report it as a failed AC.
@@ -349,31 +336,15 @@ A desk check whose real remainder is "turn this on at production" moves to **GoL
 3. **Labels match the lane.** Drop `ready-for-agent` on Parked, a leftover lane, and Done. Keep it on Unclaimed, In Progress, Live Beta, and GoLive. A `parked:*` label belongs on Parked or a leftover lane, not on GoLive.
 4. **Blocked-by links match the bodies.** Set any wait that is still only a sentence.
 5. **Database migrate.** If this house added a new `backend/drizzle/0xxx_*.sql`, `project.yml` `commands.db_migrate` has already been run after that file existed. If it has not, run it now. Do not edit a migration that has already been applied. No new SQL file means do not run it again.
-6. **Merge prompt (Ship mode PR only).** Soft-queue overlap check first. Compare Ready-to-merge pull requests in this house with each other and with any Ready-to-merge pull request still open from an earlier house in this run. If two diffs share a path, name those paths in the merge message. Do not merge, rebase, or resolve that overlap until the founder says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request in the house and asks to merge them. Several pull requests go in that one message. Do not merge until the user says so in that turn. When they say merge, land one at a time per [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**: if `<dev-branch>` moved since the verdict, bring it in, run `commands.pr_ready` once, push with `HUSKY=0`, and compare patch-id with the build-verifier receipt (changed → fresh verifier); merge, then the next. Do not list a pull request whose lock gap check, living-doc verify, or blast-radius fact is still open. A **House queue** with a next house does not wait on that answer — return to `/umbrella` and start that house. After they merge, set those tickets to the lane that is actually left and walk the list again.
+6. **Merge prompt (Ship mode PR only).** Name hot-file conflicts first: Ready-to-merge pull requests in this house that share a path with each other or with an earlier house still open. Dispatch orders the land. It does not GO a PR. Do not merge, rebase, or resolve that overlap until the founder says so in that turn. The check does not hold the next house's coding crawl. Then one message lists every Ready-to-merge pull request and asks to merge them. When they say merge, land one at a time per [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**. Do not list a pull request whose living-doc verify, code-review, or land gate is still open. A **House queue** with a next house does not wait on that answer — return to `/umbrella` and start that house. After they merge, set those tickets to the lane that is actually left and walk the list again.
 
-## Merge-queue pre-warm (Jacob 11:57 + 12:02 CT 2026-10-23, adjusted 12:07)
+## Lessons
 
-For one-at-a-time queues only (dependency bumps, or PRs that share files). Skip this section for PRs that can merge in any order.
+- **Native deps.** Flag a native package add or drop in the PR body when it opens. It needs a new binary, not OTA. Try a Linux or cloud `expo prebuild` before saying it needs a Mac.
+- **Stall alarm.** A cloud fixup with no push in 30 minutes (15 for security work) gets an ETA or a kill-and-relaunch.
+- **Migrations.** Drops and renames use expand/contract. Finalize steps run in one transaction. Real-Postgres tests run in CI or `/build-verifier`, never local-only. Keyset cursors keep full DB precision. A migration does not inherit a previous pass.
+- **Tech Lead optional ideas** wait until after the land. Parity tables are a `/code-review` Spec line, not a second review.
 
-- **Pre-warm the next 1–2 PRs, never the whole queue,** on cloud agents, and only after the CoS usage gate passes. Each one gets deps installed, a merge rehearsed against Development plus the PRs ahead of it in Dispatch's posted order, and checks run without pushing. Record the rehearsed merged tree SHA (`git rev-parse HEAD^{tree}`). Shut the agent down when its PR lands or leaves the queue.
-- **Re-rehearse on change.** When Dispatch says a PR ahead was amended, dropped or reordered, redo the rehearsals from that point down only.
-- **Resync.** Run the update and the recheck in parallel. Use the carry-over rules in [build-verifier](../build-verifier/SKILL.md) **Merge-queue carry-over**. A full carry-over needs the merged tree SHA to match the rehearsal. A patch-id match alone carries only lint, types and unit tests for files outside the base diff. Rerun everything if package.json, a lock file, tsconfig, jest/babel/metro config, the Expo app/eas config, `.github/workflows` or a migration changed on either side. GitHub required CI always runs on the pushed head.
-- **pr-ready receipt.** List the rehearsed tree SHA, the actual tree SHA, and each check as `carried` or `reran`. Target: green within about 10 minutes of the prior land.
+## Your Pipeline ticks
 
-**Check split (Jacob 12:53 CT 2026-10-23):**
-1. **IW pre-warm runs the light set only:** merge rehearsal, deps install, lint, tsc, and Jest on the changed files. It finds breakage early, but it isn't a certification. IW does not run full Jest, the fingerprint check or the bundle budget.
-2. **BV runs the heavy set once, on IW's rehearsed merge, as soon as it's ready** (while the PR ahead is still landing): full Jest, fingerprint, bundle budget, prebuild and migrations, on BV's cloud agents. On resync, a tree SHA match carries BV's pass over and GO is instant. A deps or config change means BV reruns once, on the new rehearsal.
-3. **BV never adopts IW's results** as its own pass. That keeps the check independent.
-4. **Bundle-budget jitter:** Metro temp-path jitter must not fail the gate. The root fix (a deterministic measurement that normalizes or strips temp paths) folds into the current PR or a related ticket, not a new ticket. Until it lands, a budget miss under 64 bytes gets one rerun, not a FAIL.
-
-## Lessons (Jacob 2026-10-23)
-
-- **Native deps:** flag any native package add or drop in the PR body when it opens, as a fingerprint decision (it needs a new binary build, not OTA). Try a Linux or cloud `expo prebuild` before saying "needs a Mac".
-- **Stall alarm:** a cloud fixup with no push in 30 minutes (15 for security work) gets an ETA or a kill-and-relaunch.
-- **Migrations:** drops and renames use expand/contract. Finalize steps run in one transaction. Real-Postgres tests run in CI/BV, never local-only. Keyset cursors keep full DB precision.
-- **Tech Lead optional ideas** wait until after the land.
-- **Parity table:** on a viewer-rules check or a module-intent parity table, classify owner-self, grace-period self, safety/SOS, and race-start/payout paths as exempt or restricted according to the locked spec. No blanket exemption. Repeated misses for this product are on the private binding.
-
-## Your Pipeline ticks (Jacob 5:17 AM CT 2026-11-05)
-
-Tick your boxes as each clears, in the ticket body, not at the end: code + unit, rebase, static gates, Living docs, P* leaves. Tick an AC box only with proof. N/A = `[x]` struck with a one-line reason. Other owners: area-coordinator `## Tick owners`.
+Tick a box when the receipt that clears it exists (the `commands.pr_ready` pass line, the BV verdict when the land gate calls for it, Living docs, a P* leaf). N/A is `[x]` with a one-line reason. Do not batch-tick at the end. Other owners: area-coordinator `## Tick owners`.
