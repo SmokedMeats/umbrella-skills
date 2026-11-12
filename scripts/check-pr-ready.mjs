@@ -5,10 +5,20 @@
 //
 // There is no root package.json, so the command is:
 //   node scripts/check-pr-ready.mjs
+//   node scripts/check-pr-ready.mjs --public
 //
 // PUBLIC_SAFE_DENYLIST must be set to an existing file. An unset or missing
 // path fails closed. This gate does not treat git config or a sibling
 // denylist as a pass.
+//
+// Public mode is the --public flag only. It runs only when the binding is
+// export-ignore and absent from HEAD, and origin/main does not track it.
+// A missing binding without the flag fails closed. A shallow or orphan clone
+// is not a request. On the private clone, do not pass --public. On the public
+// snapshot, pass --public. The public pass line is `pr-ready: PASS (public) <sha>`.
+// The private pass line stays `pr-ready: PASS <sha>`.
+// Source mode reads the binding blob at HEAD (`--from-head`). An excluded
+// worktree copy or a symlink does not count.
 //
 // Public-safe, via scripts/check-public-safe.mjs (its allowlist, no extra
 // exception in this file):
@@ -16,12 +26,10 @@
 //           from that tree, including skills/umbrella/private-bindings.md.
 //   --range origin/main..HEAD on this checkout. That scan reads commits.
 // Structural: scripts/check-steps.mjs and scripts/check-shared-flow.mjs.
-// A public snapshot is a git archive: skills/umbrella/private-bindings.md is
-// export-ignore, absent from HEAD, and absent from this clone's history.
-// That case runs check-shared-flow --public (binding presence and content
-// checks skipped) and prints one line saying so. A private clone has the
-// path in history, so a deleted or broken binding stays on the source check
-// and fails closed. The installer does not infer --public from a missing file.
+// When public mode runs, check-shared-flow --public skips binding presence
+// and content checks and this script prints one line saying so. A deleted or
+// broken binding on the source check still fails closed. The installer does
+// not infer --public from a missing file.
 // A dirty working tree or index fails before those checks, so a PASS names
 // HEAD and the file checks read that commit's content. origin/main must be
 // an ancestor of HEAD.
@@ -33,6 +41,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const args = process.argv.slice(2);
+const unknownArg = args.find((arg) => arg !== '--public');
 const GENERATED_COPY_MARKERS = new Set(['export-manifest.json', 'install-manifest.json']);
 // Same path as INSTALLED_BINDING in check-shared-flow.mjs. Kept here so this
 // script still loads in a tree that has not copied that file yet.
@@ -149,16 +159,19 @@ function bindingAbsentFromHead() {
   return git(['cat-file', '-e', `HEAD:${BINDING_PATH}`]).status !== 0;
 }
 
-// A private clone records this path, including the commit that later deletes
-// it. A git-archive snapshot inits a new history that never has the path.
-function bindingRecordedInHistory() {
-  const listed = git(['rev-list', '-1', '--all', '--', BINDING_PATH]);
-  if (listed.status !== 0) return true;
-  return listed.stdout.trim().length > 0;
+function baseTracksBinding() {
+  return git(['cat-file', '-e', `origin/main:${BINDING_PATH}`]).status === 0;
 }
 
-function usePublicSharedFlow() {
-  return attributeSet('export-ignore') && bindingAbsentFromHead() && !bindingRecordedInHistory();
+function publicRefusals() {
+  const reasons = [];
+  if (!attributeSet('export-ignore') || !bindingAbsentFromHead()) {
+    reasons.push('public mode refused: skills/umbrella/private-bindings.md must be export-ignored and absent');
+  }
+  if (baseTracksBinding()) {
+    reasons.push('public mode refused: origin/main still tracks skills/umbrella/private-bindings.md');
+  }
+  return reasons;
 }
 
 function generatedCopyProblems() {
@@ -174,19 +187,22 @@ function generatedCopyProblems() {
   return [`hand-edited generated copies: ${found.join(', ')}`];
 }
 
-function finish(problems) {
+function finish(problems, publicMode = false) {
   if (problems.length === 0) {
     const sha = git(['rev-parse', 'HEAD']);
     if (sha.status !== 0) {
       console.log('pr-ready: FAIL HEAD sha unavailable');
       process.exit(1);
     }
-    console.log(`pr-ready: PASS ${sha.stdout.trim()}`);
+    const label = publicMode ? 'PASS (public)' : 'PASS';
+    console.log(`pr-ready: ${label} ${sha.stdout.trim()}`);
     process.exit(0);
   }
   console.log(`pr-ready: FAIL ${problems.join('; ')}`);
   process.exit(1);
 }
+
+if (unknownArg) finish([`unknown argument ${unknownArg}`]);
 
 const deny = denylistProblem();
 if (deny) finish([deny]);
@@ -205,11 +221,22 @@ if (!range.ok) problems.push(`public-safe range: ${range.detail}`);
 const steps = runNode([path.join(root, 'scripts', 'check-steps.mjs')], root);
 if (!steps.ok) problems.push(`check-steps: ${steps.detail}`);
 const flowArgs = [path.join(root, 'scripts', 'check-shared-flow.mjs')];
-if (usePublicSharedFlow()) {
-  console.log(PUBLIC_FLOW_LINE);
-  flowArgs.push('--public');
+let usePublic = false;
+if (args.includes('--public')) {
+  const refused = publicRefusals();
+  if (refused.length > 0) {
+    problems.push(...refused);
+  } else {
+    usePublic = true;
+    console.log(PUBLIC_FLOW_LINE);
+    flowArgs.push('--public');
+    const flow = runNode(flowArgs, root);
+    if (!flow.ok) problems.push(`check-shared-flow: ${flow.detail}`);
+  }
+} else {
+  flowArgs.push('--from-head');
+  const flow = runNode(flowArgs, root);
+  if (!flow.ok) problems.push(`check-shared-flow: ${flow.detail}`);
 }
-const flow = runNode(flowArgs, root);
-if (!flow.ok) problems.push(`check-shared-flow: ${flow.detail}`);
 problems.push(...generatedCopyProblems());
-finish(problems);
+finish(problems, usePublic);

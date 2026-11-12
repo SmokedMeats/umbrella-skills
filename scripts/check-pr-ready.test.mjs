@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,11 +16,20 @@ function git(cwd, args) {
   return (run.stdout || '').trim();
 }
 
-function runGate(cwd, extraEnv = {}, { keepDenylist = false } = {}) {
+const BINDING_REL = 'skills/umbrella/private-bindings.md';
+
+function tracksBinding(cwd) {
+  const run = spawnSync('git', ['cat-file', '-e', `HEAD:${BINDING_REL}`], { cwd, encoding: 'utf8' });
+  return run.status === 0;
+}
+
+function runGate(cwd, extraEnv = {}, { keepDenylist = false, args = [] } = {}) {
   const env = { ...process.env, ...extraEnv };
   if (!keepDenylist) delete env.PUBLIC_SAFE_DENYLIST;
   if (extraEnv.PUBLIC_SAFE_DENYLIST) env.PUBLIC_SAFE_DENYLIST = extraEnv.PUBLIC_SAFE_DENYLIST;
-  const run = spawnSync(node, [path.join(cwd, 'scripts', scriptName)], {
+  delete env.PR_READY_PUBLIC;
+  if (extraEnv.PR_READY_PUBLIC) env.PR_READY_PUBLIC = extraEnv.PR_READY_PUBLIC;
+  const run = spawnSync(node, [path.join(cwd, 'scripts', scriptName), ...args], {
     cwd,
     encoding: 'utf8',
     env,
@@ -62,16 +71,19 @@ function writeDenylist(sandbox, body) {
 // The product name is a denylist hit in the private binding. Keep it out of
 // this file so the exported tree does not contain the pattern.
 const privateToken = ['Xyber', 'Run'].join('');
+const VALID_BINDING = 'Pilot: #1 `example` (PR #1).\n\nBefore a card moves to Ready to merge: hold.\n';
 
 test('a pack with a clean export and an empty range passes', () => {
   const { sandbox, tree } = copyPack();
   try {
     const denylist = writeDenylist(sandbox, `${privateToken}\n`);
-    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    const args = tracksBinding(tree) ? [] : ['--public'];
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist }, { args });
     const sha = git(tree, ['rev-parse', 'HEAD']);
+    const passLine = tracksBinding(tree) ? `pr-ready: PASS ${sha}` : `pr-ready: PASS (public) ${sha}`;
     assert.equal(run.status, 0, run.text);
     assert.match(run.text, /generated copies: none; skipped/);
-    assert.equal(run.last, `pr-ready: PASS ${sha}`);
+    assert.equal(run.last, passLine);
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
   }
@@ -266,7 +278,7 @@ function initArchiveRepo(tree, dest) {
   git(dest, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
 }
 
-test('a public snapshot omits the export-ignored binding and passes in public mode', () => {
+test('a public snapshot without --public fails closed', () => {
   const { sandbox, tree } = copyPack();
   const exported = path.join(sandbox, 'export');
   try {
@@ -274,16 +286,175 @@ test('a public snapshot omits the export-ignored binding and passes in public mo
     assert.equal(existsSync(path.join(exported, 'skills', 'umbrella', 'private-bindings.md')), false);
     const denylist = writeDenylist(sandbox, `${privateToken}\n`);
     const run = runGate(exported, { PUBLIC_SAFE_DENYLIST: denylist });
-    const sha = git(exported, ['rev-parse', 'HEAD']);
-    assert.equal(run.status, 0, run.text);
-    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), true, run.text);
-    assert.equal(run.last, `pr-ready: PASS ${sha}`);
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /^pr-ready: FAIL /);
+    assert.match(run.last, /required binding missing; fail closed/);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
   }
 });
 
-test('a private layout with the tracked binding deleted still fails closed', () => {
+function cloneDepth1(source, dest) {
+  const run = spawnSync('git', ['clone', '--depth', '1', `file://${source}`, dest], { encoding: 'utf8' });
+  if (run.status !== 0) throw new Error(run.stderr || run.stdout || 'git clone failed');
+}
+
+test('a shallow clone without --public fails closed when the binding is absent', () => {
+  const { sandbox, tree } = copyPack();
+  const shallow = path.join(sandbox, 'shallow');
+  try {
+    if (tracksBinding(tree)) {
+      git(tree, ['rm', '-f', BINDING_REL]);
+      git(tree, ['commit', '-m', 'delete binding']);
+      writeFileSync(path.join(tree, 'after-delete.txt'), 'later tip\n');
+      git(tree, ['add', 'after-delete.txt']);
+      git(tree, ['commit', '-m', 'tip after the binding was deleted']);
+      git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    }
+    cloneDepth1(tree, shallow);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(shallow, { PUBLIC_SAFE_DENYLIST: denylist });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /^pr-ready: FAIL /);
+    assert.match(run.last, /required binding missing; fail closed/);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('a public snapshot passes when --public is set and the binding is export-ignored and absent', () => {
+  const { sandbox, tree } = copyPack();
+  const exported = path.join(sandbox, 'export');
+  try {
+    initArchiveRepo(tree, exported);
+    assert.equal(existsSync(path.join(exported, 'skills', 'umbrella', 'private-bindings.md')), false);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(exported, { PUBLIC_SAFE_DENYLIST: denylist }, { args: ['--public'] });
+    const sha = git(exported, ['rev-parse', 'HEAD']);
+    assert.equal(run.status, 0, run.text);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), true, run.text);
+    assert.equal(run.last, `pr-ready: PASS (public) ${sha}`);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('PR_READY_PUBLIC does not select public mode', () => {
+  const { sandbox, tree } = copyPack();
+  const exported = path.join(sandbox, 'export');
+  try {
+    initArchiveRepo(tree, exported);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(exported, { PUBLIC_SAFE_DENYLIST: denylist, PR_READY_PUBLIC: '1' });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /required binding missing; fail closed/);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+function commitBinding(tree) {
+  const binding = path.join(tree, BINDING_REL);
+  if (!existsSync(binding)) {
+    mkdirSync(path.dirname(binding), { recursive: true });
+    writeFileSync(binding, VALID_BINDING);
+    git(tree, ['add', BINDING_REL]);
+    git(tree, ['commit', '-m', 'add binding']);
+  }
+  git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+}
+
+test('a private PR that deletes the binding fails --public while origin/main still tracks it', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    commitBinding(tree);
+    git(tree, ['rm', '-f', BINDING_REL]);
+    git(tree, ['commit', '-m', 'delete binding']);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist }, { args: ['--public'] });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /public mode refused: origin\/main still tracks skills\/umbrella\/private-bindings.md/);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('an excluded untracked binding copy does not satisfy the HEAD check', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    commitBinding(tree);
+    git(tree, ['rm', '-f', BINDING_REL]);
+    git(tree, ['commit', '-m', 'delete binding']);
+    git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    writeFileSync(path.join(tree, BINDING_REL), VALID_BINDING);
+    const exclude = path.join(tree, '.git', 'info', 'exclude');
+    writeFileSync(exclude, `${readFileSync(exclude, 'utf8').replace(/\s*$/, '')}\n${BINDING_REL}\n`);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /required binding missing; fail closed/);
+    assert.equal(run.last.includes('dirty'), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('a HEAD symlink for the binding fails closed', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    const outside = path.join(sandbox, 'outside-binding.md');
+    writeFileSync(outside, VALID_BINDING);
+    const binding = path.join(tree, BINDING_REL);
+    if (existsSync(binding)) rmSync(binding);
+    mkdirSync(path.dirname(binding), { recursive: true });
+    symlinkSync(outside, binding);
+    git(tree, ['add', BINDING_REL]);
+    git(tree, ['commit', '-m', 'binding symlink']);
+    git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /private bindings: HEAD entry is a symlink/);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('--public is refused when the binding file is present', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    const binding = path.join(tree, BINDING_REL);
+    if (!existsSync(binding)) {
+      mkdirSync(path.dirname(binding), { recursive: true });
+      writeFileSync(binding, 'Pilot: #1 `example` (PR #1).\n\nBefore a card moves to Ready to merge: hold.\n');
+      git(tree, ['add', BINDING_REL]);
+      git(tree, ['commit', '-m', 'add binding']);
+      git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    }
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist }, { args: ['--public'] });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /public mode refused: skills\/umbrella\/private-bindings.md must be export-ignored and absent/);
+    assert.equal(run.text.includes(PUBLIC_FLOW_LINE), false);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('a private layout with the tracked binding deleted still fails closed', {
+  skip: tracksBinding(root) ? false : 'private binding is not tracked',
+}, () => {
   const { sandbox, tree } = copyPack();
   try {
     git(tree, ['rm', '-f', 'skills/umbrella/private-bindings.md']);
