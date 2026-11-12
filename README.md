@@ -191,7 +191,7 @@ Unedited skills stay in Matt's pack. Overlays in this repo are marked.
 | In-scope review findings, or a red land gate | `/implement` **Build loop** in this session, then `/code-review` again | same overlay |
 | Hard or flaky bug | `/diagnosing-bugs`, then `/implement`; then `/retro` | diagnosing-bugs + retro **Matt** |
 | After `/code-review`, or after a bug fix | `/retro` (environment retrospective; feeds `/correct`; not the recall brief) | no — Matt |
-| Writing a PR body | `/pr` (model-invoked). Mode B still needs the `commands.pr_ready_pass` line naming the current `<dev-branch>` tip | no — Matt |
+| Writing a PR body | `/pr` (model-invoked). Mode B still needs the `commands.pr_ready_pass` line naming the current `<dev-branch>` tip. A docs-only pull request to this pack pastes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs` | no — Matt |
 | Whole-spec worktree frontier build | `/implement-spec` (standalone Matt). Not routed inside umbrella `/implement` | no — Matt |
 | How does this work / where should it live | `/how` | **new** |
 | Why is it shaped this way | `/why` (git and PRs first; widen only when needed) | **new** |
@@ -444,6 +444,8 @@ node scripts/check-public-safe.mjs --tree       # whole tracked tree at HEAD (au
 ```
 
 A clean run prints one line, e.g. `check:public-safe PASS <repo>@<sha> (gitleaks 0, denylist 0)`. Paste that line in the PR body.
+
+This repo has no root `package.json`. The pack gate is `node scripts/check-pr-ready.mjs`. Set `PUBLIC_SAFE_DENYLIST` first. The last line is `pr-ready: PASS <HEAD sha>` or `pr-ready: FAIL <reasons>`. A dirty working tree or index fails, and so does a HEAD that does not contain origin/main. Paste a pass line in the body. A docs-only pull request merges on that line. The exact-head build-verifier plus `## Evidence` stand-in is retired. No workflow file runs this command.
 
 ## License
 
