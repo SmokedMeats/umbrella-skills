@@ -26,7 +26,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 
 ## When
 
-Pending the product `check:pr-ready` change. Follow [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate**. Run after implement product lands, before close or leftover-lane, only when the current head's pass line says `risk: high` or has no `risk:` field. `risk: low` does not get this turn.
+Pending the product `check:pr-ready` change. Follow [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate**. Run after implement product lands, before close or leftover-lane, only when the current head's pass line says `risk: high` or has no `risk:` field. `risk: low` does not get this turn. A docs-only pull request to this pack pastes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs` ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Pack pull requests**). The exact-head build-verifier plus `## Evidence` stand-in is retired.
 
 One verifier per ticket, on a different model than the author when the harness can pick one. Record that model. Never the session that wrote the ticket. Never one pass over the wave's combined diff. One verdict per ticket. Inline in the writer's session is not this check.
 
