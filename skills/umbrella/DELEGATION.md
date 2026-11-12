@@ -263,7 +263,7 @@ OUT_OF_SCOPE   noted, not blocking
 
 | | |
 | --- | --- |
-| **Delegate?** | Yes — after implement product lands, **before** close/lane |
+| **Delegate?** | Yes — when [CONVENTIONS.md](CONVENTIONS.md) **Land gate** is high or the pass line has no `risk:` field, after implement product lands, **before** close/lane. `risk: low` does not delegate this role |
 | **Dispatch** | Cursor Task `build-verifier` (`readonly`) **or** inline receipt in a session that did not write the ticket; Grok **Build Verifier** in Verify room for standing auditor pings. One verifier per ticket. Never the writer, never one pass over the wave's combined diff |
 
 **In (extra):**
@@ -275,18 +275,12 @@ SPEC           spec issue # / Problem Statement pointer
 SEAMS          untrusted bag? flaky outbound HTTP? JSON.parse/webhook/native dict?
 PHONE_VISIBLE  yes|no
 DIFF_BASE      first-ship SHA or exclusive file list
-DEPTH          full | light   (parent picks; see build-verifier **Depth by risk**)
+MODEL          model this run used, and whether it differs from the author
 ```
 
 **Missing ACs:** if ticket body has no checkable AC list → VERDICT=`fail`, BLOCK_CLOSE_OR_LANE=`true` (mechanical miss — cannot audit).
 
-**Checks (all PASS or N/A-with-reason):**
-1. Gap-check vs grill + spec + ticket ACs  
-2. Effect-TS when SEAMS require  
-3. Effect Schema inventory when SEAMS require  
-4. Living-docs **P\*** leaf when PHONE_VISIBLE  
-5. Seam test present when seam changed  
-6. No new type workarounds without ticket-named exception  
+**Checks:** the eight checks in [build-verifier](../build-verifier/SKILL.md) **Checks**. Check 1 is the only acceptance-criteria audit. **Database test lanes** live there and nowhere else.
 
 **Out (extra):**
 ```text
@@ -301,7 +295,7 @@ PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (f
 
 **FORBIDDEN extras:** no product edits; no Maestro/adb; no Project Status; no Standards/Spec judgment essay; **not** Device QA.
 
-**Parent gate:** close/lane only when VERDICT=pass **and** code-review Build loop empty **and** Close gate line complete in UMBRELLA_CURSOR.
+**Parent gate:** close/lane when [CONVENTIONS.md](CONVENTIONS.md) **Land gate** is satisfied for that head (BV VERDICT=pass when `risk` is high or missing; no BV turn when `risk` is low), code-review Build loop is empty, and the Close gate line is complete in UMBRELLA_CURSOR. Run this role only when the land gate calls for it. The verifier uses a different model than the author when the harness can pick one.
 
 ---
 
@@ -385,7 +379,7 @@ BLOCK_STATUS_MOVES  true | false
 | Carry grill→spec→tickets (locked decisions) | **Spec Writer** (`to-spec` / `CARRY_FROM_GRILL`) then **Ticket Filers** (`to-tickets` / `CARRY_FROM_SPEC`); parent refuses spawn if those CARRY fields empty / missing≠none |
 | Probe adb / USB / phone ownership | Parent |
 | Apply `STATUS_MOVES` off Desk device or Field | Parent after device-qa-verifier Pass |
-| Close / leftover lane after Build loop | Parent alone, after Close gate complete + build-verifier Pass + code-review empty |
+| Close / leftover lane after Build loop | Parent alone, after Close gate complete + land gate satisfied + code-review empty |
 | Merge / FF / migrate / OTA / master | The founder only (CoS relays when bots are on) |
 
 ---
@@ -400,7 +394,7 @@ BLOCK_STATUS_MOVES  true | false
 | Phone crawl | Local Task **or** `roles.device_qa` Grok lane — never cloud |
 | Verifiers | Cursor readonly Task **or** Verify-room Grok bots (already created) — same packet either way |
 
-Do **not** dual-truth: one implement return gets **one** build-verifier verdict (inline **or** Task/bot, not both competing).
+Do **not** dual-truth: when the land gate calls for a build-verifier, one implement return gets **one** verdict, from a child that did not write the ticket.
 
 **Bots off.** With no Grok bot lanes this run, every role packet above runs as a local subagent on `<local-dev-host>` (Grok Build or IDE agent) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. On Claude Code the memory check still picks in-process or sibling. Direct `<dev-branch>` push stays. Do not add swarm, CoS, or Dispatch routing. Protected workflow files and Railway config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
 
@@ -431,16 +425,12 @@ A sibling session has no shared filesystem and cannot message the parent back.
 
 ### Recheck at merge
 
-Each ticket is verified on its own and rechecked before it lands. Who runs which gate:
+Follow [CONVENTIONS.md](CONVENTIONS.md) **Land gate** (pending the product `check:pr-ready` change). Do not restate its path list.
 
-| Who | Runs | When |
-| --- | --- | --- |
-| Implement child (the writer) | package `verify` for each touched package + its own tests | before it reports done (self-proof). Not `commands.pr_ready` |
-| build-verifier | package `verify` for touched packages + `commands.pr_ready` | at the verdict SHA; records `HEAD_SHA`, `BASE_SHA`, `PATCH_ID` |
-| Parent at merge | `commands.pr_ready`, once | only if `<dev-branch>` moved since the verdict |
-
-- **One verifier per ticket**, from a child that did not write it. No combined pre-merge check over the wave.
-- **Patch-id rule.** `PATCH_ID` = `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field), recomputed on the new head against its new base after any merge or rebase. Same → the verdict holds. Different only in docs, tests or lint config (a docs-last commit, say) → the code verdict holds; `commands.pr_ready` still runs fresh on the new head. Different in code → a fresh build-verifier run. Never accept a matching commit message or a green check from an older SHA instead (pstack `shipping.md`).
-- **Mode B, land one at a time.** When the founder says merge, take the Ready-to-merge PRs in order. For each: if `<dev-branch>` has not moved since the verdict, merge it. If it moved, bring it in (merge or rebase), run `commands.pr_ready` once on the new head, and push with the pre-push hook off (`HUSKY=0`; the hook would repeat the same check). Then apply the **patch-id rule** against the build-verifier receipt: holds → merge; code changed → respawn build-verifier on the new head before that merge. Then the next PR, on the new trunk.
-- **No batch-level heavy gate in this pack.** The consuming repo's own scheduled gate covers the merged tip.
-- **Mode A.** Each ticket's commit already lands on the current tree, one at a time, and its verifier reads that commit (`BASE_SHA` = its parent). Recheck only if that commit is later amended or rebased; then the patch-id rule applies.
+- The writer runs package `verify` and its own tests. It does not run `commands.pr_ready`.
+- `risk: low` on the current head: merge. No build-verifier turn.
+- `risk: high`, or no `risk:` field: one build-verifier that did not write the ticket, on a different model than the author when the harness can pick one. It runs package `verify` and `commands.pr_ready` at the verdict SHA and records `HEAD_SHA`, `BASE_SHA`, and `PATCH_ID` (`git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable`, first field). No combined check over the wave.
+- `/tech-lead-review` only when that high path touches money, auth, or migrations.
+- The head moved: bring the PR in, rerun `commands.pr_ready` on the new head, push with `HUSKY=0`. A high-risk code change since the BV verdict needs a fresh BV before that merge. Then the next PR. Dispatch orders the land and names hot-file conflicts. It does not GO a PR.
+- Mode A: the ticket commit is already on the tree. Recheck only if that commit is later amended or rebased.
+- Never push Preview or `master`. The founder merges (CoS relays when bots are on).

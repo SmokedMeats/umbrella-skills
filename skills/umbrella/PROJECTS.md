@@ -93,7 +93,7 @@ A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **F
 | Window full? | **No** |
 | Close? | **No** while it is **Ready to merge**. The founder merges, then Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
 | Who merges | **The founder only** (`project.yml` `founder`). Bots never merge |
-| Mode B gate | Before this status: rebase/merge current `origin/<dev-branch>`, run `commands.pr_ready`, paste its PASS line (`commands.pr_ready_pass`, naming the current `<dev-branch>` tip) in the PR body. Dispatch checks for that line before merge |
+| Mode B gate | Before this status: bring in current `origin/<dev-branch>` and satisfy [CONVENTIONS.md](CONVENTIONS.md) **Land gate** (pending the product `check:pr-ready` change). Paste the pass line for the current head. Dispatch does not GO the PR |
 | Public-repo gate | PR into a public repo: paste the `check:public-safe PASS` line for the current tip in the PR body. No line, not Ready |
 
 Do **not** crawl dependents past a **Ready to merge**, **Live Beta**, or **GoLive** blocker. Do **not** call Ready to merge a leftover or a handoff lane. Do **not** call **Live Beta** or **GoLive** leftover.
@@ -120,10 +120,10 @@ The **Status** table is the transition policy. Do not invent a move or a column.
 | Filed, not pulled | **Unclaimed**, unassigned. The `/triage` catch is the inbox. It does not triage every Unclaimed card |
 | Phone-visible crawl not run this pass | **Desk device** only |
 | Outdoor, GPS, or on-wrist proof still required | **Field** only. A desk phone, a golden, or any other non-outdoor check is not Field |
-| Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, `commands.pr_ready`, `/build-verifier`, tech-lead-review, CI). Never **Desk device** or **Field** |
+| Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, [CONVENTIONS.md](CONVENTIONS.md) **Land gate**, CI). Never **Desk device** or **Field** |
 | Merged or pushed, and those checks plus any applicable QA are done, and nothing else is left | **Done** |
 
-A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: `/build-verifier` before close or a leftover lane, `device-qa-verifier` before leaving **Desk device** or **Field**, the `commands.pr_ready` PASS line before **Ready to merge**, the founder for merge. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**.
+A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: the land gate before **Ready to merge** or a leftover lane (`/build-verifier` when `risk` is high or missing), `device-qa-verifier` before leaving **Desk device** or **Field**, the founder for merge. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**. Dispatch does not GO a PR.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 

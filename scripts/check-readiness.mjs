@@ -193,10 +193,10 @@ if (!denylist) {
 }
 
 record('commands.pr_ready', 'N/A', 'not applicable to this pack; no project.yml by design; not a pass');
-record('tech-lead-review', 'EXTERNAL', 'needs an independent owner receipt; this script does not record GO or BLOCKED');
-record('code-review', 'EXTERNAL', 'needs an independent owner receipt; this script does not record GO');
-record('build-verifier', 'EXTERNAL', 'needs an independent owner receipt; this script does not record GO');
-record('dispatch', 'EXTERNAL', 'merge stays held until that receipt; this script does not record GO');
+record('tech-lead-review', 'EXTERNAL', 'money, auth, or migrations on a high land gate only; this script does not record the verdict');
+record('code-review', 'EXTERNAL', 'needs an independent owner receipt; this script does not record the verdict');
+record('build-verifier', 'EXTERNAL', 'the one AC audit when the land gate is high or risk is missing; this script does not record the verdict');
+record('dispatch', 'EXTERNAL', 'land order and hot-file conflicts only; this script does not record a per-PR GO');
 record('device-qa', 'N/A', 'this diff is not phone-visible');
 record('db-migrate', 'N/A', 'this diff adds no SQL migration');
 
@@ -211,5 +211,5 @@ if (PUBLIC) {
   console.log('PUBLIC CHECKS ONLY; source-only rows are NOT APPLICABLE and are not a pass');
   console.log('FULL SUITE NOT A PASS; the raw public suite result is not turned into a pass');
 }
-console.log('MERGE HELD until independent TL, CR, BV, and Dispatch receipts; this script does not certify GO');
+console.log('MECHANICAL PASS is not a merge. Land follows CONVENTIONS Land gate. This script does not certify a merge.');
 process.exit(0);

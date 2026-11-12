@@ -112,6 +112,7 @@ Also note for Standards (do not invent; just state facts):
 - The path or fetched contents of the spec. When the spec has a **Rule card**, paste the card and the harness output in place of the whole spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Also read the kit or grill page the ticket names. If the code disagrees with that locked page, that is a Spec miss even when the ticket bullets are thinner. Do not invent a softer reading of a decided line. Quote the spec or locked-page line for each finding. Under 400 words."
 - Retried or overlapping money and rewards: when the diff retries, redelivers or can overlap a grant, payout or paid write, the change must name its reply-lost case (the commit landed, the reply was lost) and its overlap case, each with a test that it applies once. A missing case is a Spec finding (c).
+- Parity table, on a viewer-rules check or a module-intent parity table: classify owner-self, grace-period self, safety/SOS, and race-start/payout paths as exempt or restricted according to the locked spec. No blanket exemption. Repeated misses for this product are on the private binding.
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
@@ -154,7 +155,7 @@ A type error, a warning, or an error in this diff is **Build now**, not a skip a
 
 **Park** only a grill / spec **not this pack** lock — `Later:` per [PARKED-TICKETS.md](../umbrella/PARKED-TICKETS.md).
 
-After the implement pass: gap-check, then this skill again on the new commits. **Two rounds per ticket.** On round 2, a hard finding still open is a missing rule on the card. It becomes one grill question, not round 3 (`/implement` **Build loop**). A child puts it in ESCALATE; the parent asks it. Nits and code-shape notes go to a follow-up ticket. Each round is a fresh reviewer with a short brief.
+After the implement pass, run this skill again on the new commits. The acceptance-criteria table belongs to `/build-verifier` when [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate** calls for it. This skill is not that audit and not the land gate. **Two rounds per ticket.** On round 2, a hard finding still open is a missing rule on the card. It becomes one grill question, not round 3 (`/implement` **Build loop**). A child puts it in ESCALATE; the parent asks it. Nits and code-shape notes go to a follow-up ticket. Each round is a fresh reviewer with a short brief.
 
 Completion: every in-scope finding is PASS in current code, or **Window full** with remaining ACs on the same tickets.
 
