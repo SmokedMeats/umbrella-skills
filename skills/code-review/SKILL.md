@@ -55,7 +55,7 @@ When the spec has a **Rule card** (`/to-spec`), the card is the Spec axis. Revie
 
 ### 3. Identify the standards sources
 
-Anything in the repo that documents how code should be written, such as `CODING_STANDARDS.md` or `CONTRIBUTING.md`.
+Search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list passed to the Standards sub-agent.
 
 On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below — a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
@@ -101,7 +101,7 @@ Also note for Standards (do not invent; just state facts):
 **Standards sub-agent prompt** — include:
 
 - The full diff command and commit list.
-- The list of standards-source files you found in step 3, plus the path to this `code-review/SKILL.md` and the step 3 sections to apply: the smell baseline, **Narrative comments**, and the **Pit-of-success check**. A local sub-agent reads them there. Paste those sections only for a sub-agent that cannot read installed skills (a cloud or sibling session; [DELEGATION.md](../umbrella/DELEGATION.md) **Sibling contract**).
+- The list of standards-source files you found in step 3, including `CODING_STANDARDS.md` and `CONTRIBUTING.md` when they exist, plus the path to this `code-review/SKILL.md` and the step 3 sections to apply: the smell baseline, **Narrative comments**, and the **Pit-of-success check**. A local sub-agent reads them there. Paste those sections only for a sub-agent that cannot read installed skills (a cloud or sibling session; [DELEGATION.md](../umbrella/DELEGATION.md) **Sibling contract**).
 - The `check-cycles` output from step 4 (or “not run — no backend/mobile src in this diff”).
 - The map / auth-glob notes from step 4.
 - The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip lint/tsc/`verify` noise. **Product hard pins** (paste the **Code-review hard pins** section of `standing-product-rules.md` here verbatim when present; cite the rule; skip the row if the note says not in this diff). Typical pins: cycles, architecture-map, thin-router, auth-glob, low-value tests, entitlement helpers, OTA-safe overlays, and domain-function / Effect seams. **Comment cleanup (in scope):** a comment added in this diff that narrates the change or is noise is in-scope, not a judgement-only smell. Keep intentional API and docs comments. Do not require a comment-cleanup subagent. Under 400 words."

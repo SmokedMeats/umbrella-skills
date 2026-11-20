@@ -193,7 +193,7 @@ if (!denylist) {
 }
 
 record('commands.pr_ready', 'N/A', 'not applicable to this pack; no project.yml by design; not a pass');
-record('tech-lead-review', 'EXTERNAL', 'money, auth, or migrations on a high land gate only; this script does not record the verdict');
+record('tech-lead-review', 'EXTERNAL', 'money, auth, permissions, entitlements, XP/economy, migrations, or write routes on a high land gate only; this script does not record the verdict');
 record('code-review', 'EXTERNAL', 'needs an independent owner receipt; this script does not record the verdict');
 record('build-verifier', 'EXTERNAL', 'the one AC audit when the land gate is high or risk is missing; this script does not record the verdict');
 record('dispatch', 'EXTERNAL', 'land order and hot-file conflicts only; this script does not record a per-PR GO');

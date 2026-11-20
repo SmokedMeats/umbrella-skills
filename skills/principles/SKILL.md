@@ -9,7 +9,7 @@ One index. Not a folder per principle. Not a second conductor. `/umbrella` still
 
 When a mid-task choice matches a name below, follow that line. If it points at a skill, read that `SKILL.md` and follow it. Name the principle only when it changed a real decision.
 
-House gates still win where they conflict. Reversible work proceeds. Grill lock, Ready-to-merge, Preview / migrate / OTA / master promote, phone Device QA ownership conflicts, and irreversible actions still pause. See `/umbrella` **Founder intervention**.
+House gates still win where they conflict. Reversible work proceeds. Grill lock, Ready-to-merge, Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, spend, phone Device QA ownership conflicts, and irreversible actions still pause. See `/umbrella` **Founder intervention**.
 
 ## Core
 
@@ -46,4 +46,4 @@ House gates still win where they conflict. Reversible work proceeds. Grill lock,
 ## Delegation
 
 - **guard-the-context-window.** Large outputs, long files, and fan-out stay out of the main thread. Subagents return summaries. `/implement` **Window full** is the house stop when the window is actually full. That stop includes the recall brief (house queue, ship mode, now-on tickets, decisions trail path, blockers, corrections this session). Follow `/handoff` when that skill is installed. The brief does not start the next house.
-- **never-block-on-the-human.** On reversible work, do it and show the result. Ask only for a real preference, authority, or an irreversible act. Founder gates in `/umbrella` still pause. This principle does not skip grill lock, Ready-to-merge, promote, Device QA ownership conflicts, or data deletion. When you report a default the operator can reverse, say in plain words what they could tell you to do instead. Do not hand them a shorthand token. Grill questions stay on the locked Context, Choices, and Recommend shape.
+- **never-block-on-the-human.** On reversible work, do it and show the result. Ask only for a real preference, authority, or an irreversible act. Founder gates in `/umbrella` still pause. This principle does not skip grill lock, Ready-to-merge, Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, spend, or Device QA ownership conflicts. When you report a default the operator can reverse, say in plain words what they could tell you to do instead. Do not hand them a shorthand token. Grill questions stay on the locked Context, Choices, and Recommend shape.

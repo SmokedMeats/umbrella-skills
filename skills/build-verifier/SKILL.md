@@ -1,9 +1,9 @@
 ---
 name: build-verifier
 description: >
-  Readonly ticket-receipt audit when the land gate is high, or check:pr-ready
-  printed no risk field. The one acceptance-criteria audit. Not run on risk low.
-  Not Device QA. Not code-review. Emit VERDICT pass|fail only.
+  Use when the land gate is high, or check:pr-ready printed no risk field.
+  Readonly ticket-receipt audit. The one acceptance-criteria audit. Not run on risk low.
+  Not Device QA. Not code-review. Emit `GATE: BV (PASS|FAIL) <40-sha> agent: <name>` only.
 disable-model-invocation: true
 ---
 
@@ -17,18 +17,18 @@ You are a **mechanical receipt auditor**, not a judgment reviewer and not a phon
 
 Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Steps**). The sections below hold the detail.
 
-1. Confirm [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate** calls for this run (`risk: high`, or no `risk:` field). `risk: low` → do not run. proof: the `commands.pr_ready` pass line on the current head.
+1. Confirm [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate** calls for this run (`risk: high`, or no `risk:` field). `risk: low` → do not run. proof: the step-1 `commands.pr_ready` output on the current head. A `check:pr-ready WAIT · static gates clean` line is enough; a merge PASS is not required yet.
 2. Check the packet: `TICKET_ACS` present. No AC section → FAIL. proof: the AC list.
-3. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. proof: the pass lines.
+3. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. A WAIT that only lacks this skill's `GATE:` line (static gates clean) is enough. Do not require a final PASS before posting. proof: the output lines.
 4. Run one red-on-old-code test in a temp worktree at `BASE_SHA`. proof: the test path and its red and green runs.
 5. Run checks 1 to 8, each PASS or N/A with a reason. proof: the per-check lines.
-6. Emit the receipt: VERDICT, model, HEAD and BASE SHA, PATCH_ID, `STEPS_DONE`. proof: the receipt.
+6. Emit the receipt. The first line must be exactly `GATE: BV PASS <40-sha> agent: <your-agent-name>` or `GATE: BV FAIL <40-sha> agent: <your-agent-name>` for the verdict SHA, then model, BASE SHA, PATCH_ID, `STEPS_DONE`, then an `## Evidence` block in the same comment: the commands or checks run and their results (pass/fail counts), the files or areas reviewed, and that same 40-char SHA. A FAIL also lists its findings. A PASS with no shaped Evidence block does not count. A FAIL still wins with no evidence. `check:pr-ready` only checks that the block exists and is shaped right; it cannot verify the evidence is true. proof: the receipt.
 
 ## When
 
-Pending the product `check:pr-ready` change. Follow [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate**. Run after implement product lands, before close or leftover-lane, only when the current head's pass line says `risk: high` or has no `risk:` field. `risk: low` does not get this turn. A docs-only pull request to this pack pastes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs` ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Pack pull requests**). On the public snapshot, pass `--public`. That line is `pr-ready: PASS (public) <sha>`. The exact-head build-verifier plus `## Evidence` stand-in is retired.
+Follow [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate**. Run after implement product lands, before close or leftover-lane, only when the current head's pass line says `risk: high` or has no `risk:` field. `risk: low` does not get this turn. A docs-only pull request to this pack pastes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs` ([CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Pack pull requests**). On the public snapshot, pass `--public`. That line is `pr-ready: PASS (public) <sha>`. The exact-head build-verifier plus `## Evidence` stand-in is retired.
 
-One verifier per ticket, on a different model than the author when the harness can pick one. Record that model. Never the session that wrote the ticket. Never one pass over the wave's combined diff. One verdict per ticket. Inline in the writer's session is not this check.
+One verifier per ticket, a different agent than the author (the same model is fine). Record that agent and model. Never the session that wrote the ticket. Never a subagent of the author. Never one pass over the wave's combined diff. One verdict per ticket. Inline in the writer's session is not this check. Only this skill posts the BV verdict.
 
 The head moved after the verdict: [DELEGATION.md](../umbrella/DELEGATION.md) **Recheck at merge**. A high-risk code change needs a fresh run on the new head.
 
@@ -51,7 +51,7 @@ FORBIDDEN      no product edits; no Maestro/adb; no Project Status; no code-revi
 
 ## Checks
 
-**Gates at the verdict SHA.** First run the package `verify` for each package the diff touches, then `project.yml` `commands.pr_ready` (when set), at `HEAD_SHA`, through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A red gate is FAIL with its failing line. Its PASS line goes in RECEIPTS. Tests: only those for touched files and their direct callers, one file at a time, never a directory sweep.
+**Gates at the verdict SHA.** First run the package `verify` for each package the diff touches, then `project.yml` `commands.pr_ready` (when set), at `HEAD_SHA`, through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A red gate is FAIL with its failing line. A PASS, or a WAIT that only waits on this skill's `GATE:` line (static gates clean), goes in RECEIPTS. A WAIT is not a merge PASS. Tests: only those for touched files and their direct callers, one file at a time, never a directory sweep.
 
 **Red on old code** = one test from this diff that fails on `BASE_SHA` and passes on `HEAD_SHA`. Check it in a temp worktree at `BASE_SHA` with only the test file copied in (`git worktree add`; remove it after). That worktree is not a product edit. No such test is FAIL. `/code-review` owns the blast-radius fact. This skill does not repeat it.
 
@@ -125,4 +125,4 @@ If a PR touches a model under `docs/specs/models/` or the code named in that mod
 
 ## Boxes ticked before moving forward
 
-Before a product card moves to Ready to merge: the current head's `commands.pr_ready` pass line is on the PR, and this skill's pass is on that head when `risk:` is `high` or missing. A step that did not fire is `[x]` with a one-line reason. Do not require a Dispatch GO box. Hand-off lanes Operator, Field, Desk device, Live Beta, and GoLive may leave phone, field, or founder steps open.
+Before a product card moves to Ready to merge: the current head's `commands.pr_ready` pass line is on the PR, and this skill's pass is on that head when `risk:` is `high` or missing. A step that did not fire is `[x]` with a one-line reason. The author's pre-merge check lives in [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate**; this skill does not replace it. Hand-off lanes Operator, Field, Desk device, Live Beta, and GoLive may leave phone, field, or founder steps open.

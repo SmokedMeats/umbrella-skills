@@ -130,6 +130,46 @@ test('a broken phase skill fails the structural check', () => {
   }
 });
 
+test('a skill-lint error fails the gate', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    const skill = path.join(tree, 'skills', 'why', 'SKILL.md');
+    writeFileSync(skill, readFileSync(skill, 'utf8').replace('name: why', 'name: why-not'));
+    git(tree, ['add', 'skills/why/SKILL.md']);
+    git(tree, ['commit', '-m', 'break skill name']);
+    git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    assert.notEqual(run.status, 0, run.text);
+    assert.match(run.last, /^pr-ready: FAIL /);
+    assert.match(run.last, /skill-lint:/);
+    assert.match(run.last, /does not match directory name 'why'/);
+    assert.equal(run.last.includes('pr-ready: PASS'), false);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+test('a skill over 500 lines warns and still passes', () => {
+  const { sandbox, tree } = copyPack();
+  try {
+    const skill = path.join(tree, 'skills', 'why', 'SKILL.md');
+    writeFileSync(skill, `${readFileSync(skill, 'utf8')}${'\n'.repeat(500)}`);
+    git(tree, ['add', 'skills/why/SKILL.md']);
+    git(tree, ['commit', '-m', 'long skill']);
+    git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    const denylist = writeDenylist(sandbox, `${privateToken}\n`);
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    const sha = git(tree, ['rev-parse', 'HEAD']);
+    const passLine = tracksBinding(tree) ? `pr-ready: PASS ${sha}` : `pr-ready: PASS (public) ${sha}`;
+    assert.equal(run.status, 0, run.text);
+    assert.match(run.text, /skill-lint: WARN skills\/why\/SKILL.md: SKILL.md is \d+ lines, over the 500-line budget/);
+    assert.equal(run.last, passLine);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
 test('a missing denylist fails closed', () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'pr-ready-deny-'));
   const tree = path.join(sandbox, 'tree');
