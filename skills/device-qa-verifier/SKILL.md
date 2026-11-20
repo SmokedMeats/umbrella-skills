@@ -1,8 +1,8 @@
 ---
 name: device-qa-verifier
 description: >
-  Lane-2 readonly audit after device-qa-agent returns for Desk device or Field
-  (not build-verifier, not code-review). Checklist vs run folder, Fail back on its ticket or one new issue,
+  Use when device-qa-agent returns for Desk device or Field.
+  Lane-2 readonly audit (not build-verifier, not code-review). Checklist vs run folder, Fail back on its ticket or one new issue,
   Skipped blocked, Return evidence, no src edits. Never re-tap the phone. Emit VERDICT + BLOCK_STATUS_MOVES.
 disable-model-invocation: true
 ---

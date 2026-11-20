@@ -23,6 +23,7 @@ Mandatory. Context and Recommend are always required. Choices are required too, 
 - For product houses listed in `project.yml` `product.apply_end_user_stories_in`, plain terms means what the configured end user (`product.end_user`) sees, does, or feels. For non-product houses, plain terms means what the affected user (developer, operator, reader) experiences.
 - Restate the relevant settled bits inside Context. Do not assume the founder remembers prior rounds.
 - Include a Park / Later choice when cutting is real.
+- Word each question so "yes" accepts the recommended answer.
 
 Each question is structured like this:
 

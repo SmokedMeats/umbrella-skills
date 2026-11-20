@@ -1,6 +1,6 @@
 ---
 name: how
-description: "Explain how a subsystem works: architecture, runtime flow, ownership, and layering. Use for \"how does X work\", a walkthrough before changing code, or \"where should this live\" / \"which package owns this\" / \"is this the right layer\". Use why for motivation. Use teach when the person wants how and why woven into one explanation."
+description: "Explain how a subsystem works: architecture, runtime flow, ownership, and layering. Use when asked \"how does X work\", a walkthrough before changing code, or \"where should this live\" / \"which package owns this\" / \"is this the right layer\". Use why for motivation. Use teach when the person wants how and why woven into one explanation."
 ---
 
 # How

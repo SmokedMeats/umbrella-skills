@@ -1,6 +1,6 @@
 ---
 name: zero-tech-debt
-description: Rework a change as if the intended UX and architecture existed from day one, deleting compatibility cruft and accidental complexity.
+description: Rework a change as if the intended UX and architecture existed from day one, deleting compatibility cruft and accidental complexity. Use when that rework is the task.
 user-invocable: true
 ---
 

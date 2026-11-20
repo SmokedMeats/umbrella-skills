@@ -74,8 +74,8 @@ Status columns today: **Parked** → **Unclaimed** → **In Progress** → lefto
 | Repo or spec done; leftover is store console, signing, IdP admin | **Operator** — do not close. Then `/implement` **Crawl** (same as Desk device) |
 | Leftover is phone-visible, and Device QA this pass cannot run — `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone ([DEVICE-QA.md](DEVICE-QA.md)) | **Desk device** — do not close. Comment **Waiting: Device QA** (a comment, not a column). Then crawl the next unblocked coding ticket |
 | Leftover is actual outdoor, GPS, or on-wrist proof | **Field** — do not close. Then `/implement` **Crawl** (same as Desk device). A desk phone check stays **Desk device** |
-| Mode B PR open, checks green, waiting on the founder | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until the founder merges (then the lane that is actually left) or the card is parked. The founder merges. |
-| Close after Build loop empty **and** applicable checks and QA are done **and** no leftover-lane wait (Mode A), or after the founder merges a Ready-to-merge PR **and** those checks and QA are done (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. A merge by itself is not Done |
+| Mode B PR open, checks green, land gate satisfied | **Ready to merge** — do **not** close. Do **not** treat as leftover. Dependents **WAIT** until the PR merges (then the lane that is actually left) or the card is parked. The author may squash-merge per [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. |
+| Close after Build loop empty **and** applicable checks and QA are done **and** no leftover-lane wait (Mode A), or after a Ready-to-merge PR merges **and** those checks and QA are done (Mode B) | **Done** — drop `parked:*` and `ready-for-agent`. Do **not** archive in the same breath. A merge by itself is not Done |
 
 ## Leftover lanes (code complete, not Done)
 
@@ -83,17 +83,17 @@ A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **F
 
 ### Ready to merge — EXPLICIT exception (not a leftover lane)
 
-**Ready to merge** is a Mode B wait-on-founder lane. It is **not** a leftover lane and **not** a handoff lane.
+**Ready to merge** is a Mode B wait-on-land-gate lane. It is **not** a leftover lane and **not** a handoff lane. The author may squash-merge after the land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend still wait for the founder.
 
 | | |
 | --- | --- |
-| When to set | PR is open, checks green, waiting on the founder to merge into `<dev-branch>` |
+| When to set | PR is open, checks green, and the land gate is satisfied, waiting to merge into `<dev-branch>` |
 | Pull this card? | **No** — not implement frontier |
-| Hold dependents? | **Yes** while this card is **Ready to merge**. Dependents **WAIT** until the founder merges or the card is parked. Do **not** unlock the next wave the way leftover lanes do. After the merge, a leftover lane does not keep that hold |
+| Hold dependents? | **Yes** while this card is **Ready to merge**. Dependents **WAIT** until the PR merges or the card is parked. Do **not** unlock the next wave the way leftover lanes do. After the merge, a leftover lane does not keep that hold |
 | Window full? | **No** |
-| Close? | **No** while it is **Ready to merge**. The founder merges, then Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
-| Who merges | **The founder only** (`project.yml` `founder`). Bots never merge |
-| Mode B gate | Before this status: bring in current `origin/<dev-branch>` and satisfy [CONVENTIONS.md](CONVENTIONS.md) **Land gate** (pending the product `check:pr-ready` change). Paste the pass line for the current head. Dispatch does not GO the PR |
+| Close? | **No** while it is **Ready to merge**. After the PR merges, Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
+| Who merges | The author may squash-merge a `<dev-branch>` PR after the **Land gate**. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (`project.yml` `founder`) |
+| Mode B gate | Before this status: bring in current `origin/<dev-branch>` and satisfy [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. Paste the pass line for the current head. The author runs the pre-merge check, then may squash-merge |
 | Public-repo gate | PR into a public repo: paste the `check:public-safe PASS` line for the current tip in the PR body. No line, not Ready |
 
 Do **not** crawl dependents past a **Ready to merge**, **Live Beta**, or **GoLive** blocker. Do **not** call Ready to merge a leftover or a handoff lane. Do **not** call **Live Beta** or **GoLive** leftover.
@@ -123,7 +123,7 @@ The **Status** table is the transition policy. Do not invent a move or a column.
 | Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, [CONVENTIONS.md](CONVENTIONS.md) **Land gate**, CI). Never **Desk device** or **Field** |
 | Merged or pushed, and those checks plus any applicable QA are done, and nothing else is left | **Done** |
 
-A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: the land gate before **Ready to merge** or a leftover lane (`/build-verifier` when `risk` is high or missing), `device-qa-verifier` before leaving **Desk device** or **Field**, the founder for merge. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**. Dispatch does not GO a PR.
+A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: the land gate before **Ready to merge** or a leftover lane (`/build-verifier` when `risk` is high or missing), `device-qa-verifier` before leaving **Desk device** or **Field**, the founder for Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 
@@ -235,7 +235,7 @@ Do not bulk-archive from a truncated `item-list` (`-L 200` and no `--query`). Un
 | `/grill-me` | Claim batch → In Progress |
 | `/to-spec` | `item-add` on the spec |
 | `/to-tickets` | `item-add` on every published ticket (parked too) |
-| `/implement` | Backfill item; claim → In Progress; empty Build loop → the lane that matches what is left ([Lane fit](#lane-fit)); Mode B green PR waiting on the founder → **Ready to merge** (holds dependents until merge); **Done** only when applicable checks and QA are done (no immediate archive); phone-visible and this pass cannot run Device QA → Desk device, then crawl the next coding ticket |
+| `/implement` | Backfill item; claim → In Progress; empty Build loop → the lane that matches what is left ([Lane fit](#lane-fit)); Mode B green PR that passed the land gate → **Ready to merge** (holds dependents until merge); **Done** only when applicable checks and QA are done (no immediate archive); phone-visible and this pass cannot run Device QA → Desk device, then crawl the next coding ticket |
 | `PARKED-TICKETS.md` | `item-add`; Status **Parked** unless code is already done |
 
 Agents need `project` scope. Missing scope → tell the human to refresh; do not skip the issue create.

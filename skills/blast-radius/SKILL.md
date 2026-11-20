@@ -1,6 +1,6 @@
 ---
 name: blast-radius
-description: "Find what a change could break somewhere else, beyond the diff, and prove the one fact it is safe because of by running real code. Use for \"blast radius of X\", \"what could this break\", reviewing a small diff you do not trust, or the Spec axis of /code-review before Ready-to-merge."
+description: "Find what a change could break somewhere else, beyond the diff, and prove the one fact it is safe because of by running real code. Use when asked about \"blast radius of X\", \"what could this break\", reviewing a small diff you do not trust, or the Spec axis of /code-review before Ready-to-merge."
 ---
 
 # Blast radius

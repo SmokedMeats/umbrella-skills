@@ -25,7 +25,9 @@
 //   --tree  on a git archive of HEAD. export-ignore paths are already absent
 //           from that tree, including skills/umbrella/private-bindings.md.
 //   --range origin/main..HEAD on this checkout. That scan reads commits.
-// Structural: scripts/check-steps.mjs and scripts/check-shared-flow.mjs.
+// Structural: scripts/check-steps.mjs, scripts/check-shared-flow.mjs, and
+// scripts/skill-lint.mjs. Skill-lint errors fail this gate. A SKILL.md over
+// 500 lines is a skill-lint warning and does not fail the gate.
 // When public mode runs, check-shared-flow --public skips binding presence
 // and content checks and this script prints one line saying so. A deleted or
 // broken binding on the source check still fails closed. The installer does
@@ -174,6 +176,24 @@ function publicRefusals() {
   return reasons;
 }
 
+function skillLintProblems() {
+  const script = path.join(root, 'scripts', 'skill-lint.mjs');
+  if (!existsSync(script)) return ['skill-lint: scripts/skill-lint.mjs is missing'];
+  const run = spawnSync(process.execPath, [script], {
+    cwd: root,
+    encoding: 'utf8',
+    env: childEnv(),
+    maxBuffer: 1 << 28,
+  });
+  const text = `${run.stdout || ''}${run.stderr || ''}`;
+  for (const line of linesOf(text)) {
+    if (line.startsWith('skill-lint: WARN ')) console.log(line);
+  }
+  if (run.status === 0) return [];
+  const detail = detailFrom(text, run.status, 'skill-lint: FAIL');
+  return [detail.startsWith('skill-lint:') ? detail : `skill-lint: ${detail}`];
+}
+
 function generatedCopyProblems() {
   const listed = git(['ls-files', '-z']);
   if (listed.status !== 0) return ['generated copies: git ls-files failed'];
@@ -220,6 +240,7 @@ const range = scanRange();
 if (!range.ok) problems.push(`public-safe range: ${range.detail}`);
 const steps = runNode([path.join(root, 'scripts', 'check-steps.mjs')], root);
 if (!steps.ok) problems.push(`check-steps: ${steps.detail}`);
+problems.push(...skillLintProblems());
 const flowArgs = [path.join(root, 'scripts', 'check-shared-flow.mjs')];
 let usePublic = false;
 if (args.includes('--public')) {

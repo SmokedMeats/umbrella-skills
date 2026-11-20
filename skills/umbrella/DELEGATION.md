@@ -264,7 +264,7 @@ OUT_OF_SCOPE   noted, not blocking
 | | |
 | --- | --- |
 | **Delegate?** | Yes — when [CONVENTIONS.md](CONVENTIONS.md) **Land gate** is high or the pass line has no `risk:` field, after implement product lands, **before** close/lane. `risk: low` does not delegate this role |
-| **Dispatch** | Cursor Task `build-verifier` (`readonly`) **or** inline receipt in a session that did not write the ticket; Grok **Build Verifier** in Verify room for standing auditor pings. One verifier per ticket. Never the writer, never one pass over the wave's combined diff |
+| **Dispatch** | A separate reviewer agent: Cursor Task `build-verifier` (`readonly`), or Grok **Build Verifier** in the Verify room for standing auditor pings. Never a subagent of the author and never an inline receipt in the writer's session. One verifier per ticket. Never the writer, never one pass over the wave's combined diff |
 
 **In (extra):**
 ```text
@@ -295,7 +295,7 @@ PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (f
 
 **FORBIDDEN extras:** no product edits; no Maestro/adb; no Project Status; no Standards/Spec judgment essay; **not** Device QA.
 
-**Parent gate:** close/lane when [CONVENTIONS.md](CONVENTIONS.md) **Land gate** is satisfied for that head (BV VERDICT=pass when `risk` is high or missing; no BV turn when `risk` is low), code-review Build loop is empty, and the Close gate line is complete in UMBRELLA_CURSOR. Run this role only when the land gate calls for it. The verifier uses a different model than the author when the harness can pick one.
+**Parent gate:** close/lane when [CONVENTIONS.md](CONVENTIONS.md) **Land gate** is satisfied for that head (`GATE: BV PASS <40-sha> agent: <name>` when `risk` is high or missing; no BV turn when `risk` is low), code-review Build loop is empty, and the Close gate line is complete in UMBRELLA_CURSOR. Run this role only when the land gate calls for it. The verifier is a different agent than the author (the same model is fine), not a subagent of the author, and not inline in the writer's session.
 
 ---
 
@@ -380,7 +380,7 @@ BLOCK_STATUS_MOVES  true | false
 | Probe adb / USB / phone ownership | Parent |
 | Apply `STATUS_MOVES` off Desk device or Field | Parent after device-qa-verifier Pass |
 | Close / leftover lane after Build loop | Parent alone, after Close gate complete + land gate satisfied + code-review empty |
-| Merge / FF / migrate / OTA / master | The founder only (CoS relays when bots are on) |
+| Merge / FF / migrate / OTA / master | The author may squash-merge a `<dev-branch>` PR after the Land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (CoS relays when bots are on) |
 
 ---
 
@@ -396,7 +396,7 @@ BLOCK_STATUS_MOVES  true | false
 
 Do **not** dual-truth: when the land gate calls for a build-verifier, one implement return gets **one** verdict, from a child that did not write the ticket.
 
-**Bots off.** With no Grok bot lanes this run, every role packet above runs as a local subagent on `<local-dev-host>` (Grok Build or IDE agent) or as an inline receipt in the parent, never a Cursor Task or a cloud agent. On Claude Code the memory check still picks in-process or sibling. Direct `<dev-branch>` push stays. Do not add swarm, CoS, or Dispatch routing. Protected workflow files and Railway config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
+**Bots off.** Declared at session start only, with no mid-session switch, and session-scoped only: never a PR label, marker, or body line (`commands.pr_ready` does not read one). With no Grok bot lanes this run, implement children may run as a local subagent on `<local-dev-host>` (Grok Build or IDE agent), never a Cursor Task or a cloud agent. Tech Lead and Build Verifier are still separate reviewer agents that post their own `GATE:` verdicts, never a subagent of the author and never an inline receipt in the writer's session. On Claude Code the memory check still picks in-process or sibling for implement children. The only direct `<dev-branch>` push is the rare local `<local-dev-host>` exception in [umbrella-mode](../umbrella-mode/SKILL.md) **Bots off**; that path still starts those separate reviewer agents (they post on the ticket with the SHA). Do not add swarm, CoS, or Dispatch routing. Protected workflow files and Railway config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
 
 ---
 
@@ -425,12 +425,14 @@ A sibling session has no shared filesystem and cannot message the parent back.
 
 ### Recheck at merge
 
-Follow [CONVENTIONS.md](CONVENTIONS.md) **Land gate** (pending the product `check:pr-ready` change). Do not restate its path list.
+Follow [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. Do not restate its path list.
 
-- The writer runs package `verify` and its own tests. It does not run `commands.pr_ready`.
-- `risk: low` on the current head: merge. No build-verifier turn.
-- `risk: high`, or no `risk:` field: one build-verifier that did not write the ticket, on a different model than the author when the harness can pick one. It runs package `verify` and `commands.pr_ready` at the verdict SHA and records `HEAD_SHA`, `BASE_SHA`, and `PATCH_ID` (`git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable`, first field). No combined check over the wave.
-- `/tech-lead-review` only when that high path touches money, auth, or migrations.
-- The head moved: bring the PR in, rerun `commands.pr_ready` on the new head, push with `HUSKY=0`. A high-risk code change since the BV verdict needs a fresh BV before that merge. Then the next PR. Dispatch orders the land and names hot-file conflicts. It does not GO a PR.
-- Mode A: the ticket commit is already on the tree. Recheck only if that commit is later amended or rebased.
-- Never push Preview or `master`. The founder merges (CoS relays when bots are on).
+- The author runs `commands.pr_ready` on the exact head that will merge (Land gate step 1): classify risk and clear the static and diff gates. A `check:pr-ready WAIT` that only waits on review is enough for this step; it is not a merge PASS. The writer still runs package `verify` and its own tests.
+- `/tech-lead-review` first when the high path (or the output has no `risk:` field) touches money, auth, permissions, entitlements, paid tiers, XP/economy/tokens, migrations, or write routes. Deps, config, native, and locking stay build-verifier only.
+- `risk: high`, or no `risk:` field: one build-verifier that did not write the ticket, a different agent than the author (the same model is fine), not a subagent of the author, and not inline in the writer's session. It runs package `verify` and `commands.pr_ready` at the verdict SHA. A WAIT that only lacks this skill's `GATE:` line (static gates clean) is enough; do not require a final PASS before posting. Record `HEAD_SHA`, `BASE_SHA`, and `PATCH_ID` (`git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable`, first field). Post `GATE: BV (PASS|FAIL) <40-sha> agent: <name>` plus an `## Evidence` block citing that SHA, the checks run, and the files or areas reviewed. A FAIL also lists findings. No combined check over the wave.
+- The author then reruns `commands.pr_ready` for the final PASS on this same SHA.
+- `risk: low` on the current head: no build-verifier turn and no tech-lead turn. The author still runs the pre-merge check.
+- The author runs the Land gate pre-merge check, then may squash-merge its own PR.
+- The head moved: bring the PR in, rerun the stale gates on the new head, and push with hooks on (never `HUSKY=0` or `--no-verify`). A high-risk code change since the BV verdict needs a fresh BV before that merge. Then the next PR.
+- Mode A local `<local-dev-host>` direct `<dev-branch>` push is the narrow exception in [umbrella-mode](../umbrella-mode/SKILL.md) **Bots off**. Recheck only if that commit is later amended or rebased.
+- Never push Preview or `master`.

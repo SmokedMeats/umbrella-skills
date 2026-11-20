@@ -1,6 +1,6 @@
 ---
 name: teach
-description: "Explain existing code, a change, or a subsystem so a person understands it. Use for \"explain this\", \"help me really understand X\", \"walk me through this change\", or \"teach me this code\". Runs how and why and weaves them into one plain explanation. Not a multi-session course. A course, lessons, or learning a topic over time is teach-me."
+description: "Explain existing code, a change, or a subsystem so a person understands it. Use when asked to \"explain this\", \"help me really understand X\", \"walk me through this change\", or \"teach me this code\". Runs how and why and weaves them into one plain explanation. Not a multi-session course. A course, lessons, or learning a topic over time is teach-me."
 ---
 
 # Teach

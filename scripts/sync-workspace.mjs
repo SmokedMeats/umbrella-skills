@@ -29,6 +29,8 @@
  *   3. personal skills (in a user root, not from a pack) -> the other user roots and every
  *      repo skill dir, so a cloud session with no home folder still has them
  *   4. each repo's rules generator (skill_targets `rules: "<command>"`, run in that repo)
+ * Before step 1 it fetches every pack it reads and every skill_targets repo it writes and
+ * refuses when one is behind or diverged from its upstream (scripts/sync-freshness.mjs).
  * Steps 2 and 3 write a marker file (.synced-by-sync-workspace) and only ever replace
  * a folder that carries it; a folder another installer owns is left alone.
  *
@@ -598,6 +600,27 @@ if (missing.length > 0) {
 const cfg = loadProjectConfig();
 const cfgRaw = cfg ? cfg.raw : '';
 const WORKSPACE_TARGETS = cfg ? parseSkillTargets(cfgRaw) : [];
+const overlayPackName = (cfg && parseOverlayPack(cfgRaw)) || overlaySibling;
+const privateRoot = overlayPackName ? path.join(workspaceRoot, overlayPackName) : null;
+const hasPrivate = Boolean(privateRoot && existsSync(privateRoot));
+const swarmRoot = SYNC_SWARM && !FIXTURE_ROOT ? findSwarmSibling() : null; // --fixture-root never copies swarm skills
+
+// Pull first: fetch every pack this run reads and every repo it writes, and stop
+// before any copy when one is behind or diverged from its upstream branch.
+// --fixture-root writes one disposable folder and reads no other repo, so it skips this.
+if (!FIXTURE_ROOT) {
+  const { checkFreshness } = await import('./sync-freshness.mjs');
+  const repos = [
+    { name: path.basename(packRoot), dir: packRoot },
+    ...(hasPrivate ? [{ name: overlayPackName, dir: privateRoot }] : []),
+    ...(swarmRoot ? [{ name: path.basename(swarmRoot), dir: swarmRoot }] : []),
+    ...WORKSPACE_TARGETS.map(({ repo }) => ({ name: repo, dir: path.join(workspaceRoot, repo) })),
+  ];
+  if (!checkFreshness(repos, (cmd, args, opts) => spawnSync(cmd, args, opts))) {
+    console.error('sync: stopped before copying anything. Every checkout must be up to date with its upstream branch.');
+    process.exit(1);
+  }
+}
 if (CHECK_UPDATES || APPLY_UPDATES) {
   const { checkUpdates } = await import('./check-updates.mjs');
   const results = await checkUpdates({
@@ -606,10 +629,6 @@ if (CHECK_UPDATES || APPLY_UPDATES) {
   if (CHECK_UPDATES) process.exit(results.some((r) => r.status === 'error') ? 1 : 0);
   console.log('');
 }
-const overlayPackName = (cfg && parseOverlayPack(cfgRaw)) || overlaySibling;
-const privateRoot = overlayPackName ? path.join(workspaceRoot, overlayPackName) : null;
-const hasPrivate = Boolean(privateRoot && existsSync(privateRoot));
-
 console.log(`Pack: ${label(packRoot)}`);
 if (cfg) console.log(`Config: ${label(cfg.path)}`);
 if (!SYNC_VENDOR) console.log('Vendored packs: (skipped, --no-vendor)');
@@ -692,7 +711,6 @@ if (!FIXTURE_ROOT) for (const { dir: dest, box } of EXTRA_DESTS) {
 // Swarm companion: every root the overlay went to (user roots, product repo skill_targets, --box/--dest),
 // so a cloud coordinator or sibling working in a product checkout can read the swarm skills too.
 // Runs before the private skills-overlay merge so the overlay can patch swarm skills too.
-const swarmRoot = SYNC_SWARM ? findSwarmSibling() : null;
 if (!SYNC_SWARM) {
   console.log('Swarm pack: (skipped, --no-swarm)');
 } else if (!swarmRoot) {

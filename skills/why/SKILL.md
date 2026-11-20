@@ -1,6 +1,6 @@
 ---
 name: why
-description: "Explain why code is shaped this way, from evidence. Use for \"why does X work this way\", \"why we picked Y\", design rationale, regressions, postmortems, or data-backed thresholds. Default narrow: git history and pull requests, plus only the evidence categories the question needs (issues, docs, chat, observability, errors, analytics). Use how for runtime behavior. Use teach to weave how and why into one explanation."
+description: "Explain why code is shaped this way, from evidence. Use when asked \"why does X work this way\", \"why we picked Y\", design rationale, regressions, postmortems, or data-backed thresholds. Default narrow: git history and pull requests, plus only the evidence categories the question needs (issues, docs, chat, observability, errors, analytics). Use how for runtime behavior. Use teach to weave how and why into one explanation."
 ---
 
 # Why
