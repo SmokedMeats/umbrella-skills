@@ -282,6 +282,8 @@ MODEL          model this run used, and whether it differs from the author
 
 **Checks:** the eight checks in [build-verifier](../build-verifier/SKILL.md) **Checks**. Check 1 is the only acceptance-criteria audit. **Database test lanes** live there and nowhere else.
 
+**Heavy legs:** Send heavy BV runs only to the local runner. Full backend Jest and coverage, and full mobile Jest, follow [build-verifier](../build-verifier/SKILL.md) **Heavy legs**. When the private binding installed with the umbrella skill is present, the verifier sends the local runner the repo, the exact SHA, the PR number, and those heavy legs only, for this run only. The binding owns the per-run switch. The switch goes off when the run ends, when the run fails, and when the verifier aborts. A local result counts only from a clean checkout after the verifier matches its HEAD SHA and tree to the reviewed head. A mismatch or a skipped heavy leg is not a PASS. A refusal, a busy runner, an unreachable runner, or no result within 15 minutes of acceptance runs those same legs on cloud agents in that turn. The receipt names where each heavy leg ran, the result, and how to rerun, on that SHA. Light checks stay on the verifier.
+
 **Out (extra):**
 ```text
 VERDICT              pass | fail

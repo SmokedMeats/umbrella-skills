@@ -20,9 +20,10 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 1. Confirm [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **Land gate** calls for this run (`risk: high`, or no `risk:` field). `risk: low` → do not run. proof: the step-1 `commands.pr_ready` output on the current head. A `check:pr-ready WAIT · static gates clean` line is enough; a merge PASS is not required yet.
 2. Check the packet: `TICKET_ACS` present. No AC section → FAIL. proof: the AC list.
 3. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. A WAIT that only lacks this skill's `GATE:` line (static gates clean) is enough. Do not require a final PASS before posting. proof: the output lines.
-4. Run one red-on-old-code test in a temp worktree at `BASE_SHA`. proof: the test path and its red and green runs.
-5. Run checks 1 to 8, each PASS or N/A with a reason. proof: the per-check lines.
-6. Emit the receipt. The first line must be exactly `GATE: BV PASS <40-sha> agent: <your-agent-name>` or `GATE: BV FAIL <40-sha> agent: <your-agent-name>` for the verdict SHA, then model, BASE SHA, PATCH_ID, `STEPS_DONE`, then an `## Evidence` block in the same comment: the commands or checks run and their results (pass/fail counts), the files or areas reviewed, and that same 40-char SHA. A FAIL also lists its findings. A PASS with no shaped Evidence block does not count. A FAIL still wins with no evidence. `check:pr-ready` only checks that the block exists and is shaped right; it cannot verify the evidence is true. proof: the receipt.
+4. Run **Heavy legs** for this SHA. When the private binding installed with the umbrella skill is present, send them to the local runner it names, for this run only. The switch goes off when the run ends, when it fails, and when this verifier aborts. A refusal, a busy runner, an unreachable runner, or no result within 15 minutes runs those same legs on cloud agents in this turn. proof: where each heavy leg ran, the result, and how to rerun.
+5. Run one red-on-old-code test in a temp worktree at `BASE_SHA`. proof: the test path and its red and green runs.
+6. Run checks 1 to 8, each PASS or N/A with a reason. proof: the per-check lines.
+7. Emit the receipt. The first line must be exactly `GATE: BV PASS <40-sha> agent: <your-agent-name>` or `GATE: BV FAIL <40-sha> agent: <your-agent-name>` for the verdict SHA, then model, BASE SHA, PATCH_ID, `STEPS_DONE`, then an `## Evidence` block in the same comment: the commands or checks run and their results (pass/fail counts), where each heavy leg ran, the result and how to rerun it, the files or areas reviewed, and that same 40-char SHA. A FAIL also lists its findings. A PASS with no shaped Evidence block does not count. A FAIL still wins with no evidence. `check:pr-ready` only checks that the block exists and is shaped right; it cannot verify the evidence is true. proof: the receipt.
 
 ## When
 
@@ -87,6 +88,7 @@ HEAD_SHA             commit audited
 BASE_SHA             DIFF_BASE as a SHA (Mode B: merge-base with <dev-branch>; Mode A: the ticket commit's parent)
 PATCH_ID             `git diff <BASE_SHA> <HEAD_SHA> | git patch-id --stable` (first field)
 MODEL                model used, and whether it differs from the author
+HEAVY_LEGS           where each heavy leg ran, the result, and how to rerun, on HEAD_SHA
 RED_ON_OLD_CODE      the one test path, with its red and green runs
 ARTIFACTS            pointers only
 RECEIPTS             commands/paths checked
@@ -96,14 +98,33 @@ NEXT_HINT            (ignored by parent)
 ```
 
 
+## Heavy legs
+
+Send heavy BV runs only to the local runner.
+
+Heavy legs are (A) the full backend Jest and coverage run and (B) the full mobile Jest run, on a high-risk head or a head with no `risk:` field. `risk: low` still gets no BV run. Light checks stay on this agent: package `verify`, `commands.pr_ready`, checks 1 to 8, the red-on-old-code test, and any run that is not those two full suites.
+
+When the private binding installed with the umbrella skill is present, send A and B to the local heavy runner it names. Pass the repo, the exact SHA, the PR number, and those heavy legs only. The binding owns the request, the per-run switch, and the result file. The switch is on for that run and off when the run ends, when the run fails, and when this verifier aborts. There is no persistent on-state. A runtime that cannot send the request treats the runner as unreachable.
+
+Accept a local result only from a clean checkout pinned to this SHA, and only after this verifier matches its HEAD SHA and tree to the reviewed head. A mismatch or a skipped heavy leg is not a PASS.
+
+A refusal (exit 3), a busy runner, or an unreachable runner means run the same legs on cloud agents in this turn. Do not wait on the runner. If the runner has accepted the run and has not returned a result within 15 minutes, treat that as unreachable and run the same legs on cloud agents in this turn. **Parallel heavy gate** is that cloud path. Its 5% usage floor still applies, and the run spends no GitHub Actions minutes.
+
+Leg C stays on that cloud path. A leg that needs secrets or a network stays there too.
+
+The `## Evidence` block names, on this SHA, what ran, where (local runner or cloud), the result, and how to rerun. A local result is evidence. This skill still posts the verdict. With no private binding, A and B use **Parallel heavy gate** directly.
+
 ## Parallel heavy gate
+
+Cloud path for heavy legs, and the path for leg C. Use it when the private binding is absent, and in the same turn **Heavy legs** falls back. Do not wait on the local runner.
 
 Cap concurrent cloud agents at 10.
 The full heavy gate (high-risk path only) runs as three legs on the same head.
-(A) full backend Jest.
+(A) full backend Jest and coverage.
 (B) full mobile Jest.
 (C) integration/postgresOnly with its own throwaway DB, plus `check:pr-ready` scenarios, bundle budget, fingerprint, and TLC when a model is touched.
 Keep pr-ready and the bundle together in C; they share the Android export.
+A and B may already have a local-runner result. C still runs here. Each leg's SHAs still have to match.
 Every leg prints HEAD and the tree SHA (`git rev-parse HEAD` and `git rev-parse 'HEAD^{tree}'`) at start and end.
 BV passes only if all three legs pass and both SHAs match the PR's current head and tree. A mismatch or a missing leg means no PASS.
 The legs count toward the 10-agent cap. Before fanning out, check usage: past 90% included usage, or the 5% cloud floor at risk, means run sequentially or hold. No on-demand spend.

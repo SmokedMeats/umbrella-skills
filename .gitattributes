@@ -6,3 +6,8 @@ scripts/check-public-safe.mjs text eol=lf
 /vendor export-ignore
 # Private policy installed with the umbrella skill folder. The public archive omits it.
 /skills/umbrella/private-bindings.md export-ignore
+# Operator-installed watcher. The public archive omits this directory.
+/skills/umbrella/watcher export-ignore
+/skills/umbrella/watcher/** export-ignore
+# Decision-quote pins. The public archive omits them with the binding.
+/scripts/check-binding-quote.test.mjs export-ignore

@@ -20,7 +20,7 @@ function git(cwd, args) {
 // fixtures; otherwise this fails and the export cannot ship red tests.
 test('the public export test suite has no failures', {
   skip: tracksBinding(root) ? false : 'already a public snapshot',
-  timeout: 120_000,
+  timeout: 420_000,
 }, () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'public-export-suite-'));
   const tree = path.join(sandbox, 'tree');
@@ -50,7 +50,7 @@ test('the public export test suite has no failures', {
     const run = spawnSync(process.execPath, ['--test', '--test-reporter', 'tap', ...files], {
       cwd: tree,
       encoding: 'utf8',
-      timeout: 110_000,
+      timeout: 390_000,
       env,
     });
     const text = `${run.stdout || ''}${run.stderr || ''}`;

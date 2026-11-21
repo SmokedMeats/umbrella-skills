@@ -146,6 +146,20 @@ function commitsIn(revs) {
   return out ? out.split('\n') : [];
 }
 
+const exportIgnoreCache = new Map();
+
+// export-ignore paths stay out of the public archive. A denylist hit that
+// exists only there is not exported content.
+function isExportIgnored(file) {
+  if (!file || file === '/dev/null') return false;
+  if (exportIgnoreCache.has(file)) return exportIgnoreCache.get(file);
+  const listed = run('git', ['check-attr', 'export-ignore', '--', file]);
+  const set = listed.status === 0
+    && listed.stdout.split('\n').some((line) => line.trim().endsWith(': export-ignore: set'));
+  exportIgnoreCache.set(file, set);
+  return set;
+}
+
 function scanDenylistRange(revs) {
   const hits = [];
   // commit messages
@@ -165,14 +179,18 @@ function scanDenylistRange(revs) {
     }
     if (l.startsWith('+++ ')) {
       file = l.slice(4).replace(/^b\//, '');
-      if (file !== '/dev/null') hits.push(...denyHits(`${sha} path`, file));
+      if (file !== '/dev/null' && !isExportIgnored(file)) hits.push(...denyHits(`${sha} path`, file));
       continue;
     }
     if (l.startsWith('rename to ')) {
-      hits.push(...denyHits(`${sha} path`, l.slice(10)));
+      const renamed = l.slice(10);
+      if (!isExportIgnored(renamed)) hits.push(...denyHits(`${sha} path`, renamed));
       continue;
     }
-    if (l.startsWith('+') && !l.startsWith('+++')) hits.push(...denyHits(`${sha} ${file}`, l.slice(1)));
+    if (l.startsWith('+') && !l.startsWith('+++')) {
+      if (isExportIgnored(file)) continue;
+      hits.push(...denyHits(`${sha} ${file}`, l.slice(1)));
+    }
   }
   return hits;
 }
