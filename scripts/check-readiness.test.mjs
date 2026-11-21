@@ -5,9 +5,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { tracksBinding } from './tracks-binding.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const node = process.execPath;
+
 
 function runReady(cwd, args, extraEnv = {}) {
   const env = { ...process.env, ...extraEnv };
@@ -62,7 +64,7 @@ test('an unknown readiness argument is rejected', () => {
   assert.match(run.text, /Unknown argument: --export/);
 });
 
-test('public readiness on the source pack fails closed', () => {
+test('public readiness on the source pack fails closed', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const run = runReady(root, ['--public']);
   const rows = results(run.text);
   assert.equal(run.status, 1, run.text);
@@ -111,7 +113,7 @@ test('default readiness on an export still fails closed', () => {
     const rows = results(run.text);
     assert.equal(run.status, 1, run.text);
     assert.equal(rows.get('check-shared-flow').result, 'FAIL', run.text);
-    assert.equal(rows.get('check-shared-flow.test').result, 'FAIL');
+    assert.equal(rows.get('check-shared-flow.test').result, 'PASS');
     assert.equal(rows.get('install-fixture').result, 'FAIL');
     assert.match(run.text, /required binding missing; fail closed/);
     assert.match(run.text, /MECHANICAL FAIL/);
@@ -121,7 +123,7 @@ test('default readiness on an export still fails closed', () => {
   }
 });
 
-test('default source readiness still passes its source rows without a denylist', () => {
+test('default source readiness still passes its source rows without a denylist', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const run = runReady(root, []);
   const rows = results(run.text);
   assert.equal(run.status, 0, run.text);

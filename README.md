@@ -423,10 +423,6 @@ This public pack ships **no product board ids, branch names, npm command names, 
 
 Role names **Board**, **Dispatch**, **Chief of Staff**, and the phone lane `roles.device_qa` (default Mobile QA) are generic process roles. Bind the founder display name and GitHub Project option ids only in `project.yml`.
 
-## The land gate
-
-One merge path for every runtime, whether a reviewer fleet is on or a solo session runs the same skills itself. See [docs/land-gate.md](docs/land-gate.md).
-
 ## Before pushing
 
 Every push runs a local `check:public-safe` gate (no CI minutes) so private-shaped content cannot land in a public snapshot: [gitleaks](https://github.com/gitleaks/gitleaks) over the commits being pushed, then a private denylist over every added line, new file path, and commit message in those commits.
