@@ -387,7 +387,7 @@ Matt's default stays **one ticket per session**. The umbrella grill is the excep
 
 ### `/principles` · `/blast-radius`
 
-- **principles** — one index. Redirect mid-task by name. Each line is a short rule and, where the house already has the move, a pointer at `/umbrella`, `/implement`, `/to-tickets`, `/blast-radius`, `/tdd`, `/diagnosing-bugs`, or `/domain-modeling`. **explain-the-number** gates a measured speedup, regression, or eval. **resist-agent-mistakes** screens a module shape. **encode-lessons-in-structure** is the `/correct` ladder. DESIGN-IT-TWICE is the two-sketch form for a non-trivial prototype UI or an explicit ask. Never-block applies to reversible work only. Outside the grill, say the alternative in plain words.
+- **principles** — one index. Redirect mid-task by name. Each line is a short rule and, where the house already has the move, a pointer at `/umbrella`, `/implement`, `/to-tickets`, `/blast-radius`, `/tdd`, `/diagnosing-bugs`, or `/domain-modeling`. **explain-the-number** gates a measured speedup, regression, or eval. **resist-agent-mistakes** screens a module shape. **encode-lessons-in-structure** is the `/correct` ladder. DESIGN-IT-TWICE is the two-sketch form for a non-trivial prototype UI or an explicit ask. Never-block applies to reversible work only. **apply-clear-precedent** uses clear past handling of a mid-work issue and cites it; it never skips a gate. Outside the grill, say the alternative in plain words.
 - **blast-radius** — what else the change breaks. Prove the one safety fact by running code. `/code-review` runs this before Ready-to-merge.
 
 ### `/umbrella-mode` · `/build-verifier` · `/device-qa-agent` · `/device-qa-verifier`
