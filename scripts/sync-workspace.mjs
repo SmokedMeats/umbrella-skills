@@ -16,7 +16,7 @@
  *   node scripts/sync-workspace.mjs --no-swarm      # skip the umbrella-swarm companion pack
  *   node scripts/sync-workspace.mjs --no-vendor     # skip the pinned Matt + SimpleEnglish snapshots
  *   node scripts/sync-workspace.mjs --no-personal   # skip mirroring personal skills across user roots
- *   node scripts/sync-workspace.mjs --no-rules      # skip each product repo's rules generator
+ *   node scripts/sync-workspace.mjs --no-rules      # skip only each product repo's rules generator (AGENTS.md, CLAUDE.md, .cursor/rules); docs/standing-product-rules.md is still copied
  *   node scripts/sync-workspace.mjs --check-updates # upstream report + diffs (scripts/check-updates.mjs)
  *   node scripts/sync-workspace.mjs --update        # same, install the auto sources, then sync
  *
@@ -165,7 +165,7 @@ for (let i = 0; i < argv.length; i++) {
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarmy + skills/swarmy-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
-    console.log('  --no-rules     skip each product repo\'s rules generator (skill_targets rules:)');
+    console.log('  --no-rules     skip only each product repo\'s rules generator (AGENTS.md, CLAUDE.md, .cursor/rules); docs/standing-product-rules.md is still copied');
     console.log('  UMBRELLA_SWARM=<folder>    pick the swarm companion sibling explicitly');
     console.log('  UMBRELLA_OVERLAY=<folder>  pick the private overlay sibling explicitly');
     process.exit(0);

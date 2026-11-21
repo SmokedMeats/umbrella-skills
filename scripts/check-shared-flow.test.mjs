@@ -16,6 +16,7 @@ import {
   scrubTokens,
   sharedFlowProblems,
 } from './check-shared-flow.mjs';
+import { gitEnv } from './sync-freshness.mjs';
 import { tracksBinding } from './tracks-binding.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -63,20 +64,13 @@ function syntheticPack() {
   };
 }
 
-function packAt(rev) {
-  const show = (file) => execSync(`git show ${rev}:${file}`, { cwd: root, encoding: 'utf8' });
-  return {
-    conventions: show('skills/umbrella/CONVENTIONS.md'),
-    implement: show('skills/implement/SKILL.md'),
-    toSpec: show('skills/to-spec/SKILL.md'),
-    umbrella: show('skills/umbrella/SKILL.md'),
-    toTickets: show('skills/to-tickets/SKILL.md'),
-    sync: show('scripts/sync-workspace.mjs'),
-    buildVerifier: show('skills/build-verifier/SKILL.md'),
-    hasStartWork: false,
-    hasAreaCoordinator: false,
-    hasSharedSkill: false,
-  };
+function gitText(run) {
+  return `${run.error ? run.error.message : ''}\n${run.stderr || ''}\n${run.stdout || ''}`
+    .replace(/https?:\/\/[^@\s/]+@/g, 'https://[redacted]@');
+}
+
+function assertGit(run, label) {
+  assert.equal(run.error || run.status, run.error ? null : 0, `${label} failed: ${gitText(run)}`);
 }
 
 test('a complete synthetic pack has no problems', () => {
@@ -154,11 +148,125 @@ test('forbidden pins and writer-N/A wording fail', () => {
   }
 });
 
+function testSource(name) {
+  const text = readFileSync(fileURLToPath(new URL('./check-shared-flow.test.mjs', import.meta.url)), 'utf8');
+  const marker = `test('${name}'`;
+  const start = text.indexOf(marker);
+  assert.ok(start >= 0, `missing test ${name}`);
+  const next = text.indexOf('\ntest(', start + marker.length);
+  return text.slice(start, next === -1 ? undefined : next);
+}
+
+function widenedOntoRunner(text) {
+  const light = /commands\.pr_ready|[Ll]ight checks|package `verify`|checks 1 to 8|red-on-old-code/;
+  const runner = /local (heavy )?runner/;
+  return text.split(/\n|(?<=\.)\s+/).filter((sentence) => light.test(sentence) && runner.test(sentence));
+}
+
 test('PR 56 head fails the shared-flow contract', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
-  const problems = sharedFlowProblems(packAt(BASE));
-  assert.ok(problems.some((problem) => problem.includes('section missing')));
-  assert.ok(problems.some((problem) => problem.includes('Database test lanes')));
-  assert.ok(problems.some((problem) => problem.includes('3.22.1') || problem.includes('opt-in')));
+  const scratch = mkdtempSync(path.join(tmpdir(), 'pr56-head-'));
+  const env = gitEnv();
+  const git = (args, timeout) => spawnSync('git', args, { encoding: 'utf8', env, timeout });
+  try {
+    assertGit(git(['init', '--bare', '--quiet', scratch], 30_000), 'init scratch');
+    const remote = git(['-C', root, 'remote', 'get-url', 'origin'], 15_000);
+    assertGit(remote, 'origin url');
+    const url = remote.stdout.trim();
+    assertGit(
+      git(['-C', scratch, 'fetch', '--depth=1', url, `${BASE}:refs/private/pr56`], 60_000),
+      'fetch PR 56 head',
+    );
+    const leaked = git(['-C', root, 'rev-parse', '--verify', '--quiet', 'refs/private/pr56'], 15_000);
+    assert.notEqual(leaked.status, 0, 'private ref was written into the pack checkout');
+    const show = (file) => {
+      const run = git(['-C', scratch, 'show', `refs/private/pr56:${file}`], 15_000);
+      assertGit(run, file);
+      return run.stdout;
+    };
+    const problems = sharedFlowProblems({
+      conventions: show('skills/umbrella/CONVENTIONS.md'),
+      implement: show('skills/implement/SKILL.md'),
+      toSpec: show('skills/to-spec/SKILL.md'),
+      umbrella: show('skills/umbrella/SKILL.md'),
+      toTickets: show('skills/to-tickets/SKILL.md'),
+      sync: show('scripts/sync-workspace.mjs'),
+      buildVerifier: show('skills/build-verifier/SKILL.md'),
+      hasStartWork: false,
+      hasAreaCoordinator: false,
+      hasSharedSkill: false,
+    });
+    assert.ok(problems.some((problem) => problem.includes('section missing')));
+    assert.ok(problems.some((problem) => problem.includes('Database test lanes')));
+    assert.ok(problems.some((problem) => problem.includes('3.22.1') || problem.includes('opt-in')));
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test('the PR 56 shared-flow test stays confined and fail-closed', () => {
+  const body = testSource('PR 56 head fails the shared-flow contract');
+  assert.equal(body.includes('t.skip'), false);
+  assert.equal(body.includes('test.skip'), false);
+  assert.match(body, /const env = gitEnv\(\)/);
+  assert.match(body, /spawnSync\('git', args, \{ encoding: 'utf8', env, timeout \}\)/);
+  const fetchCall = body.split('\n').find((line) => line.includes("'fetch'"));
+  assert.ok(fetchCall, 'fetch call missing');
+  assert.match(fetchCall, /\], \d[\d_]*\)/);
+});
+
+test('heavy legs use the local runner only from a clean matching checkout', () => {
+  const skill = readFileSync(path.join(root, 'skills/build-verifier/SKILL.md'), 'utf8');
+  for (const line of [
+    'local heavy runner it names',
+    'send A and B to the local heavy runner',
+    'those heavy legs only',
+    'Light checks stay on this agent',
+    'commands.pr_ready',
+    'when this verifier aborts',
+    'clean checkout pinned to this SHA',
+    'matches its HEAD SHA and tree to the reviewed head',
+    'is not a PASS',
+    'within 15 minutes',
+    'heavy BV runs only',
+    'local runner',
+  ]) {
+    assert.ok(skill.includes(line), `build-verifier missing ${line}`);
+  }
+  assert.deepEqual(widenedOntoRunner(skill), []);
+  const delegation = readFileSync(path.join(root, 'skills/umbrella/DELEGATION.md'), 'utf8');
+  for (const line of [
+    'those heavy legs only',
+    'Light checks stay on the verifier',
+    'within 15 minutes',
+    'clean checkout',
+    'is not a PASS',
+    'heavy BV runs only',
+    'local runner',
+  ]) {
+    assert.ok(delegation.includes(line), `DELEGATION missing ${line}`);
+  }
+  assert.deepEqual(widenedOntoRunner(delegation), []);
+  const readme = readFileSync(path.join(root, 'README.md'), 'utf8');
+  assert.equal(readme.split('within 15 minutes').length - 1, 2);
+  assert.equal(readme.split('clean checkout whose HEAD and tree match').length - 1, 2);
+  assert.equal(readme.split('local runner named by the private binding').length - 1, 2);
+  assert.equal(readme.split('heavy BV runs only').length - 1, 2);
+  assert.deepEqual(widenedOntoRunner(readme), []);
+  const bindingPath = path.join(root, 'skills/umbrella/private-bindings.md');
+  if (!existsSync(bindingPath)) return;
+  const binding = readFileSync(bindingPath, 'utf8');
+  for (const line of [
+    'heavy BV runs only',
+    'the heavy legs only',
+    'clean checkout',
+    'matches its HEAD SHA and tree to the reviewed head',
+    'is not a PASS',
+    'when BV aborts',
+    'within 15 minutes',
+  ]) {
+    assert.ok(binding.includes(line), `binding missing ${line}`);
+  }
+  assert.equal(binding.includes('named check list'), false);
 });
 
 test('live pack satisfies shared full-flow', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {

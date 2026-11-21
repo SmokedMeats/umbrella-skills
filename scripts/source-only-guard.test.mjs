@@ -89,7 +89,7 @@ function runSourceOnlyTap() {
   const run = spawnSync(process.execPath, args, {
     cwd: root,
     encoding: 'utf8',
-    timeout: 150_000,
+    timeout: 450_000,
     env: childEnv(),
   });
   return `${run.stdout || ''}${run.stderr || ''}`;
@@ -100,7 +100,7 @@ function runSourceOnlyTap() {
 // not ok both count as reported; # SKIP and # TODO (any case) do not. Pass/fail
 // is the outer suite's job. On a public snapshot (binding untracked) those 14
 // may skip; this guard still passes.
-test('source-only tests and the canary still run when the binding is tracked', { timeout: 180_000 }, () => {
+test('source-only tests and the canary still run when the binding is tracked', { timeout: 480_000 }, () => {
   assert.equal(SOURCE_ONLY_TESTS.length, 14);
   const textGaps = sourceTextGaps();
   const tracked = headTracksBinding(root);
