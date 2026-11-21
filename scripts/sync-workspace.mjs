@@ -66,10 +66,11 @@
  */
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { closeSync, constants, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readlinkSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkFreshness, gitEnv } from './sync-freshness.mjs';
 
 const OVERLAY_SKILLS = [
   'code-review',
@@ -159,7 +160,8 @@ for (let i = 0; i < argv.length; i++) {
     console.log('  --force          with --update: install even a source whose new version drops a skill, file or section we have now');
     console.log(`  --box          also sync the Grok Bot box skills root (${BOX_SKILLS_ROOT}; override with UMBRELLA_BOX_SKILLS_ROOT)`);
     console.log('  --dest <dir>   also sync any other skills root (repeatable)');
-    console.log('  --fixture-root <dir>  copy overlay skills into that directory only (no home, mirror, rules, hooks, project.yml, standing rules, skills-overlay, or swarm docs)');
+    console.log('  --fixture-root <dir>  TEST ONLY: copy overlay skills into that directory only (no home, mirror, rules, hooks, project.yml, standing rules, skills-overlay, or swarm docs).');
+    console.log('                 <dir> must be inside the OS temp folder; this mode skips the freshness check.');
     console.log('  --no-swarm     skip the swarm companion pack (sibling with skills/swarmy + skills/swarmy-mode)');
     console.log('  --no-vendor    skip the pinned Matt + SimpleEnglish snapshots in vendor/');
     console.log('  --no-personal  skip mirroring personal skills across the user skill roots');
@@ -169,6 +171,28 @@ for (let i = 0; i < argv.length; i++) {
     process.exit(0);
   } else {
     console.error(`Unknown argument: ${a} (try --help)`);
+    process.exit(2);
+  }
+}
+
+// --fixture-root skips the freshness check, so it is for tests only: the folder
+// must sit inside the OS temp folder. A real skills root never qualifies.
+function realExisting(p) {
+  let cur = path.resolve(p);
+  const rest = [];
+  while (!existsSync(cur)) {
+    rest.unshift(path.basename(cur));
+    const up = path.dirname(cur);
+    if (up === cur) break;
+    cur = up;
+  }
+  return path.join(realpathSync(cur), ...rest);
+}
+if (FIXTURE_ROOT) {
+  const tmp = realpathSync(tmpdir());
+  const rel = path.relative(tmp, realExisting(FIXTURE_ROOT));
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+    console.error(`sync: --fixture-root is test-only; ${FIXTURE_ROOT} is not inside the temp folder ${tmp}.`);
     process.exit(2);
   }
 }
@@ -607,9 +631,10 @@ const swarmRoot = SYNC_SWARM && !FIXTURE_ROOT ? findSwarmSibling() : null; // --
 
 // Pull first: fetch every pack this run reads and every repo it writes, and stop
 // before any copy when one is behind or diverged from its upstream branch.
-// --fixture-root writes one disposable folder and reads no other repo, so it skips this.
+// --fixture-root (test-only, temp folder) writes one disposable folder and reads no other repo, so it skips this.
+// --check-updates stays gated too: its diffs compare upstream with this pack's copy, and a
+// stale copy reports changes that already landed, which turns into a wasted cherry-pick PR.
 if (!FIXTURE_ROOT) {
-  const { checkFreshness } = await import('./sync-freshness.mjs');
   const repos = [
     { name: path.basename(packRoot), dir: packRoot },
     ...(hasPrivate ? [{ name: overlayPackName, dir: privateRoot }] : []),
@@ -1024,7 +1049,7 @@ for (const { repo, rules } of WORKSPACE_TARGETS) {
 // Public repos carry .githooks/pre-push + scripts/check-public-safe.mjs; the denylist stays
 // private in the overlay (public-safe/denylist.txt). No CI: this runs on the pushing machine.
 function gitIn(repoRoot, ...args) {
-  return spawnSync('git', ['-C', repoRoot, ...args], { encoding: 'utf8' });
+  return spawnSync('git', ['-C', repoRoot, ...args], { encoding: 'utf8', env: gitEnv() });
 }
 const denylist = hasPrivate ? path.join(privateRoot, 'public-safe', 'denylist.txt') : null;
 const publicSafeRepos = [];

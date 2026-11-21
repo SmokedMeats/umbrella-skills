@@ -23,15 +23,24 @@
  *
  * Diffs land in updates/<source>.diff (gitignored); each run replaces them.
  */
-import { spawnSync } from 'node:child_process';
+import { spawnSync as systemSpawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { gitEnv } from './sync-freshness.mjs';
+
+let spawnSync = systemSpawnSync;
+
+/** Test-only. Restore by calling with no argument. */
+export function setSpawnSyncForTests(fn) {
+  spawnSync = fn ?? systemSpawnSync;
+}
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg|ico)$/i;
 
 function run(cmd, args, opts = {}) {
-  const r = spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32', ...opts });
+  const env = cmd === 'git' ? gitEnv(opts.env || process.env) : opts.env;
+  const r = spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32', ...opts, ...(env ? { env } : {}) });
   if (r.status !== 0) {
     throw new Error(`${cmd} ${args.join(' ')} failed: ${(r.stderr || r.stdout || r.error?.message || '').trim().split('\n').pop()}`);
   }
@@ -186,7 +195,7 @@ function summarize(currentDir, latestDir, history) {
     let commits = [];
     if (history) {
       const upstreamPath = history.pathFor(latRel, name);
-      const log = spawnSync('git', ['-C', history.dir, 'log', '--no-merges', '--format=%s', `${history.from}..HEAD`, '--', upstreamPath], { encoding: 'utf8' });
+      const log = spawnSync('git', ['-C', history.dir, 'log', '--no-merges', '--format=%s', `${history.from}..HEAD`, '--', upstreamPath], { encoding: 'utf8', env: gitEnv() });
       if (log.status === 0) commits = [...new Set(log.stdout.trim().split('\n').filter(Boolean))];
     }
     sum.changed.push({ name, notes, commits, dropped });
@@ -232,6 +241,23 @@ function houseSkills(packRoot, workspaceRoot) {
   return { names, usersOf };
 }
 
+// Compare two folders as current/ and latest/ so the diff reads cleanly.
+// Exported so tests can exercise the three report-only git spawns without a network run.
+export function diffTrees(name, currentDir, latestDir, { work, outDir, history } = {}) {
+  const cmp = path.join(work, 'cmp', name);
+  mkdirSync(cmp, { recursive: true });
+  copyFiltered(currentDir, path.join(cmp, 'current'));
+  copyFiltered(latestDir, path.join(cmp, 'latest'));
+  const args = ['-c', 'core.quotepath=off', 'diff', '--no-index', '--no-color', '--no-prefix'];
+  const full = spawnSync('git', [...args, 'current', 'latest'], { cwd: cmp, encoding: 'utf8', maxBuffer: 1 << 28, env: gitEnv() });
+  if (full.status === 0) return null;
+  if (full.status !== 1) throw new Error(`git diff failed: ${full.stderr.trim()}`);
+  const stat = spawnSync('git', [...args, '--shortstat', 'current', 'latest'], { cwd: cmp, encoding: 'utf8', env: gitEnv() }).stdout.trim();
+  const file = path.join(outDir, `${name}.diff`);
+  writeFileSync(file, full.stdout);
+  return { file, stat, text: full.stdout, summary: summarize(currentDir, latestDir, history) };
+}
+
 export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = false, force = false, print = false, label = (p) => p }) {
   const house = houseSkills(packRoot, workspaceRoot);
   const work = mkdtempSync(path.join(tmpdir(), 'umbrella-updates-'));
@@ -240,21 +266,8 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
   mkdirSync(outDir, { recursive: true });
   const results = [];
 
-  // Compare two folders as current/ and latest/ so the diff reads cleanly.
-  function diff(name, currentDir, latestDir, history = null) {
-    const cmp = path.join(work, 'cmp', name);
-    mkdirSync(cmp, { recursive: true });
-    copyFiltered(currentDir, path.join(cmp, 'current'));
-    copyFiltered(latestDir, path.join(cmp, 'latest'));
-    const args = ['-c', 'core.quotepath=off', 'diff', '--no-index', '--no-color', '--no-prefix'];
-    const full = spawnSync('git', [...args, 'current', 'latest'], { cwd: cmp, encoding: 'utf8', maxBuffer: 1 << 28 });
-    if (full.status === 0) return null;
-    if (full.status !== 1) throw new Error(`git diff failed: ${full.stderr.trim()}`);
-    const stat = spawnSync('git', [...args, '--shortstat', 'current', 'latest'], { cwd: cmp, encoding: 'utf8' }).stdout.trim();
-    const file = path.join(outDir, `${name}.diff`);
-    writeFileSync(file, full.stdout);
-    return { file, stat, text: full.stdout, summary: summarize(currentDir, latestDir, history) };
-  }
+  const diff = (name, currentDir, latestDir, history = null) =>
+    diffTrees(name, currentDir, latestDir, { work, outDir, history });
 
   // name: shown in the report; key: the diff file name (updates/<key>.diff).
   async function source(name, kind, fn) {

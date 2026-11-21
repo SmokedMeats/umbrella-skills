@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -13,10 +13,13 @@ import {
   checkSharedFlow,
   copyOverlaySkillDir,
   loadPack,
+  scrubTokens,
   sharedFlowProblems,
 } from './check-shared-flow.mjs';
+import { tracksBinding } from './tracks-binding.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
 const BASE = '2b7272b55f3dc568d3ad064c995b31a4cb962a69';
 
 function syntheticPack() {
@@ -151,14 +154,14 @@ test('forbidden pins and writer-N/A wording fail', () => {
   }
 });
 
-test('PR 56 head fails the shared-flow contract', () => {
+test('PR 56 head fails the shared-flow contract', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const problems = sharedFlowProblems(packAt(BASE));
   assert.ok(problems.some((problem) => problem.includes('section missing')));
   assert.ok(problems.some((problem) => problem.includes('Database test lanes')));
   assert.ok(problems.some((problem) => problem.includes('3.22.1') || problem.includes('opt-in')));
 });
 
-test('live pack satisfies shared full-flow', () => {
+test('live pack satisfies shared full-flow', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const pack = loadPack(root);
   assert.equal(pack.bindingPresent, true);
   assert.ok(pack.privateBindings.length > 0);
@@ -209,7 +212,7 @@ test('an invalid pack mode is rejected before the pack is read', () => {
   assert.deepEqual(checkSharedFlow(missing, { packMode: 'PUBLIC' }), [{ skill: 'shared-flow', problems: ['unknown pack mode PUBLIC'] }]);
 });
 
-test('umbrella skill copy lands the private binding on an install root', () => {
+test('umbrella skill copy lands the private binding on an install root', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-bind-'));
   try {
     const installed = copyOverlaySkillDir(path.join(root, 'skills', 'umbrella'), dest);
@@ -235,7 +238,7 @@ test('pre-sync check stays before config load and mirror protection stays', () =
   assert.match(sync, /cpSync\(from, to, \{ recursive: true \}\)/);
 });
 
-test('fixture-root installs the binding and leaves an unmarked skill', () => {
+test('fixture-root installs the binding and leaves an unmarked skill', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-fixture-'));
   try {
     const run = execSync(
@@ -261,7 +264,7 @@ function existsHomeWrite(log) {
   return /\/\.cursor\/skills|\/\.claude\/skills|\/\.grok\/skills|\/home\/box\/agent-data/.test(log);
 }
 
-test('fixture-root does not write outside the fixture when a private overlay is visible', () => {
+test('fixture-root does not write outside the fixture when a private overlay is visible', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'umbrella-sandbox-'));
   const fixture = path.join(sandbox, 'fixture');
   const home = path.join(sandbox, 'home');
@@ -320,7 +323,7 @@ test('fixture-root does not write outside the fixture when a private overlay is 
   }
 });
 
-test('a dirty file inside pack-owned umbrella is kept and the copy is refused', () => {
+test('a dirty file inside pack-owned umbrella is kept and the copy is refused', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-dirty-'));
   const dirty = path.join(dest, 'umbrella', 'DIRTY.txt');
   try {
@@ -346,7 +349,7 @@ test('a dirty file inside pack-owned umbrella is kept and the copy is refused', 
   }
 });
 
-test('a clean installed mirror can be copied again', () => {
+test('a clean installed mirror can be copied again', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-clean-'));
   try {
     execSync(`node scripts/sync-workspace.mjs --fixture-root ${JSON.stringify(dest)} --no-vendor --no-swarm`, { cwd: root, encoding: 'utf8' });
@@ -358,7 +361,7 @@ test('a clean installed mirror can be copied again', () => {
   }
 });
 
-test('an identical tree with no baseline is adopted', () => {
+test('an identical tree with no baseline is adopted', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-adopt-'));
   try {
     cpSync(path.join(root, 'skills', 'umbrella'), path.join(dest, 'umbrella'), { recursive: true });
@@ -371,7 +374,7 @@ test('an identical tree with no baseline is adopted', () => {
   }
 });
 
-test('a differing tree with no baseline is kept and refused', () => {
+test('a differing tree with no baseline is kept and refused', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-differ-'));
   const skill = path.join(dest, 'umbrella', 'SKILL.md');
   try {
@@ -394,7 +397,7 @@ test('a differing tree with no baseline is kept and refused', () => {
   }
 });
 
-test('a symlink edit after a clean baseline is kept and refused', () => {
+test('a symlink edit after a clean baseline is kept and refused', { skip: tracksBinding(root) ? false : 'private binding is not tracked' }, () => {
   const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-link-'));
   const link = path.join(dest, 'umbrella', 'extra-link');
   try {
@@ -440,12 +443,81 @@ test('generated public archive passes only with an explicit public flag', () => 
   }
 });
 
-// Listing only. A public export does not contain the binding file, so this
-// check must not read it. Source presence stays in the source-pack tests.
-test('public archive omits the private binding and vendor', () => {
+// Archive scrub hits record only a file path and token index so a red
+// assertion cannot print the token strings.
+function archiveScrubHits(tokens, dest) {
+  const hits = [];
+  const walk = (dir) => {
+    for (const ent of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!ent.isFile()) continue;
+      const buf = readFileSync(full);
+      if (buf.includes(0)) continue;
+      const body = buf.toString('utf8');
+      tokens.forEach((token, index) => {
+        if (body.includes(token)) hits.push({ file: path.relative(dest, full), index });
+      });
+    }
+  };
+  walk(dest);
+  return hits;
+}
+
+function formatArchiveScrubHits(hits, tokenCount) {
+  const detail = hits.map((h) => `token[${h.index}] in ${h.file}`).join(', ');
+  return `${hits.length} scrub-token hit(s) in the public archive (${detail}); ${tokenCount} token(s) scanned.`;
+}
+
+test('a failed archive scrub report names token indexes, not token strings', () => {
+  const tokens = ['PROOF_TOKEN_alpha_9f3a', 'PROOF_TOKEN_beta_9f3a'];
+  const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-scrub-msg-'));
+  try {
+    writeFileSync(path.join(dest, 'README.md'), `visible ${tokens[1]} here\n`);
+    const hits = archiveScrubHits(tokens, dest);
+    assert.deepEqual(hits, [{ file: 'README.md', index: 1 }]);
+    let message = '';
+    try {
+      assert.equal(hits.length, 0, formatArchiveScrubHits(hits, tokens.length));
+    } catch (err) {
+      message = String(err && err.message ? err.message : err);
+    }
+    assert.match(message, /1 scrub-token hit\(s\) in the public archive/);
+    assert.match(message, /token\[1\] in README\.md/);
+    assert.match(message, /2 token\(s\) scanned/);
+    for (const token of tokens) {
+      assert.equal(message.includes(token), false, 'failure output leaked a token string');
+    }
+  } finally {
+    rmSync(dest, { recursive: true, force: true });
+  }
+});
+
+// Listing plus content. A public export must not contain the binding file
+// or any ## Scrub token from that file. Tokens are read from the source
+// binding at runtime so this test file does not repeat them. On a public
+// snapshot the binding is absent and the content check is skipped.
+// Source presence stays in the source-pack tests.
+test('public archive omits the private binding, vendor, and binding scrub tokens', () => {
   const listed = execSync('git archive --format=tar HEAD | tar -t', { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 1 << 26 });
   assert.equal(listed.includes('private-bindings.md'), false);
   assert.equal(listed.includes('vendor/'), false);
+  const bindingPath = path.join(root, INSTALLED_BINDING);
+  const dest = mkdtempSync(path.join(tmpdir(), 'umbrella-public-scrub-'));
+  try {
+    execSync(`git archive --format=tar HEAD | tar -x -C ${JSON.stringify(dest)}`, { cwd: root, shell: true, encoding: 'utf8' });
+    assert.equal(existsSync(path.join(dest, INSTALLED_BINDING)), false);
+    if (!existsSync(bindingPath)) return;
+    const tokens = scrubTokens(readFileSync(bindingPath, 'utf8'));
+    assert.ok(tokens.length > 0);
+    const hits = archiveScrubHits(tokens, dest);
+    assert.equal(hits.length, 0, formatArchiveScrubHits(hits, tokens.length));
+  } finally {
+    rmSync(dest, { recursive: true, force: true });
+  }
 });
 
 const SYNTHETIC_BINDING = [

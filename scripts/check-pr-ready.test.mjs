@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { BINDING_REL, tracksBinding } from './tracks-binding.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const node = process.execPath;
@@ -16,12 +17,6 @@ function git(cwd, args) {
   return (run.stdout || '').trim();
 }
 
-const BINDING_REL = 'skills/umbrella/private-bindings.md';
-
-function tracksBinding(cwd) {
-  const run = spawnSync('git', ['cat-file', '-e', `HEAD:${BINDING_REL}`], { cwd, encoding: 'utf8' });
-  return run.status === 0;
-}
 
 function runGate(cwd, extraEnv = {}, { keepDenylist = false, args = [] } = {}) {
   const env = { ...process.env, ...extraEnv };
@@ -139,7 +134,8 @@ test('a skill-lint error fails the gate', () => {
     git(tree, ['commit', '-m', 'break skill name']);
     git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
     const denylist = writeDenylist(sandbox, `${privateToken}\n`);
-    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    const args = tracksBinding(tree) ? [] : ['--public'];
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist }, { args });
     assert.notEqual(run.status, 0, run.text);
     assert.match(run.last, /^pr-ready: FAIL /);
     assert.match(run.last, /skill-lint:/);
@@ -159,7 +155,8 @@ test('a skill over 500 lines warns and still passes', () => {
     git(tree, ['commit', '-m', 'long skill']);
     git(tree, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
     const denylist = writeDenylist(sandbox, `${privateToken}\n`);
-    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist });
+    const args = tracksBinding(tree) ? [] : ['--public'];
+    const run = runGate(tree, { PUBLIC_SAFE_DENYLIST: denylist }, { args });
     const sha = git(tree, ['rev-parse', 'HEAD']);
     const passLine = tracksBinding(tree) ? `pr-ready: PASS ${sha}` : `pr-ready: PASS (public) ${sha}`;
     assert.equal(run.status, 0, run.text);
