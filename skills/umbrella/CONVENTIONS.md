@@ -96,7 +96,7 @@ Hillclimb and a separate perf playbook are not standing slashes. Do not install 
 
 ### Asks outside the grill
 
-Grill questions stay on the locked Context, Choices, and Recommend shape in `/grilling`. Any other question to the user says the alternative in plain words. Do not offer a one-word token to type back.
+Grill questions stay on the locked Context, Choices, and Recommend shape in `/grilling`. Any other question to the user says the alternative in plain words. Do not offer a one-word token to type back. When an issue comes up mid-work, follow **apply-clear-precedent** in `/principles`.
 
 ### Decision trail
 

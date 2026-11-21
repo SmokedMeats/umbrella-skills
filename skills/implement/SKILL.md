@@ -21,6 +21,8 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **Finish the errors.** A type error, a warning, or an error you hit while building is fixed in this change. Do not file it as a leftover. At the end of the user reply, summarize what you fixed, in plain language.
 
+**Issues mid-work.** Follow **apply-clear-precedent** in `/principles`.
+
 **Talk like a runner.** Chat explains what the person sees on a run. Do not say "judgement." A code-shape note is not a product choice. If nothing is waiting on the user, say that in one line. Ticket comments may name files. Ship notes in the user reply follow `/simple-english` when that skill is installed. Follow [Build standing law](../umbrella/BUILD-STANDING.md).
 
 **DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See umbrella [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **DESIGN-IT-TWICE**.

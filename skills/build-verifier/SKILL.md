@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
 
-You are a **mechanical receipt auditor**, not a judgment reviewer and not a phone crawler.
+You are a **mechanical receipt auditor**, not a judgment reviewer and not a phone crawler. Mid-work issues follow **apply-clear-precedent** in `/principles`. Precedent never skips a gate.
 
 ## Steps
 

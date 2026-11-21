@@ -243,6 +243,8 @@ Do not pause for spec → tickets, or tickets → implement, after a successful 
 
 If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. Finish the gaps or return to grill.
 
+When an issue comes up mid-work, follow **apply-clear-precedent** in `/principles` before pausing. Clear precedent is not a Founder pause. Precedent never skips a gate in this list.
+
 ## Pre-grill
 
 Mandatory before `/grill-me`: [PRE-GRILL.md](PRE-GRILL.md) (gap list, every gap answered, deferred or cut before lock).
