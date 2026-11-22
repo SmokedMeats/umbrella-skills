@@ -59,6 +59,7 @@ Full detail, the order of use and the house rules: [docs/REFERENCE.md](docs/REFE
 
 - [Glossary](docs/GLOSSARY.md): house, lane, Ship mode, land gate, and the rest.
 - [Reference](docs/REFERENCE.md): every skill, the flow, the conventions.
+- [The land gate](docs/land-gate.md): how a PR gets reviewed and merged, step by step.
 - [umbrella-swarm](https://github.com/SmokedMeats/umbrella-swarm): several area coordinators working at once (draft).
 - [MAINTAINING.md](MAINTAINING.md): for people who edit or publish this pack.
 
