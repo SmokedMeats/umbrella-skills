@@ -27,7 +27,7 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 **DESIGN-IT-TWICE.** When a prototype ticket is in this wave, or `/prototype` is loaded for a non-trivial UI or flow, or the user asked: read `/prototype` for that artifact, and write two short competing sketches before locking one. Do not do this for every feature. See umbrella [CONVENTIONS.md](../umbrella/CONVENTIONS.md) **DESIGN-IT-TWICE**.
 
-**Orient (optional, non-blocking).** Before reading code for a ticket. Only when `commands.graph_freshness` is set: run it from the repo root. Exit 0 means the local code graph is fresh; then run `graphify query "<ticket area>" --budget 1500` (or `path` / `explain`) to find the files, then read them. Key unset, non-zero exit, or no `graphify` CLI → skip silently and use `rg` / Read. Never build or rebuild the graph inside a task.
+**Orient (optional, non-blocking).** Before reading code for a ticket. Only when `commands.graph_freshness` is set: run it from the repo root. That command fetches the graphify-map release, then checks freshness. Exit 0 means the local code graph is fresh; then run `graphify query "<ticket area>" --budget 1500` (or `path` / `explain`) to find the files, then read them. Key unset, non-zero exit, or no `graphify` CLI → skip silently and use `rg` / Read. Never build or rebuild the graph inside a task.
 
 **Before a new module or seam.** Read [/codebase-design](../codebase-design/SKILL.md) and apply its deletion test and its adapter rule (one adapter is a hypothetical seam, two is a real one) before writing it. Fails either → fold it into the caller or the existing module. Do not copy that skill here.
 
