@@ -2,7 +2,7 @@
 
 Companion for every skill in this pack. Safe for phase children to read (it is not `umbrella/SKILL.md`).
 
-Product bindings live outside this pack, in `project.yml` and an optional `standing-product-rules.md` (both from the private overlay; see the pack README **Project config**). Find each file in this order: `docs/agents/<file>` in the current repo, then `<file>` in the skills root (the folder that holds `umbrella/`, `implement/`, …; from any skill folder that is `../<file>`). The sync writes both places.
+Product bindings live outside this pack, in `project.yml` and an optional `standing-product-rules.md` (both from the private overlay; see the pack docs/REFERENCE.md **Project config**). Find each file in this order: `docs/agents/<file>` in the current repo, then `<file>` in the skills root (the folder that holds `umbrella/`, `implement/`, …; from any skill folder that is `../<file>`). The sync writes both places.
 
 - A `project.yml` key in backticks (`commands.pr_ready`, `paths.umbrella_cursor`, `branches.dev`, …) means: use that key's value. "Rewrite `paths.umbrella_cursor`" means rewrite the file at that path.
 - Placeholders: `<org>` = `org`. `<dev-branch>` = `branches.dev`. Held branches (master, Preview) = `branches.held`. `<local-dev-host>` = `ship_mode.local_hosts`. `<mobile-pkg>` = the package dir of `paths.mobile_src`. "The founder" = `founder`. The end user = `product.end_user`. Board ids = `repos[]` row whose `name` matches `git remote`. A role in backticks (`roles.device_qa`, …) is that bot lane's display name; unset `roles.device_qa` → Mobile QA.

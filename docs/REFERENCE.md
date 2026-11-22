@@ -1,0 +1,328 @@
+# umbrella-skills reference
+
+The full map of this pack: what every skill does, the order they run in, and the house rules they share. Start with the [README](../README.md) to install, and the [glossary](GLOSSARY.md) for the words used here.
+
+This pack adds **`/umbrella`** on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) (written against **v1.3.1**). Matt's pack installs first and this overlay second; `node scripts/install.mjs` does both in that order (README **Install**). `/umbrella` is the only front door.
+
+It also pulls methods from [Lauren Tan (poteto)](https://github.com/poteto). The skills stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins): `/how`, `/why`, `/teach` (explain), `/principles` (one index), and `/blast-radius`. Agents auto-invoke them when the work needs them. A slash menu is not required. This overlay does not install poteto-mode or the full pstack plugin.
+
+Matt's skills do the work: `/wayfinder`, `/grill-me`, `/to-spec`, `/to-tickets`, `/implement`. `/umbrella` names the pack of issues (the **house**) and the **next** skill. Optional sticky **`/umbrella-mode`** keeps the parent thin and runs phase work as Task/bot kids with packets ([DELEGATION.md](../skills/umbrella/DELEGATION.md)). Every phase skill opens with a short **Steps** list that the agent copies into its todo list and the child packet, so a skipped step stays visible ([CONVENTIONS.md](../skills/umbrella/CONVENTIONS.md) **Steps**). After implement, the land gate is `commands.pr_ready` on the current head; **`/build-verifier`** is the one AC audit when that line is high or has no `risk:` field. After Device QA, **`/device-qa-verifier`** audits the run folder (never the phone). Agents may auto-invoke these skills. A locked grill, with every gap closed, auto-runs `/to-spec` → `/to-tickets` → `/implement`. Spec approval and ticket approval are not gates. The founder still locks the grill. A locked grill does not jump straight to a build.
+
+After a locked grill, the house crawl is default `/umbrella` behavior in that session, not a separate overnight arm, and `/loop` is optional. A named **House queue** ("work through these") runs one house at a time, then the next; Ready to merge on house A does not block house B. Phase B: `/umbrella` auto-routes installed Matt skills (`/simple-english`, `/wait-what`, `/writing-for-agents`, `/handoff`, `/domain-modeling`, `/prototype`, `/codebase-design`, `/diagnosing-bugs`, `/tdd`, `/retro`, `/pr`, …) without copying their bodies into this overlay. `/implement-spec` stays Matt standalone. See [Thin conventions](#thin-conventions).
+
+## Why this is not a fork
+
+A fork copies Matt's whole repo. Then every upstream change needs a merge. Then this pack looks like a replacement.
+
+This repo is an **overlay**:
+
+1. Install Matt's pack first. That is the skillset.
+2. Install this pack second. It overwrites a few of those skills, adds `/umbrella` (with DELEGATION / BUILD-STANDING / CURSOR companions), optional `/umbrella-mode`, `/build-verifier`, `/device-qa-agent`, `/device-qa-verifier`, and `/how`, `/why`, `/teach`, `/teach-me`, `/principles`, `/blast-radius`, `/pit-of-success`, and `/zero-tech-debt`. Planning-spine overlays stay Matt-based. `/how`, `/why`, `/teach`, `/principles`, and `/blast-radius` are adapted from [poteto](https://github.com/poteto) / [pstack](https://github.com/cursor/plugins/tree/main/pstack), with house unslop. `/teach-me` is Matt's former `/teach`.
+3. Unedited skills stay Matt's (`/tdd`, `/research`, `/prototype`, `/domain-modeling`, `/codebase-design`, `/improve-codebase-architecture`, `/diagnosing-bugs`, `/retro`, `/pr`, `/implement-spec`, `/wait-what`, `/writing-for-agents`, `/handoff`, `/ask-matt`, `/setup-matt-pocock-skills`). `/umbrella` auto-routes them (except `/implement-spec`, which stays standalone). It does not copy their bodies. `/simple-english` is not Matt's: it is [AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) (MIT), installed next to Matt's pack the same way. Matt **v1.3.1** dropped `/resolving-merge-conflicts`.
+
+Keep both. Update Matt's pack on its own schedule.
+
+## Why this exists
+
+Matt's flow:
+
+```
+/wayfinder  →  /grill-me  →  /to-spec  →  /to-tickets  →  /implement
+```
+
+On a cluster of related grilling tickets, three gaps showed up for our pack:
+
+1. Each grill ended the session. The human had to remember which child was next. `/to-spec` then wrote a spec for the last ticket, not the whole pack.
+2. A locked grill felt like "we decided, now code." Agents started a build and skipped `/to-spec` and `/to-tickets`.
+3. `/triage` applied only category and state. The pack never got a house label, so `/grill-me` could not find siblings.
+
+`/umbrella` is the conductor. It does not reimplement those skills.
+
+## Two labels: domain and umbrella
+
+`/triage` still applies one **category** (`bug` / `enhancement`) and one **state** (`ready-for-agent`, and the other state roles). Packs need two extra labels. You choose the words. You write them in `docs/agents/triage-labels.md`.
+
+| Label | What it means | How many on one issue |
+| --- | --- | --- |
+| `domain:…` | The **area** of the product | One or more |
+| `umbrella:…` | The **live** named pack | Zero or one |
+| `parked:…` | Same slug, **not live** — Later / Leftover | Zero or one; never with `umbrella:…` |
+
+**Example.** Many tickets sit in billing. Only some of them are the refunds pack.
+
+| Issue | `domain:` | Live / parked |
+| --- | --- | --- |
+| Invoice PDF is blank | `billing` | none — one-off bug |
+| Refunds: restock window | `billing` | `umbrella:refunds` |
+| Later: refunds web board | `billing` | `parked:refunds` — not live |
+| Dunning: day-3 email | `billing` | `umbrella:dunning` |
+
+`domain:billing` is the neighborhood. `umbrella:refunds` is the **live** house `/grill-me` loads. `parked:refunds` is the same pack, shelved — listed under the house, never pulled, never assigned, never a second picker row.
+
+If the pack is real and the `umbrella:…` label does not exist yet, create the label. Then apply it. That only creates a tracker label. It does **not** create a wayfinder map. The map is a separate issue with the `wayfinder:map` label.
+
+Do not create an umbrella label for a one-off bug. Do not invent a new `domain:…` during triage. The domain list is the catalog in your mapping file.
+
+## Order of use
+
+Unedited skills stay in Matt's pack. Overlays in this repo are marked.
+
+**Phase B.** Matt skills stay Matt installs (**v1.3.1**). This overlay does not copy their bodies. `/umbrella` auto-routes them when the playbook says so: `/domain-modeling` (with `/grilling`), `/prototype`, `/codebase-design`, `/improve-codebase-architecture`, `/diagnosing-bugs`, `/tdd`, `/retro` (after `/code-review` or a bug fix), `/pr` (PR body shape), `/wait-what`, `/writing-for-agents`, and `/handoff`, plus `/simple-english` (SimpleEnglish pack, not Matt's). `/implement-spec` is Matt standalone (not a second conductor; umbrella `/implement` stays same-worktree waves unless the founder asks for worktrees). `/zero-tech-debt` and `/pit-of-success` only when installed. Thin conventions, not new skills: **DESIGN-IT-TWICE** (explicit ask, or a non-trivial prototype UI), a default-on **decision trail** on a long crawl (`decisions.tsv` or cursor bullets), **figure-it-out** (only when `/wayfinder` does not fit; one pass, then the spine), **comment cleanup** before review, and a **recall brief** on handoff (house queue, ship mode, now-on tickets, decisions trail path, blockers). Swarm and arena are not standing. `/automate-me` is maintainer-only. There is no `typescript-best-practices` always-on overlay.
+
+| When | Skill | This pack? |
+| --- | --- | --- |
+| Matt's pack or repo mapping missing | `/umbrella` prerequisite (install Matt, then setup) | **new** |
+| Once per repo | `/setup-matt-pocock-skills` | no — Matt |
+| Inbox is dirty | `/triage` | **overlay** |
+| Which house / which phase / keep the house crawl | **`/umbrella`** (auto-invoked). One house at a time | **new** |
+| Several houses named, or "work through these" | **`/umbrella`** runs that queue one house at a time. Ready to merge on the current house does not block the next | **new** |
+| Foggy effort, no map yet | `/wayfinder` (chart) | **overlay** |
+| Before grill | Doc review + explicit gap list | **`/umbrella` pre-grill** |
+| Open grilling siblings | `/grill-me` → `/grilling` + `/domain-modeling` | grill-me + grilling **overlay**; domain-modeling **Matt** |
+| Fact a decision waits on | `/research` | no — Matt |
+| Need a cheap artifact, or prove a fold | `/prototype`. **DESIGN-IT-TWICE** when asked, or for a non-trivial UI or flow | no — Matt; convention in `/umbrella` |
+| Grill locked, every gap closed | **`/to-spec`** immediately (no spec approval) | **overlay** |
+| Spec published from that lock | **`/to-tickets`** immediately (no ticket approval) | **overlay** |
+| Tickets filed from that lock | **`/implement`** house crawl (default under `/umbrella`) → `/tdd` → **Build loop** (living docs for touched docs, including a phone **P\*** Device QA leaf → comment cleanup → `/code-review` including `/blast-radius` → the land gate). The pull is not ready until the ticket has the **ready comment** (`## Living docs`, `## Standards`, `## Spec`, `## Cycles`, `## Effect-TS check`) and the current head's `commands.pr_ready` pass line. The acceptance-criteria table is `/build-verifier` on a high path, not a second writer pass. Silence is not an Effect-TS skip. Do not stop after filing | implement + code-review **overlay**; tdd **Matt** |
+| Two or more unblocked implement tickets | `/implement` **wave**: count table first, spawn children (spawn gate), then crawl later waves as they unlock | same overlay |
+| Long house crawl / thin parent context | **`/umbrella-mode`** (sticky). Parent keeps grill, claim, CURSOR, Founder gates; kids get one phase skill + companions only | **new** |
+| Land gate before Ready to merge | Follow CONVENTIONS **Land gate**: `commands.pr_ready` on the exact head (a WAIT that only waits on review is enough for step 1), `/tech-lead-review` first when the diff touches money, auth, permissions, entitlements, paid tiers, XP/economy/tokens, migrations, or write routes, then `/build-verifier` when `risk: high` or `risk:` is missing (a different agent than the author; the same model is fine). The author reruns pr-ready for the final PASS, runs the pre-merge check, and may squash-merge. Deps, config, native, and locking stay BV-only. Dispatch may still order land when the fleet is on, but it does not replace that check | **new** |
+| Phone-visible ship, crawl can run | **`/device-qa-agent`**: Leaves → probe (USB phone, or the configured Desk emulator) → borrow → crawl → return → propose `STATUS_MOVES` unapplied. A Fail goes back on the leaf's ticket, or one new issue | **new** |
+| After Device QA returns | **`/device-qa-verifier`**. Checklist vs run folder; never re-tap. Parent alone advances Status off Desk device or Field | **new** |
+| Build loop empty on a ticket | Set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold the next wave. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds. Ready to merge holds until merge | same overlay |
+| Phone-visible, and this pass cannot run Device QA | **Desk device**, do not close, crawl the next unblocked coding ticket. Device QA only when this runner sees exactly one USB phone and no other actor owns it | same overlay |
+| In-scope review findings, or a red land gate | `/implement` **Build loop** in this session, then `/code-review` again | same overlay |
+| Hard or flaky bug | `/diagnosing-bugs`, then `/implement`; then `/retro` | diagnosing-bugs + retro **Matt** |
+| After `/code-review`, or after a bug fix | `/retro` (environment retrospective; feeds `/correct`; not the recall brief) | no — Matt |
+| Writing a PR body | `/pr` (model-invoked). Mode B still needs the `commands.pr_ready_pass` line naming the current `<dev-branch>` tip. A docs-only pull request to this pack pastes `pr-ready: PASS <sha>` from `node scripts/check-pr-ready.mjs`. On the public snapshot, pass `--public`. That line is `pr-ready: PASS (public) <sha>`. | no — Matt |
+| Whole-spec worktree frontier build | `/implement-spec` (standalone Matt). Not routed inside umbrella `/implement` | no — Matt |
+| How does this work / where should it live | `/how` | **new** |
+| Why is it shaped this way | `/why` (git and PRs first; widen only when needed) | **new** |
+| Explain this code or change | `/teach` (weaves `/how` and `/why`) | **new** |
+| Learn a topic over multiple sessions | `/teach-me` (former Matt `/teach`) | **new** |
+| Mid-task principle redirect | `/principles` (one index) | **new** |
+| What else could this break | `/blast-radius` (also from `/code-review`) | **new** |
+| User-facing prose, leftover questions, ship notes, Device QA wait comments | `/simple-english` | no — SimpleEnglish (AminBlg) |
+| User says unclear or too jargony | `/wait-what` | no — Matt |
+| Editing agent-facing docs in the repo | `/writing-for-agents` | no — Matt |
+| Structure or module boundaries | `/codebase-design` | no — Matt |
+| Architecture debt, asked or idle and in scope | `/improve-codebase-architecture` (Matt); `/pit-of-success` for a footgun seam, `/zero-tech-debt` to rework from the end state | `/pit-of-success`, `/zero-tech-debt`: **new** |
+| Off-map, and `/wayfinder` does not fit | figure-it-out (one competing-planner pass, then the spine) | convention — not a skill |
+| Long crawl (multi-ticket or a house queue) | decision trail: `decisions.tsv` or cursor bullets. Default on | convention |
+| Window full / end of session / next agent | `/handoff` when installed, plus the recall brief. The brief keeps **House queue** | handoff **Matt** when installed; brief is this pack |
+| "Which skill do I type?" | `/ask-matt` | no — Matt |
+
+### Who applies labels
+
+Three jobs. Do not merge them.
+
+| Who | Job |
+| --- | --- |
+| **`/triage`** | Labels **inbound** (category, state, every fitting `domain:…`). **Names the house:** a `wayfinder:map`, or two or more like issues in the same pack, get a creatable `umbrella:…`. Same `domain:…` is not a pack. |
+| **`/wayfinder`** (and `/to-tickets`) | Labels **on create** when this session files a map or a child. No `needs-triage`. Does not call `/triage`. |
+| **`/umbrella`** | **Catch.** Every run, feed unlabeled, `needs-triage`, **and unhoused maps/children** to **`/triage`**. Does not invent `umbrella:…` itself. |
+
+### Order (do not skip)
+
+```
+every /umbrella run       →  prerequisite (Matt pack + repo mapping), then /triage catch
+loose idea / no map       →  /wayfinder
+open grilling siblings    →  pre-grill doc + gap list, then /grill-me
+grill lock (gaps closed)  →  /to-spec → /to-tickets → /implement house crawl
+tickets filed             →  keep /implement crawling in this session (/loop is optional)
+two+ unblocked tickets    →  /implement wave (count table, spawn gate, crawl)
+review remainder / red land gate →  /implement Build loop (same tickets), then /code-review again
+empty Build loop          →  lane from what is left, then the next unblocked coding ticket
+named houses, in order    →  one house at a time; coding crawl done → next house (Ready to merge does not block)
+phone-visible, and this pass cannot run Device QA →  Desk device, do not close, keep coding elsewhere
+before a terminal lane    →  living-doc verify, comment cleanup, blast-radius, land gate
+window full during build  →  /implement Window full (spec comment + recall brief + Next: /implement #<n>)
+off-map, no map shape     →  figure-it-out once, then the spine
+user-facing copy          →  /simple-english
+unclear / too jargony     →  /wait-what
+hard or flaky bug         →  /diagnosing-bugs, then /implement
+explain                   →  /how, /why, or /teach
+course over sessions      →  /teach-me
+```
+
+A locked grill is not a build. It is the only planning pause. After that confirm, do not wait for spec approval or ticket approval. Keep the `/triage` catch every time.
+
+PAUSE for the grill lock (per house), Ready-to-merge waiting on the land gate (or on the founder for promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, or spend), phone Device QA ownership conflicts, and irreversible actions. Never unattended: promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, or spend. The author may squash-merge a Development PR after the land gate. An ownership conflict pauses the phone and the crawl continues on this house's other coding tickets. Do not pause between spec and tickets, or tickets and implement, after a lock with every gap closed. If the grill skipped the doc/gap pass or left a gap open, refuse that auto-advance. One named house stops at Ready-to-merge until the land gate is met (the author may then squash-merge). A house queue starts the next house instead. The session stops on Window full, a Founder pause that blocks the session, or when the user stops.
+
+`/grill-with-docs` is still Matt's interview when you are not on a wayfinder map. `/umbrella` does not replace it.
+
+## Thin conventions
+
+House rules in `/umbrella`. Not new skill folders.
+
+- **DESIGN-IT-TWICE.** Only when asked, or when `/prototype` is a non-trivial UI or flow. Two short sketches, then lock one. A trivial stub skips it.
+- **Decision trail.** Default on a long crawl (multi-ticket or a **House queue**). `decisions.tsv` (`when`, `ticket`, `decision`, `why`) or short bullets in the cursor file. One house at a time.
+- **figure-it-out.** Only when `/wayfinder` does not fit. One competing-planner pass, then the spine. Not a slash.
+- **Comment cleanup.** Before `/code-review` closes a ticket, strip narrative and noise comments from this change. Keep intentional API and docs comments. No cleanup subagent.
+- **Recall** brief (handoff). On Window full, end of session, or the next agent: house queue, ship mode, now-on tickets, decisions trail path, blockers, corrections this session. Follow `/handoff` when that skill is installed. The brief does not start the next house.
+- **Agent-shaped design.** On `/codebase-design`, architecture debt, or DESIGN-IT-TWICE: reject split ownership, two ways, importable internals, and a hand-synced list. Do not install `/architect`.
+- **Repeated corrections.** `/correct` is this alias. The second correction of the same kind in a session stops the run until it is encoded. Second time the same mistake shows up, fix it in structure, then types, then a lint that names the fix, then a behavior test. Docs last. Not a new skill.
+- **Measured slowness.** Mantra order, then **explain-the-number**, before a measured number is trusted or reported. Not a hillclimb slash.
+- **Asks outside the grill.** Plain words. No one-word token. Grill shape (Context, Choices, Recommend) stays.
+- **Overnight `/loop`.** Optional. If armed, `/loop 1h`. Bots off (`/umbrella-mode`), the parent arms it at session start. No `/goal`. The tick does not merge or promote.
+
+Swarm and arena are not standing. `/automate-me` is maintainer-only. There is no `typescript-best-practices` always-on overlay.
+
+## Ship mode
+
+Pin once at `/umbrella` start. Sticky for the whole multi-house run (`/implement`, `/code-review`, Device QA, crawl, every house in the queue). Do **not** re-pick mid-run. Write it on `project.yml` `paths.umbrella_cursor` ([CURSOR.md](../skills/umbrella/CURSOR.md)) or the conductor comment.
+
+| Actor | Forced pin |
+| --- | --- |
+| Grok Bot teammates or Cursor cloud | `Ship mode: PR` — never `<dev-branch>` tip |
+| Local Grok Build or Cursor IDE on <local-dev-host> | `Ship mode: <dev-branch>` — never a PR branch |
+
+Wrong pin for this actor → correct once, note it, stay sticky. Mode A pushes `origin/<dev-branch>`. Mode B is one ticket → one branch → one PR; green + land gate met is Kanban **Ready to merge** (dependents wait; the author may squash-merge). Cloud Mode B leaves phone leftover on **Desk device** and keeps the coding crawl. One pin. No second worktree on the same `adb` device.
+
+## What this pack changes
+
+Short index first. Detail for the fat overlays is under the headings.
+
+| Skill | What changed |
+| --- | --- |
+| `umbrella` | Only conductor. Auto-invoked. One house at a time. A named queue starts the next house after this coding crawl. Auto-routes Matt playbook skills. Thin conventions: DESIGN-IT-TWICE, agent-shaped design, repeated corrections (`/correct` alias), measured slowness, agent cost, asks outside the grill, decision trail, figure-it-out, comment cleanup, recall brief. Optional overnight `/loop 1h` (no `/goal`). Pre-grill gaps. Grill lock is the only planning gate. Then spec → tickets → the house crawl. Companions: [DELEGATION.md](../skills/umbrella/DELEGATION.md), [BUILD-STANDING.md](../skills/umbrella/BUILD-STANDING.md), [CURSOR.md](../skills/umbrella/CURSOR.md) (**Close gate** before close/lane), [CONVENTIONS.md](../skills/umbrella/CONVENTIONS.md) (the thin conventions, readable by children and swarm coordinators), [PRE-GRILL.md](../skills/umbrella/PRE-GRILL.md). |
+| `umbrella-mode` | Sticky conductor mode. Parent owns grill, phase detect, claim, CURSOR, Founder gates, Close gate + close/lane. Fresh child by default. Respawn a thin receipt once. Kids never load `umbrella/SKILL.md`. Every packet names the repo agent-rules file (`paths.agent_rules`). The founder picks the coding runtime per house: `build` (local coding agent on `<local-dev-host>`) or `cloud` (Cursor cloud agents, PR only); below `caps.cloud_usage_floor` (default 10%) cloud coding parks and never falls back to a local build. No own-computer work for bots except Expo / EAS (CONVENTIONS **No own-computer work**). **Bots off:** session-scoped only (declared at start, no switch, no PR marker). The rare local `<local-dev-host>` exception may push `<dev-branch>` directly; everything else follows the land gate. Implement children may run as local subagents, never Cursor Task or cloud; Tech Lead and Build Verifier are always separate reviewer agents, never a subagent or an inline receipt in the writer's session; **auto-continue** and **auto-loop** apply only on that exception and stop at founder gates. **Child shape by runtime:** Cursor Task / cloud per ticket; Claude Code in-process only while the memory check passes, else a sibling session, under one cap (`limits.max_children`), refilled as a rolling window. Land gate: CONVENTIONS order (pr-ready step 1 / WAIT is enough, TL when required, BV when risk is high or missing, author reruns pr-ready for the final PASS, pre-merge check, then the author may squash-merge). Irreversible steps wait on the founder. No poteto install. |
+| `build-verifier` | The one acceptance-criteria audit, only when the land gate is high or `check:pr-ready` printed no `risk:` field. Fail-closed if the AC checklist is missing. Never the writer. A different agent than the author (the same model is fine). One red-on-old-code test. Exit 137/143 is a re-run, not FAIL. Send heavy BV runs only to the local runner named by the private binding installed with the umbrella skill when that binding is present; a refusal, a busy runner, an unreachable runner, or no result within 15 minutes runs those same legs on cloud agents in that turn. A local result counts only from a clean checkout whose HEAD and tree match. Not Device QA. Not `/code-review`. |
+| `device-qa-agent` | Desk or Field crawl on a Preview phone (or `device_qa.desk_emulator` for Desk). Proposes Status moves; parent applies after `device-qa-verifier`. Product facts (package, accounts, scripts, quirks) come from the overlay's `PRODUCT.md` + `scripts/`. Reverts any schedule it sped up. |
+| `device-qa-verifier` | Readonly audit after Device QA (Desk device or Field). Checklist vs run folder; Fail→one issue; never re-tap the phone. No Status advance off Desk device or Field without its Pass. |
+| `grilling` | Sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend, worded so "yes" accepts the recommended answer. Loads `/domain-modeling` with the interview. Gap list required. Lock only when every gap is closed. Then `/to-spec` immediately. |
+| `grill-me` | Load the map's grilling siblings. Question shape stays in `/grilling`. Refuse a lock with open gaps. Do not ask "next grill?" |
+| `wayfinder` | Pack-grill exception to one-ticket-per-session. Off-map work is `Later:`. Prototype tickets read Matt `/prototype`. Non-trivial UI uses DESIGN-IT-TWICE. Optional graphify Orient when `commands.graph_freshness` passes. Auto-invoked. |
+| `to-spec` | Spec the whole locked batch. Cite gap resolutions. **Rule card**: 5–15 user-language rules tied to fixtures, plus the numeric bar; the only build and review SSOT (`RULE_CARD`). **Carry checklist** (`CARRY_FROM_GRILL`): every locked decision answered, deferred, or cut; refuse publish if missing. Label it `spec`. No approval wait. Next is `/to-tickets`. |
+| `to-tickets` | 1:1 with the spec. Waves + exclusive paths. Each ticket is a sub-issue of its source issue when that source is an issue, and still a child of the map. Live tickets need **≥2** checkable Acceptance criteria. **Carry** (`CARRY_FROM_SPEC`): each in-scope decision → ticket AC(s) or parked#. No approval wait. Next is `/implement`. |
+| `implement` | A passed ticket reference is fetched and its title stated before starting. Count table, spawn gate, crawl, Build loop. Follow [BUILD-STANDING.md](../skills/umbrella/BUILD-STANDING.md) (not full umbrella). Pre-code AC gate. Ship mode PR: push the PR branch after each verifiable unit and use the `##` PR briefing. Before Ready to merge: bring in current <dev-branch> and satisfy the land gate. Paste the pass line for the current head. Stack or split above ~800 real added lines. Before close/lane: write **Close gate** on `paths.umbrella_cursor` and refuse if incomplete. Comment cleanup before review. Build to the **Rule card**; run its harness before handoff. Two review rounds per ticket, then a grill question. Fresh child per round, brief near 2 KB. PR body under 8 KB. Empty loop sets the lane from what is left. Optional graphify Orient before reading code when `commands.graph_freshness` passes. Conductor writes a new shared helper once before spawning and scans children's new shared files for a second copy. Heavy checks go through a slotted gate (`limits.heavy_gate_slots`; a new one starts when a slot is free and 2 GB fits after the reserve at that moment); checks run to the end. Children self-prove with package `verify` + tests for touched files and direct callers (no directory sweep). `commands.pr_ready` is the land gate; build-verifier runs only when `risk` is high or missing. A head move reruns that script and pushes with hooks on (never `HUSKY=0` or `--no-verify`; [DELEGATION.md](../skills/umbrella/DELEGATION.md) **Recheck at merge**). |
+| `code-review` | Two-axis report. Standards searches the repo and passes `CODING_STANDARDS.md` / `CONTRIBUTING.md` when they exist. Spec-axis blast-radius, optional adversarial notes, narrative comments in-scope on Standards, then remaining ACs on the same tickets. Spec axis reviews against the **Rule card** + harness output. Round 2 is the last round. |
+| `triage` | Every fitting `domain:…`. Names `umbrella:…` for a map or two+ like issues. Hard bugs name `/diagnosing-bugs`. |
+| `how` | Subsystem walkthrough. Auto-invoked. |
+| `why` | Why the code is shaped that way. Git and PRs first. Widen only when the question needs it. |
+| `teach` | One-sitting explanation. Weaves `/how` and `/why`. Not a course. |
+| `teach-me` | Multi-session learning workspace. Former Matt `/teach`. |
+| `principles` | One index of mid-task redirects, including **explain-the-number** and **resist-agent-mistakes**. Not a folder per principle. Not a second conductor. |
+| `pit-of-success` | Make the obvious call correct: move the invariant into the seam, delete bypasses, prove it with one check. |
+| `zero-tech-debt` | Rework a change from the intended end state; delete compatibility paths with no caller. |
+| `tech-lead-review` | A `GATE: TL` line on a high land-gate diff that touches money, auth, permissions, entitlements, paid tiers, XP/economy/tokens, migrations, or write routes. Not the risk classifier. Deps, config, native, and locking stay BV-only. No test on an in-scope path fails the review. |
+| `blast-radius` | What else a change breaks. Prove the one safety fact by running code. Optional graphify Orient when `commands.graph_freshness` passes. |
+
+Matt's default stays **one ticket per session**. The umbrella grill is the exception. Tracker setup stays `/setup-matt-pocock-skills`.
+
+**Phase B wiring.** The Matt skills this pack does not overlay stay Matt installs. `/umbrella` auto-routes them. Thin conventions are DESIGN-IT-TWICE, agent-shaped design, repeated corrections, measured slowness, agent cost, asks outside the grill, the decision trail, figure-it-out, comment cleanup, and the recall brief. Swarm and arena are not standing slashes and not an always-on fan-out. `/automate-me` is maintainer-only, not an always-on pack writer. There is no `typescript-best-practices` always-on overlay.
+
+### `/umbrella`
+
+- Pin **Ship mode** first (table above). The same pin covers every house in the queue.
+- Read and rewrite `project.yml` `paths.umbrella_cursor` ([CURSOR.md](../skills/umbrella/CURSOR.md)). That file is the **step**, plus a **House queue** when the user names several houses. GitHub labels win for **phase**.
+- **One house at a time.** An ordered list of houses, slugs, or issues that map to more than one `umbrella:*`, or "work through these", is that queue. Finish this house's coding crawl, then claim the next house and detect its phase. Do not interleave tickets. One named house does not auto-hop. Ready to merge waits on the founder and does not block the next house. Soft-queue overlap still runs before any merge prompt.
+- Every run: if Matt's pack or the repo mapping is missing, install / run setup first.
+- Inbox catch → `/triage`: unlabeled, `needs-triage`, unhoused maps/children, open issues with no milestone, open issues missing from **this clone’s** Project.
+- After create: `Later:` / `Leftover:` need **When to do this** ([PARKED-TICKETS.md](../skills/umbrella/PARKED-TICKETS.md)).
+- After close: [CLOSE-PARENTS.md](../skills/umbrella/CLOSE-PARENTS.md) (child first; parent only when open children = 0, including parked).
+- Claim: assign `@me`, Status **In Progress**.
+- Pre-grill before `/grill-me`: review GLOSSARY, ADRs, living docs, related tickets, and prior locks. Write the gap list. No lock while a gap is open or vague.
+- After the lock confirm: `/to-spec` (cite gap resolutions) → `/to-tickets` (1:1) → `/implement` house crawl. Do not wait for spec or ticket approval. Do not stop after filing tickets.
+- When a Build loop is empty: set the lane from what is left (Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done). Living-doc verify for touched docs, `/code-review` including `/blast-radius`, and the land gate still run first. Invented scope is new fog, and it is not a silent merge.
+- Playbooks: feature/fog stays on the spine. Bug or flake → `/diagnosing-bugs`, then `/implement`, then `/retro`. After `/code-review` → `/retro`. PR body → Matt `/pr` (Mode B still needs the `commands.pr_ready_pass` line). `/implement-spec` is standalone Matt, not inside umbrella `/implement`. Explain → `/how` / `/why` / `/teach`. Course → `/teach-me`. User-facing copy → `/simple-english`. Unclear or too jargony → `/wait-what`. Agent docs in the repo → `/writing-for-agents`. Structure or module boundaries → `/codebase-design`. Cheap artifact → `/prototype` (DESIGN-IT-TWICE when asked, or for a non-trivial UI or flow). Off-map when `/wayfinder` does not fit → figure-it-out once, then the spine. Window full or the next agent → `/handoff` when installed, with the recall brief. Architecture debt → Matt `/improve-codebase-architecture` when asked or when that work is in scope (`/zero-tech-debt` and `/pit-of-success` only if installed).
+- House crawl is default `/umbrella` behavior. `/loop` is optional. The crawl continues in this session without it. One house stops at Ready-to-merge until the land gate is met. A queue starts the next house. The session stops on Window full, a Founder pause that blocks the session, or when the user stops. A long crawl (multi-ticket or a house queue) keeps a decision trail: `decisions.tsv` in the house notes, or short bullets in the cursor file. Default on. Do not wait on the founder to start it. Handoff points at that path. Never unattended: promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, or spend. The author may squash-merge a `<dev-branch>` PR after the land gate.
+- Two or more unblocked tickets → `/implement` wave. Later waves crawl as they unlock. Leftover lanes (**Operator**, **Desk device**, **Field**) do not hold that wave. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds. Ready to merge holds until merge.
+- Device QA: [DEVICE-QA.md](../skills/umbrella/DEVICE-QA.md). `adb devices` is not exactly one, this runner cannot see USB, or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Cursor cloud cannot see the phone. One Ship mode pin. No second worktree on the same `adb` device.
+- Done cards stay on the board until [PROJECTS.md](../skills/umbrella/PROJECTS.md) **Archive Done** (Done > 200, or other lanes need the page).
+- **One board per repo** (see `project.yml` `repos[]`). File on this clone. Never put satellite-repo cards on the primary board.
+- Status right edge: leftover lanes (**Operator**, **Desk device**, **Field**) → **Ready to merge** → **Live Beta** → **GoLive** → **Done**. Handoff lanes are those three leftover lanes plus **Live Beta** and **GoLive**. None of the five is routine new implementation. **Ready to merge** is the merge wait, not a handoff lane. Resolve a card via `issue.projectItems` — do not `item-list` the first 200.
+
+### `/grilling` · `/grill-me` · `/wayfinder`
+
+- **grilling** — sibling batch + `Now on`. Every question is Context (plain terms) + Choices + Recommend, worded so "yes" accepts the recommended answer. Read `/domain-modeling` with the interview. The pre-grill gap list is in the tree. Refuse the lock while a gap is open. After the confirm: `/to-spec` immediately. A “not this pack” branch files `Later:` with **When to do this**.
+- **grill-me** — load the map's grilling siblings. Question shape stays in `/grilling`. No gap list → do not start. Advance without asking "next grill?"
+- **wayfinder** — umbrella-grill exception to one-ticket-per-session. Wanted-but-not-this-map work files `Later:` with **When to do this**. Forever-out stays map Out of scope. A prototype ticket reads Matt `/prototype`. A non-trivial UI or flow follows DESIGN-IT-TWICE.
+
+### `/to-spec` · `/to-tickets`
+
+- **to-spec** — spec the whole locked batch and cite every gap resolution. Write the **Rule card**: 5–15 rules in user language, each naming the fixture or test that proves it, plus **The bar** (the numbers a build must hit, and the harness command) when the change grades, scores, times, or prices. The card is the only build and review SSOT; long design docs stay background. Emit **`RULE_CARD`** and **`CARRY_FROM_GRILL`** (locked decisions covered / deferred / cut; `missing=none`). Refuse publish if a locked decision is missing from the cite list. The spec issue wears the `spec` label. Do not wait for approval. Next is `/to-tickets`. Later work in Out of Scope must already be a `Later:` ticket with **When to do this**. Name Effect seams only when a spec owns an untrusted bag or flaky outbound HTTP. Open gaps → back to grill. Do not publish.
+- **to-tickets** — 1:1 with that spec. No approval quiz. Waves + exclusive paths. When the source is an existing issue, each ticket is a sub-issue of that issue. Every **live** ticket needs `## Acceptance criteria` with **≥2** checkable done-looks-like boxes (refuse placeholder/task-only). Emit **`CARRY_FROM_SPEC`**: each in-scope locked decision → ticket AC(s) or an explicit parked ticket. Each ticket names spec + map, wears house labels, and is a child of the map. Parked slices are `Later:` (no `ready-for-agent`) with **When to do this**. Effect-TS acceptance only on tickets that own a bag or flaky outbound HTTP. Next is `/implement`.
+
+### `/implement`
+
+- Follow [BUILD-STANDING.md](../skills/umbrella/BUILD-STANDING.md). Do not load full `umbrella/SKILL.md` as a kid.
+- Read the sticky **Ship mode** pin. Do not re-pick.
+- Before product code: live tickets need a real Acceptance criteria checklist (≥1 checkbox). Empty AC → repair or escalate; do not invent from chat.
+- Build to the spec's **Rule card**. Run the harness it names before handoff and put the summary line in the receipt and PR `## Verification`. A rule the build needs that is not on the card is a grill question.
+- **Two review rounds per ticket.** A hard finding after round 2 becomes one grill question, and the card is amended; there is no round 3. Nits go to a follow-up ticket. Each round is a fresh child with a brief near 2 KB (card, ACs, open findings, paths, commands). Do not resume a long child. PR bodies stay under 8 KB.
+- Before close or leftover-lane: rewrite **Close gate** on `project.yml` `paths.umbrella_cursor` ([CURSOR.md](../skills/umbrella/CURSOR.md)). Shape: `Close gate (#N): land-gate <sha> risk=<low|high|missing> | BV pass|n/a | code-review empty | Living docs | migrate N/A|done | lane=<lane>`. `BV n/a` only when `risk=low`. Refuse if incomplete.
+- If the user passes a ticket reference, fetch it from the issue tracker and state its title before starting. Ask when the reference is ambiguous.
+- Count first: **table in the first reply**. **Spawn gate** before any product-file edit. Then **crawl**.
+- Window full → conductor comment on the spec + recall brief (house queue, ship mode, now-on tickets, decisions trail path, blockers) + `Next: /implement #<n>` (2+ frontier = next session is conductor). If this house's coding crawl is already done, the last line names the next queued house and does not start it. Follow `/handoff` when that skill is installed. A local mid-stop also writes the `OVERFLOW_LOCAL` stop receipt on each in-flight ticket (timestamp, branch tip / WIP, open PR, remainder, blockers, next step, host) and keeps In Progress. The local build does not keep going; a bot-owned run parks and `overflow:local` clears on that park or a cloud reclaim.
+- Before product code, backfill parent + map + house labels if create missed them.
+- **Build loop:** keep building until the ticket's ACs hold in current code. Invented scope is parked as new fog and re-grilled. The acceptance-criteria table is `/build-verifier` when the land gate calls for it. Living docs: update/verify docs this change touched (phone-visible ships append a **P\*** leaf on `DEVICE_QA_PHASED_CHECKLIST.md`). Not a second pre-grill survey. **Comment cleanup** strips narrative comments added in this change, then `/code-review` (including blast-radius). In-scope findings, including leftover narrative comments, return here. A prototype ticket in the wave, or an explicit ask, uses DESIGN-IT-TWICE. Do not require that for every feature. **Small PRs:** stack or split above ~800 real added lines (generated snapshots do not count). A backfill or data script ships alone with its dry-run output.
+- New migration file (`paths.drizzle_glob`) → `project.yml` `commands.db_migrate` in the same session.
+- **Effect-TS (when standing-product-rules present):** skip unless the change matches an existing Effect seam (`Schema`/`Either` on an untrusted bag, or `Effect`+`Schedule` next to flaky outbound HTTP). Do not wrap services in `Effect.gen`. A new `JSON.parse` / webhook / native dict still gets a census row.
+- Per ticket before close or leftover-lane: **Living docs** comment (grep `docs/`), **Comment cleanup**, `/code-review` two-axis, then the land gate.
+- When the Build loop is empty, set the lane from what is left: Operator / Desk device / Field / Ready to merge / Live Beta / GoLive / Done ([PROJECTS.md](../skills/umbrella/PROJECTS.md) **Lane fit**). No Verify column. Parked is pre-launch only. Desk device is phone-visible only. Field is outdoor, GPS, or on-wrist only. Non-device checks never use those two lanes. Merged is not Done until applicable checks and QA are done. Leftover lanes (**Operator**, **Desk device**, **Field**) **Crawl** the next wave. They do not hold dependents. Those three plus **Live Beta** and **GoLive** are handoff lanes and are not a routine coding spawn (`/implement` **Count first**). **Live Beta** and **GoLive** are not leftover. A `blocked_by` on **Live Beta**, **GoLive**, or **Ready to merge** still holds. Mode B **Ready to merge** holds dependents until the PR merges. It does not block the next house in a **House queue**. After **End of house**, return to `/umbrella` for that house.
+- Phone-visible, and this pass cannot see USB or another actor owns the phone → **Desk device**, do not close, crawl the next unblocked coding ticket. Never unattended: promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, or spend. The author may squash-merge a `<dev-branch>` PR after the land gate.
+- On close: drop `ready-for-agent`, child first, CLOSE-PARENTS. Do not archive Done unless the 200-card trim says so.
+
+### `/code-review`
+
+- When the spec has a **Rule card**, the Spec axis reviews against the card and its bar, starting from the harness output. Two rounds per ticket; a hard finding after round 2 is a grill question.
+- Spec axis includes **blast-radius**: prove the one safety fact by running code, or mark it unproven. Optional adversarial notes are a short annex. No multi-model product.
+- Standards searches the repo for documented standards and passes `CODING_STANDARDS.md` and `CONTRIBUTING.md` to the Standards sub-agent when those files exist. It flags leftover narrative or noise comments from this change as in-scope. Keep intentional API and docs comments. Do not require a comment-cleanup subagent.
+- After the two-axis report, **Close the loop**: each Standards hard violation and Spec missing/partial/wrong (including an unproven safety fact the ship depends on) becomes remaining ACs on the **same** tickets, then `/implement` again.
+- `Later:` only for grill/spec not-this-pack. A report without that remaining-AC verdict is unfinished.
+- Flag a hand-parsed bag or one-off retry only next to an existing Effect sibling — not `Effect.gen` for its own sake.
+- When product hard pins are configured: `check-cycles` when the diff touches backend or mobile `src`. Also hard-pin missing map fragment, fat router, auth-glob drive-by, new low-value test, raw tier check, raw RN `Modal`.
+
+### `/triage`
+
+- Apply every fitting `domain:…`.
+- Create `umbrella:…` for a map, or for two or more like issues in the same pack.
+- House-name pass does not flip state.
+- A hard or flaky bug names next skill `/diagnosing-bugs`, then `/implement`. The brief does not stop at "reproduce."
+
+### `/how` · `/why` · `/teach` · `/teach-me`
+
+- **how** — how a subsystem works, and where a change should live.
+- **why** — why it is shaped that way. Git history and pull requests first. Add issues, docs, chat, observability, errors, or analytics only when the question needs them and a tool exists.
+- **teach** — one plain explanation that weaves how and why. Not a course.
+- **teach-me** — former Matt `/teach`. Multi-session workspace: `MISSION.md`, `RESOURCES.md`, `lessons/`, learning records. Do not use it to explain a diff.
+
+### `/principles` · `/blast-radius`
+
+- **principles** — one index. Redirect mid-task by name. Each line is a short rule and, where the house already has the move, a pointer at `/umbrella`, `/implement`, `/to-tickets`, `/blast-radius`, `/tdd`, `/diagnosing-bugs`, or `/domain-modeling`. **explain-the-number** gates a measured speedup, regression, or eval. **resist-agent-mistakes** screens a module shape. **encode-lessons-in-structure** is the `/correct` ladder. DESIGN-IT-TWICE is the two-sketch form for a non-trivial prototype UI or an explicit ask. Never-block applies to reversible work only. **apply-clear-precedent** uses clear past handling of a mid-work issue and cites it; it never skips a gate. Outside the grill, say the alternative in plain words.
+- **blast-radius** — what else the change breaks. Prove the one safety fact by running code. `/code-review` runs this before Ready-to-merge.
+
+### `/umbrella-mode` · `/build-verifier` · `/device-qa-agent` · `/device-qa-verifier`
+
+- **umbrella-mode** — sticky mode on top of `/umbrella` (not a second conductor). Parent keeps grill, phase detect, claim, CURSOR, Founder gates, Close gate, and Status off Desk device. New work is a fresh child. Resume only when checkout, uncommitted edits, or a live process must stay. A thin verifier receipt is respawned once. Phase kids get one `SKILL.md` + named companions via [DELEGATION.md](../skills/umbrella/DELEGATION.md). Kids must not read `umbrella/SKILL.md`. Build standing is [BUILD-STANDING.md](../skills/umbrella/BUILD-STANDING.md). The repo agent-rules file (`paths.agent_rules`, default `AGENTS.md`) rides every packet as a named companion. **Hybrid:** implement / coding kids run locally (Grok Build or an IDE agent on `<local-dev-host>`) by default, or the founder picks `cloud` for the house (Cursor cloud agents, PR only); below `caps.cloud_usage_floor` (default 10%) cloud coding parks with a one-line note and does not fall back to Build. Bots do no clone, build, test or install on their own computer, except Expo / EAS; the founder's laptop stays off-limits (CONVENTIONS **No own-computer work**). **Child shape by runtime:** on Claude Code an in-process child shares the parent's container, so it runs only while the memory check passes (`limits.child_mem_gb` free after `limits.mem_reserve_gb`); past that, a sibling session (`create_session`) that pushes its own ticket branch; one cap for both runtimes (`limits.max_children`). The phone lane is `roles.device_qa`. No poteto-mode install. No Plan Mode front door.
+- **build-verifier** — the one acceptance-criteria audit when the land gate is high or the pass line has no `risk:` field. Never the session that wrote it; a different agent than the author (the same model is fine). Missing AC checklist → automatic FAIL + block close/lane. A killed check (137/143) is re-run, not FAIL. Send heavy BV runs only to the local runner named by the private binding installed with the umbrella skill when that binding is present; a refusal, a busy runner, an unreachable runner, or no result within 15 minutes runs those same legs on cloud agents in that turn. A local result counts only from a clean checkout whose HEAD and tree match. Not Device QA. Not `/code-review`.
+- **device-qa-agent** — the phone lane. Leaves, then probe (one USB phone, or the `device_qa.desk_emulator` serial for a Desk crawl), borrow, crawl, return, propose `STATUS_MOVES` unapplied. A Fail goes back on the ticket the leaf names (In Progress), or one new issue when it does not fit. Escalations go to the founder (or CoS when bots are on). Product facts live in the overlay's `PRODUCT.md` and `scripts/`.
+- **device-qa-verifier** — readonly after Device QA returns. Checklist vs run folder; Fail → one issue; never re-tap the phone. Parent alone advances Project Status off Desk device or Field after verifier Pass.
+
+Packet law and role schemas: [DELEGATION.md](../skills/umbrella/DELEGATION.md).
+
+## Project config
+
+This public pack ships **no product board ids, branch names, npm command names, or machine hosts**.
+
+1. Copy [`project.example.yml`](../project.example.yml) to `project.yml` next to this pack, **or** keep the real file in a private overlay repo (recommended) and clone it as a sibling.
+2. Skills read `docs/agents/project.yml` in the product repo when present, else `project.yml` in the installed skills root (sync writes both). Resolution rules: [PROJECT-CONFIG.md](../skills/umbrella/PROJECT-CONFIG.md).
+3. Optional `standing-product-rules.md` (from the private overlay; sync writes it to the same two places) adds product-specific locks by named section (**Grill Context**, **Code-review facts**, **Code-review hard pins**, **Effect domain functions**, **Repeated corrections**, **Boards**, …). Public skills keep the generic form of each rule.
+4. `paths.agent_rules` (unset → `AGENTS.md`) names the product repo's agent-rules file: the coding standing a bare local session also reads. Skills read it at start and pass it to every child packet ([PROJECT-CONFIG.md](../skills/umbrella/PROJECT-CONFIG.md) **Repo agent rules**).
+5. Optional `commands.graph_freshness` turns on the non-blocking graphify **Orient** step in `/implement`, `/wayfinder`, and `/blast-radius`: query only when it exits 0; otherwise skip silently. Skills never build the graph.
+6. `node scripts/install.mjs` (or `node scripts/sync-workspace.mjs --public` without the upstream fetch) copies the public overlay, then layers the private overlay from the sibling folder whose `project.yml` sets `workspace.overlay_pack` to its own folder name (or `UMBRELLA_OVERLAY=<folder>`). The public pack never names that repo. On a public clone, pass `--public`. Without that flag the source check stops when `skills/umbrella/private-bindings.md` is missing. A missing file does not turn the flag on. `--box` / `--dest <dir>` add more skills roots (MAINTAINING **Install internals**).
+
+Role names **Board**, **Dispatch**, **Chief of Staff**, and the phone lane `roles.device_qa` (default Mobile QA) are generic process roles. Bind the founder display name and GitHub Project option ids only in `project.yml`.
+
+## Credit
+
+Planning spine: [Matt Pocock's skills](https://github.com/mattpocock/skills). Overlay files for that spine start from those skills. `/umbrella` is original to this repo.
+
+Understand and rigor: [Lauren Tan (poteto)](https://github.com/poteto). Skills stack: [pstack](https://github.com/cursor/plugins/tree/main/pstack) in [cursor/plugins](https://github.com/cursor/plugins) (integrated through pstack 0.15.17, 2026-10-11). `/how`, `/why`, `/teach`, the `/principles` index, and `/blast-radius` are adapted from pstack, with house unslop. Later pstack deltas land as thin conventions on `/umbrella`, not as poteto-mode.
+
+This pack is the SSOT — we do not keep a field-notes issue on Matt's repo.
+
+Maintainer notes: [MAINTAINING.md](../MAINTAINING.md).
+
+

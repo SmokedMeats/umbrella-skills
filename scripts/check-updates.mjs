@@ -16,7 +16,8 @@
  *
  * Sources:
  *   review (report only; bump by hand, vendor/README.md "Bump a pin"):
- *     mattpocock-skills, simple-english, pstack-reference, pstack-skills  (vendor/pins.json)
+ *     mattpocock-skills, simple-english, pstack-reference, pstack-skills,
+ *     cursor-team-kit-skills  (vendor/pins.json; layout in scripts/upstreams.mjs)
  *   auto (--update installs them):
  *     every skill in a product repo's skills-lock.json (npx skills: Stripe, Neon, ...)
  *     graphify (an original folder with .graphify_version in a product repo)
@@ -28,6 +29,9 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gitEnv } from './sync-freshness.mjs';
+import { UPSTREAMS, layoutUpstream, newestSemverTag } from './upstreams.mjs';
+
+const upstreamNamed = (name) => UPSTREAMS.find((u) => u.name === name);
 
 let spawnSync = systemSpawnSync;
 
@@ -63,17 +67,6 @@ function cloneShallow(repo, dir, { branch, sparse } = {}) {
 function copyFiltered(from, to, skip = () => false) {
   mkdirSync(path.dirname(to), { recursive: true });
   cpSync(from, to, { recursive: true, filter: (src) => path.basename(src) !== '.git' && !skip(src) });
-}
-
-function semverTags(rows) {
-  return rows
-    .map(([, ref]) => ref.replace('refs/tags/', ''))
-    .filter((t) => /^v?\d+\.\d+\.\d+$/.test(t))
-    .sort((a, b) => {
-      const pa = a.replace(/^v/, '').split('.').map(Number);
-      const pb = b.replace(/^v/, '').split('.').map(Number);
-      return pa[0] - pb[0] || pa[1] - pb[1] || pa[2] - pb[2];
-    });
 }
 
 async function getJson(url) {
@@ -307,16 +300,13 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
     await source('mattpocock-skills', 'review', async (r) => {
       const pin = pins['mattpocock-skills'];
       r.current = pin.tag;
-      const tags = semverTags(gitLsRemote(pin.repo, '--tags', '--refs', 'refs/tags/*'));
-      r.latest = tags.at(-1) || pin.tag;
+      const tags = gitLsRemote(pin.repo, '--tags', '--refs', 'refs/tags/*').map(([, ref]) => ref.replace('refs/tags/', ''));
+      r.latest = newestSemverTag(tags) || pin.tag;
       if (r.latest === pin.tag) return;
       const src = path.join(work, 'matt');
       cloneHistory(pin.repo, src, { branch: r.latest });
-      const manifest = JSON.parse(readFileSync(path.join(src, '.claude-plugin', 'plugin.json'), 'utf8'));
       const latest = path.join(work, 'matt-latest');
-      for (const rel of manifest.skills) copyFiltered(path.join(src, rel), path.join(latest, 'skills', path.basename(rel)));
-      copyFiltered(path.join(src, '.claude-plugin', 'plugin.json'), path.join(latest, 'plugin.json'));
-      copyFiltered(path.join(src, 'LICENSE'), path.join(latest, 'LICENSE'));
+      const manifest = layoutUpstream(upstreamNamed('mattpocock-skills'), src, latest);
       const upstreamOf = (name) => (manifest.skills.find((p) => path.basename(p) === name) || `skills/${name}`).replace(/^\.\//, '');
       r.diff = diff('mattpocock-skills', path.join(vendorRoot, 'mattpocock-skills'), latest, {
         dir: src, from: pin.commit, pathFor: (rel) => upstreamOf(path.basename(rel)),
@@ -335,8 +325,7 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
       const src = path.join(work, 'simple-english');
       cloneHistory(pin.repo, src);
       const latest = path.join(work, 'simple-english-latest');
-      copyFiltered(path.join(src, 'skills', 'simple-english'), path.join(latest, 'skills', 'simple-english'));
-      copyFiltered(path.join(src, 'LICENSE'), path.join(latest, 'LICENSE'));
+      layoutUpstream(upstreamNamed('simple-english'), src, latest);
       r.diff = diff('simple-english', path.join(vendorRoot, 'simple-english'), latest, { dir: src, from: pin.commit, pathFor: (rel) => rel });
       r.status = r.diff ? 'behind' : 'current';
     });
@@ -364,30 +353,28 @@ export async function checkUpdates({ packRoot, workspaceRoot, targets, apply = f
     });
   }
 
-  // The few pstack skills the overlay calls by name, installed from vendor/pstack-skills.
-  if (pins?.['pstack-skills']) {
-    await source('pstack-skills', 'review', async (r) => {
-      const pin = pins['pstack-skills'];
+  // The few cursor/plugins skills the overlay calls by name (pstack: statechart, no-comments;
+  // cursor-team-kit: deslop), installed from vendor/<name>.
+  for (const name of ['pstack-skills', 'cursor-team-kit-skills']) {
+    if (!pins?.[name]) continue;
+    await source(name, 'review', async (r) => {
+      const pin = pins[name];
       r.current = pin.version;
       const head = gitLsRemote(pin.repo, 'HEAD')[0]?.[0] || pin.commit;
       r.latest = pin.version;
       if (head === pin.commit) return;
-      const src = path.join(work, 'pstack-skills');
+      const src = path.join(work, name);
       cloneHistory(pin.repo, src, { sparse: [pin.path] });
       const upstream = path.join(src, pin.path);
       const manifest = path.join(upstream, '.cursor-plugin', 'plugin.json');
       if (existsSync(manifest)) r.latest = JSON.parse(readFileSync(manifest, 'utf8')).version || r.latest;
-      const latest = path.join(work, 'pstack-skills-latest');
-      const omit = (pin.omit || []).map((rel) => path.join(upstream, 'skills', rel));
-      for (const name of pin.skills) {
-        copyFiltered(path.join(upstream, 'skills', name), path.join(latest, 'skills', name), (p) => omit.some((o) => p === o || p.startsWith(o + path.sep)));
-      }
-      copyFiltered(path.join(upstream, 'LICENSE'), path.join(latest, 'LICENSE'));
-      r.diff = diff('pstack-skills', path.join(vendorRoot, 'pstack-skills'), latest, {
+      const latest = path.join(work, `${name}-latest`);
+      layoutUpstream(upstreamNamed(name), src, latest);
+      r.diff = diff(name, path.join(vendorRoot, name), latest, {
         dir: src, from: pin.commit, pathFor: (rel) => `${pin.path}/${rel}`,
       });
       r.status = r.diff ? 'behind' : 'current';
-      if (!r.diff) r.note = `cursor/plugins moved (${head.slice(0, 7)}), these pstack skills unchanged; bump pins.json commit when convenient`;
+      if (!r.diff) r.note = `cursor/plugins moved (${head.slice(0, 7)}), these skills unchanged; bump pins.json commit when convenient`;
     });
   }
 

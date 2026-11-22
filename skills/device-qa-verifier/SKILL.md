@@ -45,7 +45,7 @@ FORBIDDEN      no Maestro; no Borrow/Return; no adb input/tap; no src edits;
 2. **Fail disposition** — each Fail either cites the leaf's existing ticket with Status In Progress, or cites exactly one new issue when the fail did not fit that ticket. No second issue for a fail that fit the leaf's ticket. The cited issue exists.
 3. **Blocked dependents Skipped** — leaves that require a Failed (or missing precondition) leaf appear under Skipped (blocked) per SKIP-BLOCKED, not silent open `[ ]` with no Skip line.
 4. **Return ran** — return packet + `.scratch` session/lock cleared (or explicit restore evidence); Fail evidence pulled into run `screenshots/` (not on-phone-only).
-5. **No product-code edits** — changed paths exclude `src/`, `backend/src/`, auth-critical paths; only checklist + `device-qa-runs/` (+ allowed Leaves appends).
+5. **No product-code edits** — changed paths exclude `paths.mobile_src`, `paths.backend_src`, auth-critical paths; only checklist + `device-qa-runs/` (+ allowed Leaves appends).
 
 ## Receipt out
 

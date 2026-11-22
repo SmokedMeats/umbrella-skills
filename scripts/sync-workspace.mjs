@@ -76,6 +76,9 @@ import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkFreshness, gitEnv } from './sync-freshness.mjs';
+import { parseSkillTargets, rowAllows } from './skill-targets.mjs';
+
+const ALLOW_ALL = () => true;
 
 const OVERLAY_SKILLS = [
   'code-review',
@@ -264,10 +267,11 @@ function listSwarmSkills(swarmRoot) {
 
 let swarmSkillNames = new Set();
 
-function copySwarmInto(destRoot, swarmRoot, names, overlayRoot = '') {
+function copySwarmInto(destRoot, swarmRoot, names, overlayRoot = '', allow = ALLOW_ALL) {
   mkdirSync(destRoot, { recursive: true });
   let ok = true;
   for (const name of names) {
+    if (!allow(name)) continue;
     const from = path.join(swarmRoot, 'skills', name);
     let overlayDir = '';
     if (overlayRoot) {
@@ -294,30 +298,6 @@ function loadProjectConfig() {
   return null;
 }
 
-function parseSkillTargets(raw) {
-  // Extremely small parser for:
-  //   skill_targets:
-  //     - { name: Foo, dirs: [.cursor/skills], own: [.grok/skills], rules: "node scripts/x.mjs", skip: [gh-mix] }
-  // own, rules and skip are optional.
-  const targets = [];
-  const block = raw.match(/skill_targets:\s*\n((?:[ \t]+-.+\n?)+)/);
-  if (!block) {
-    // Fallback: empty — user-global only
-    return targets;
-  }
-  for (const line of block[1].split('\n')) {
-    const m = line.match(/name:\s*([^,}\s]+).*dirs:\s*\[([^\]]*)\]/);
-    if (!m) continue;
-    const name = m[1].trim();
-    const dirs = m[2].split(',').map((s) => s.trim()).filter(Boolean);
-    const own = (line.match(/own:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
-    const rules = line.match(/rules:\s*"([^"]*)"/)?.[1] || null;
-    const skip = (line.match(/skip:\s*\[([^\]]*)\]/)?.[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
-    targets.push({ repo: name, dirs, own, rules, skip });
-  }
-  return targets;
-}
-
 function parseOverlayPack(raw) {
   const m = raw.match(/overlay_pack:\s*(\S+)/);
   return m ? m[1].trim() : overlaySibling;
@@ -331,9 +311,11 @@ function parsePrimaryRepo(raw) {
   return first ? first[1].trim() : null;
 }
 
-// Pinned upstream packs: vendor/<pack>/skills/<skill>/SKILL.md.
+// Upstream packs: vendor/<pack>/skills/<skill>/SKILL.md (pinned, private clone), or the
+// folder install.mjs fetched the newest releases into (UMBRELLA_VENDOR_ROOT, same layout).
+const VENDOR_ROOT = process.env.UMBRELLA_VENDOR_ROOT ? path.resolve(process.env.UMBRELLA_VENDOR_ROOT) : path.join(packRoot, 'vendor');
 function listVendorSkills() {
-  const root = path.join(packRoot, 'vendor');
+  const root = VENDOR_ROOT;
   if (!existsSync(root)) return [];
   const out = [];
   for (const pack of readdirSync(root, { withFileTypes: true })) {
@@ -548,7 +530,7 @@ function placePackSkill(from, to, overlayDir = '') {
 // Symlink targets are part of that hash and are not followed. Anything else
 // is left in place.
 // --fixture-root returns before overlay project writes, repo-own copies, and repo share.
-function copyOverlayInto(destRoot, overlayRoot = '') {
+function copyOverlayInto(destRoot, overlayRoot = '', allow = ALLOW_ALL) {
   mkdirSync(destRoot, { recursive: true });
   const overlaySlice = (name) => {
     if (!overlayRoot) return '';
@@ -557,11 +539,13 @@ function copyOverlayInto(destRoot, overlayRoot = '') {
   };
   let ok = true;
   for (const { name, from } of VENDOR_SKILLS) {
+    if (!allow(name)) continue;
     if (!placePackSkill(from, path.join(destRoot, name), overlaySlice(name))) ok = false;
   }
   for (const name of OVERLAY_SKILLS) {
     const from = path.join(srcRoot, name);
     if (!existsSync(from)) throw new Error(`Missing overlay skill: ${from}`);
+    if (!allow(name)) continue;
     if (!placePackSkill(from, path.join(destRoot, name), overlaySlice(name))) ok = false;
   }
   return ok;
@@ -569,10 +553,11 @@ function copyOverlayInto(destRoot, overlayRoot = '') {
 
 // Pack skills are already final, including their overlay slice. A refused pack
 // skill stays as it was. Other overlay entries (swarm patches, extra files) still merge.
-function applySkillsOverlay(dest, skillsOverlay) {
+function applySkillsOverlay(dest, skillsOverlay, allow = ALLOW_ALL) {
   let merged = false;
   for (const ent of readdirSync(skillsOverlay, { withFileTypes: true })) {
     if (packSkillNames.has(ent.name) || swarmSkillNames.has(ent.name)) continue;
+    if (ent.isDirectory() && !allow(ent.name)) continue; // a skill folder this root does not take
     const from = path.join(skillsOverlay, ent.name);
     const to = path.join(dest, ent.name);
     if (refusedDestinations.has(path.resolve(to))) continue;
@@ -665,15 +650,22 @@ if (!SYNC_VENDOR) console.log('Vendored packs: (skipped, --no-vendor)');
 else if (VENDOR_SKILLS.length) {
   const byPack = {};
   for (const v of VENDOR_SKILLS) byPack[v.pack] = (byPack[v.pack] || 0) + 1;
-  console.log(`Vendored packs: ${Object.entries(byPack).map(([k, n]) => `${k} (${n})`).join(', ')}`);
+  console.log(`Vendored packs${process.env.UMBRELLA_VENDOR_ROOT ? ' (fetched upstream)' : ''}: ${Object.entries(byPack).map(([k, n]) => `${k} (${n})`).join(', ')}`);
 } else {
-  console.log('Vendored packs: (none in this clone; install Matt + SimpleEnglish with npx, README Install)');
+  console.log('Vendored packs: (none in this clone; run node scripts/install.mjs to fetch the upstream packs, README Install)');
 }
 if (hasPrivate) console.log(`Private overlay: ${label(privateRoot)}`);
 else console.log(`Private overlay: (none${overlayPackName ? ` at ../${overlayPackName}` : ' found'})`);
 
 const skillDests = [];
 let installRefused = 0;
+// A skill_targets row's skip / only lists, keyed by each of its resolved skill dirs.
+// Every other root (user, --box, --dest) takes every skill.
+const allowByDest = new Map();
+for (const row of WORKSPACE_TARGETS) {
+  for (const rel of row.dirs) allowByDest.set(path.resolve(workspaceRoot, row.repo, rel), (name) => rowAllows(row, name));
+}
+const allowFor = (dest) => allowByDest.get(path.resolve(dest)) || ALLOW_ALL;
 
 const skillsOverlayRoot = hasPrivate && existsSync(path.join(privateRoot, 'skills-overlay'))
   ? path.join(privateRoot, 'skills-overlay')
@@ -721,7 +713,7 @@ if (!FIXTURE_ROOT) for (const { repo, dirs } of WORKSPACE_TARGETS) {
   }
   for (const rel of dirs) {
     const dest = path.join(repoRoot, rel);
-    if (!copyOverlayInto(dest, skillsOverlayRoot)) installRefused += 1;
+    if (!copyOverlayInto(dest, skillsOverlayRoot, allowFor(dest))) installRefused += 1;
     skillDests.push(dest);
     console.log(`  repo  ${repo}/${rel}`);
   }
@@ -754,7 +746,7 @@ if (!SYNC_SWARM) {
   swarmSkillNames = new Set(names);
   const swarmDests = [...new Set(skillDests.map((d) => path.resolve(d)))];
   for (const dest of swarmDests) {
-    if (!copySwarmInto(dest, swarmRoot, names, skillsOverlayRoot)) installRefused += 1;
+    if (!copySwarmInto(dest, swarmRoot, names, skillsOverlayRoot, allowFor(dest))) installRefused += 1;
     // Older directory names are not current swarm skills. Words inside a skill
     // file do not make the tree disposable. Leave the entry, including a symlink.
     for (const retired of LEGACY_MIRROR_NAMES) {
@@ -790,7 +782,7 @@ if (hasPrivate) {
       copyFile(standing, path.join(dest, 'standing-product-rules.md'));
       wrote.push('standing-product-rules.md');
     }
-    if (existsSync(skillsOverlay) && applySkillsOverlay(dest, skillsOverlay)) {
+    if (existsSync(skillsOverlay) && applySkillsOverlay(dest, skillsOverlay, allowFor(dest))) {
       wrote.push('skills-overlay/**');
     }
     if (wrote.length) console.log(`  cfg   ${label(dest)}: ${wrote.join(', ')}`);
@@ -832,6 +824,30 @@ if (hasPrivate) {
       }
     }
   }
+}
+
+// 1b. A row with `only: [...]` keeps just those synced skills. Any other folder in its
+//     skill dirs that sync wrote earlier (a pack copy with .sync-workspace-baseline, or a
+//     mirror copy with .synced-by-sync-workspace) is removed. The repo's own originals
+//     (neither file) and symlinks stay. Steps 2b and 3 below never copy one back.
+for (const row of WORKSPACE_TARGETS) {
+  if (row.only === null) continue;
+  const repoRoot = path.join(workspaceRoot, row.repo);
+  if (!existsSync(repoRoot)) continue;
+  const removed = [];
+  for (const rel of row.dirs) {
+    const root = path.join(repoRoot, rel);
+    if (!existsSync(root)) continue;
+    for (const ent of readdirSync(root, { withFileTypes: true })) {
+      if (!ent.isDirectory() || rowAllows(row, ent.name)) continue;
+      const dir = path.join(root, ent.name);
+      if (refusedDestinations.has(path.resolve(dir))) continue;
+      if (!isMirrorCopy(dir) && !existsSync(path.join(dir, PACK_BASELINE))) continue; // the repo's own
+      rmSync(dir, { recursive: true, force: true });
+      removed.push(`${rel}/${ent.name}`);
+    }
+  }
+  console.log(`  only  ${row.repo}: keeps ${row.only.length} synced skill(s)${removed.length ? `; removed ${removed.length} other cop${removed.length === 1 ? 'y' : 'ies'}` : ''}`);
 }
 
 // ---------- steps 2-4: repo-own skills, personal skills, rules ----------
@@ -937,7 +953,8 @@ for (const found of repoOriginals.values()) {
     for (const [rel, dir] of byRel) if (!shared.get(name).byRel.has(rel)) shared.get(name).byRel.set(rel, dir);
   }
 }
-for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
+for (const row of WORKSPACE_TARGETS) {
+  const { repo, dirs, skip } = row;
   const found = repoOriginals.get(repo);
   if (!found) continue;
   const copied = [];
@@ -958,7 +975,7 @@ for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
   }
   if (removed.length) console.log(`  skip  ${repo}: removed ${removed.length} earlier shared cop${removed.length === 1 ? 'y' : 'ies'} (${removed.join(', ')})`);
   for (const [name, { first, byRel }] of shared) {
-    if (found.has(name) || skip.includes(name)) continue; // own version wins; skip never arrives
+    if (found.has(name) || !rowAllows(row, name)) continue; // own version wins; skip / not-in-only never arrives
     for (const rel of dirs) {
       const from = byRel.get(path.normalize(rel)) || first;
       const to = path.join(workspaceRoot, repo, rel, name);
@@ -971,9 +988,9 @@ for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
 
 // 3. Personal skills: any original skill in a user root (not a pack skill, not a copy)
 //    goes to the other user roots and to every repo skill dir (minus that row's skip).
-const repoSkipFor = new Map(); // repo skill dir -> that row's skip list
-for (const { repo, dirs, skip } of WORKSPACE_TARGETS) {
-  for (const rel of dirs) repoSkipFor.set(path.join(workspaceRoot, repo, rel), skip);
+const repoRowFor = new Map(); // repo skill dir -> its skill_targets row
+for (const row of WORKSPACE_TARGETS) {
+  for (const rel of row.dirs) repoRowFor.set(path.join(workspaceRoot, row.repo, rel), row);
 }
 const repoSkillDirs = WORKSPACE_TARGETS.flatMap(({ repo, dirs }) =>
   existsSync(path.join(workspaceRoot, repo)) ? dirs.map((rel) => path.join(workspaceRoot, repo, rel)) : [],
@@ -1003,7 +1020,7 @@ if (SYNC_PERSONAL) {
   }
   let n = 0;
   for (const [name, from] of sources) {
-    const repoDests = repoOwnNames.has(name) ? [] : repoSkillDirs.filter((d) => !repoSkipFor.get(d)?.includes(name));
+    const repoDests = repoOwnNames.has(name) ? [] : repoSkillDirs.filter((d) => rowAllows(repoRowFor.get(d), name));
     const dests = [...roots, ...repoDests];
     for (const root of dests) {
       const to = path.join(root, name);
@@ -1058,7 +1075,9 @@ function gitIn(repoRoot, ...args) {
 }
 const denylist = hasPrivate ? path.join(privateRoot, 'public-safe', 'denylist.txt') : null;
 const publicSafeRepos = [];
-for (const ent of readdirSync(workspaceRoot, { withFileTypes: true })) {
+// Maintainers only: an install with no private overlay (a public user) never pushes to these
+// packs, so its clones keep their own hooks.
+for (const ent of hasPrivate ? readdirSync(workspaceRoot, { withFileTypes: true }) : []) {
   if (!ent.isDirectory()) continue;
   const repoRoot = path.join(workspaceRoot, ent.name);
   if (!existsSync(path.join(repoRoot, '.githooks', 'pre-push'))) continue;

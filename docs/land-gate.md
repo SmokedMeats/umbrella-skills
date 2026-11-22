@@ -18,7 +18,7 @@ Declare bots-off at the start of the session. There is no mid-session switch, an
 
 The same land gate still runs. The author starts Tech Lead and Build Verifier as **separate agents** — a new chat or a cloud agent loaded with that skill — never as a subagent of the session that wrote the code, and never as an inline receipt in the writer's session. Each reviewer posts its own `GATE:` verdict with an Evidence block on the exact commit it reviewed. The same model is fine; the reviewer must be a different agent than the declared `author-agent:`.
 
-A rare, narrow exception to the pull-request flow is described under **Bots off** in [`/umbrella-mode`](../skills/umbrella-mode/SKILL.md). That path still starts those separate reviewer agents. Protected workflow files and Railway config still go on a branch and a pull request.
+A rare, narrow exception to the pull-request flow is described under **Bots off** in [`/umbrella-mode`](../skills/umbrella-mode/SKILL.md). That path still starts those separate reviewer agents. Protected workflow files and deploy config still go on a branch and a pull request.
 
 ## The order
 
@@ -41,19 +41,19 @@ A rare, narrow exception to the pull-request flow is described under **Bots off*
 
 5. The author reruns `pr-ready` and pastes the final PASS line for this same SHA (the review `GATE:` lines are now on it).
 
-6. The author runs the pre-merge check itself: every verdict is on the current SHA; the body has no `do not merge` or `MERGE HOLD`; there is no merge freeze; the pull request does not target Preview or `master`; the diff has no migration, data deletion, Railway, or workflow-file change (those wait for the human owner). Then the author session may squash-merge its own pull request.
+6. The author runs the pre-merge check itself: every verdict is on the current SHA; the body has no `do not merge` or `MERGE HOLD`; there is no merge freeze; the pull request does not target a held branch (`branches.held` in `project.yml`); the diff has no migration, data deletion, deploy-config, or workflow-file change (those wait for the human owner). Then the author session may squash-merge its own pull request.
 
 7. If the head moved, rerun the stale gates on the new head before that merge. A high-risk code change after the Build Verifier verdict needs a fresh Build Verifier run. The squash SHA need not equal the review SHA.
 
 ## What always waits for the human owner
 
-Never push Preview or `master`. These stay with the human owner, and are never unattended:
+Never push a held branch (`branches.held`). These stay with the human owner, and are never unattended:
 
-- Preview/master promotes
+- promotes to held branches
 - OTA
 - migrations
 - data deletion
-- Railway
+- deploy config
 - workflow files
 - spend
 
