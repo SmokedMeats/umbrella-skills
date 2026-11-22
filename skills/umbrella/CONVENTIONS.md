@@ -130,6 +130,13 @@ Do not add a `/recall` skill. Do not confuse this brief with Matt `/retro` (envi
 
 If `handoff/SKILL.md` exists in the parent skills directory, read it and follow `/handoff`, and include that brief. The brief is still required when `/handoff` is not installed. The brief does not start the next house. **House queue** still decides when that house starts.
 
-### OVERFLOW_LOCAL (local mid-stop)
+### No own-computer work
 
-When this session stops mid-ticket on `<local-dev-host>` (Window full, handoff, Stop, crash, or a cloud park that continues locally), every in-flight ticket gets the `OVERFLOW_LOCAL` receipt (`/implement` **Window full** step 6; canonical wording in `paths.agent_rules` when present), plus the swarm area brief when the area is Active. Keep In Progress + `overflow:local`. During a coding crawl `/implement` owns the ticket comment; the conductor still makes sure it lands before going quiet.
+Fleet rule, the same in this pack and the swarm pack (founder, 2026-11-21). Do not let bots use their own computer (founder 11:43 AM CT: "do not let bots use their own computer. it takes too much space. cloud agents for most things"). Only minimal things on a bot's computer, and only if necessary (founder 11:44 AM CT: "only minimal things on computer. and only if necessary."). No cloning, building, testing or installing on the founder's laptop (founder 10:39 AM CT: "what is making my computer slow? nothing better be running on it"). Device QA and the founder's own sessions there stay allowed. Build Verifier heavy legs on the local runner stay allowed ([build-verifier](../build-verifier/SKILL.md) **Heavy legs**).
+
+- **Expo / EAS exception** (founder 4:20 PM CT: "Allow own computers for expo stuff" / "That is an exception"). An EAS build uploads from a clone, and the EAS CLI may run on a bot's own computer. The GitHub-trigger path is not used for the private repo. Everything else heavy stays on cloud agents or the local runner, and the founder's laptop stays off-limits.
+- **Below the floor, Starts wait** (founder 12:54 PM CT: "Below the floor, Starts wait for cloud usage. No local builds."). The floor is remaining included Cursor usage below `caps.cloud_usage_floor` (default 10%), one floor for umbrella and swarm. Under it, cloud coding parks (`usage_parked`). It does not fall back to a local build. A house the founder runs as `build` in their own session stays allowed.
+
+### OVERFLOW_LOCAL (stop receipt)
+
+`OVERFLOW_LOCAL` is a stop receipt, not a license to keep a local build going. When a local session stops mid-ticket on `<local-dev-host>` (Window full, handoff, Stop, crash, or a usage park), every in-flight ticket gets the `OVERFLOW_LOCAL` receipt (`/implement` **Window full** step 6; canonical wording in `paths.agent_rules` when present), plus the swarm area brief when the area is Active. Keep In Progress. A cloud park never continues locally: a bot-owned local run stops and parks (`usage_parked`), and `overflow:local` clears on that park or when cloud reclaims the ticket. During a coding crawl `/implement` owns the ticket comment; the conductor still makes sure it lands before going quiet.

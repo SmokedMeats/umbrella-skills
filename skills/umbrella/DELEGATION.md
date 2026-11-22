@@ -390,7 +390,7 @@ BLOCK_STATUS_MOVES  true | false
 
 | Work | Prefer |
 | --- | --- |
-| Code / implement extras | **Local coding agent** on `<local-dev-host>` (`build`), or Cursor cloud agent when the founder picked `cloud` and usage left is ≥5% (umbrella-mode **Hybrid**) |
+| Code / implement extras | **Local coding agent** on `<local-dev-host>` (`build`), or Cursor cloud agent when the founder picked `cloud` and remaining included usage is at or above `caps.cloud_usage_floor` (umbrella-mode **Hybrid**; below it, park) |
 | Code-review axes / one-shot phase publish | **Cursor Task** kids |
 | Durable lanes that need rooms (Verify, Umbrella, Investigate) | **Grok bots** |
 | Phone crawl | Local Task **or** `roles.device_qa` Grok lane — never cloud |
