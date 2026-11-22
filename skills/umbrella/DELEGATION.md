@@ -382,7 +382,7 @@ BLOCK_STATUS_MOVES  true | false
 | Probe adb / USB / phone ownership | Parent |
 | Apply `STATUS_MOVES` off Desk device or Field | Parent after device-qa-verifier Pass |
 | Close / leftover lane after Build loop | Parent alone, after Close gate complete + land gate satisfied + code-review empty |
-| Merge / FF / migrate / OTA / master | The author may squash-merge a `<dev-branch>` PR after the Land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (CoS relays when bots are on) |
+| Merge / FF / migrate / OTA / master | The author may squash-merge a `<dev-branch>` PR after the Land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (CoS relays when bots are on). Pack sync PRs land first as the pre-step |
 
 ---
 

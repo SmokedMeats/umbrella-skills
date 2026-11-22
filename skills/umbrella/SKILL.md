@@ -237,7 +237,7 @@ PAUSE and wait:
 
 **Session stops** are **Window full**, the user stops, or a Founder pause that blocks the session (Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, spend, or another irreversible action). Grill lock is not a session stop. A phone ownership conflict is not a session stop. Ready-to-merge is not a session stop when a next house is queued.
 
-Never unattended: Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. The crawl waits on those. The author may squash-merge a `<dev-branch>` PR after the land gate. `project.yml` `commands.db_migrate` for a new `backend/drizzle/0xxx_*.sql` in this change stays inside the Build loop. That run is not a Preview or master promote.
+Never unattended: Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. Pack sync PRs land first as the pre-step. The crawl waits on those. The author may squash-merge a `<dev-branch>` PR after the land gate. `project.yml` `commands.db_migrate` for a new `backend/drizzle/0xxx_*.sql` in this change stays inside the Build loop. That run is not a Preview or master promote.
 
 Do not pause for spec → tickets, or tickets → implement, after a successful grill lock with gaps closed.
 
@@ -304,7 +304,7 @@ Stop the **session** only when:
 
 Grill lock is the per-house planning gate. It waits on this house and does not open the next house. A phone ownership conflict leaves **Desk device** and the crawl continues on this house's other coding tickets.
 
-Never unattended: Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. The author may squash-merge a `<dev-branch>` PR after the land gate.
+Never unattended: Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. Pack sync PRs land first as the pre-step. The author may squash-merge a `<dev-branch>` PR after the land gate.
 
 On a long crawl (multi-ticket, or a **House queue**), keep the **Decision trail**. Default on. Do not wait on the founder to start it.
 

@@ -19,7 +19,7 @@ Update both in the same change:
 1. The skill file under `skills/`
 2. The "What this pack changes" index + skill headings in `README.md`
 
-Then sync this private clone into every IDE and every product workspace repo listed in `project.yml` `workspace.skill_targets` (one command does skills and each repo's agent rules; in a product repo it is `npm run sync`). Do not pass `--public` here:
+Then sync this private clone into every IDE. The product-repo sync, into the repos listed in `project.yml` `workspace.skill_targets`, runs once per promote, right before it, never mid-day, and never while a pack PR is queued. Pack pull requests still land in the pack repos as they are ready. The designated sync owner is the only agent that runs that sync, so the product branches never get two parallel syncs. One command does skills and each repo's agent rules; in a product repo it is `npm run sync`. Do not pass `--public` here:
 
 ```text
 node scripts/sync-workspace.mjs
@@ -33,7 +33,7 @@ A skill directory is replaced only when it is missing, when its `.sync-workspace
 
 Retire a rollout stash only when the whole stash object has an archive and every path in it has a durable destination. The archive is every parent, the index, and the untracked bytes, with hashes and a check that those bytes can be reconstructed. A ticket name or a stash subject is not that archive. A path that matches a commit already on the remote, or a regenerated tree, is the landed case. Intentional customization moves into the canonical source or the supported overlay. Unique work is its own reviewed change. Obsolete output is regenerated and checked against the archive. When the same bytes support two readings, the owner of that work chooses. Unrelated work in progress stays. Do not retire the stash, reset the checkout, or overwrite a dirty tree before the destination exists. A generated dependency directory is reproduced in isolation from the manifest and lock that created it, then compared file by file, including files the lock's package list does not name. Matching lock metadata does not make that directory disposable.
 
-After you add or edit one of those folders, run the sync script in the same change before you call the pack installed.
+After you add or edit one of those folders, run the sync script for the IDE roots in the same change before you call the pack installed. Product repos wait for the promote pre-step.
 
 Optional extra (same overlay, installer-managed paths):
 
