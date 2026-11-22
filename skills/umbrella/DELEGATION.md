@@ -331,7 +331,7 @@ STATUS_MOVES   proposed ticket → Field|Operator|Live Beta|GoLive|Done (+ why)
                *** UNAPPLIED — parent applies after device-qa-verifier Pass ***
 ```
 
-**FORBIDDEN extras:** no `umbrella/SKILL.md`; no `src/` / `backend/src/` edits; no git; **no Project Status writes** except a Fail sending its ticket (or its one new issue) to **In Progress**; no `gh issue close`; no second Borrow if lock held; no AskQuestion.
+**FORBIDDEN extras:** no `umbrella/SKILL.md`; no `paths.mobile_src` / `paths.backend_src` edits; no git; **no Project Status writes** except a Fail sending its ticket (or its one new issue) to **In Progress**; no `gh issue close`; no second Borrow if lock held; no AskQuestion.
 
 ---
 
@@ -356,7 +356,7 @@ STATUS_MOVES   proposed (unapplied) list to gate
 2. Fail → exactly one GH issue (exists, no dup leaf issues)  
 3. Blocked dependents Skipped per SKIP-BLOCKED  
 4. Return ran (lock/session cleared or restore evidence; Fail shots in run `screenshots/`)  
-5. No product-code edits (`src/`, `backend/src/` clean)  
+5. No product-code edits (`paths.mobile_src`, `paths.backend_src` clean)  
 
 **Out (extra):**
 ```text
@@ -382,7 +382,7 @@ BLOCK_STATUS_MOVES  true | false
 | Probe adb / USB / phone ownership | Parent |
 | Apply `STATUS_MOVES` off Desk device or Field | Parent after device-qa-verifier Pass |
 | Close / leftover lane after Build loop | Parent alone, after Close gate complete + land gate satisfied + code-review empty |
-| Merge / FF / migrate / OTA / master | The author may squash-merge a `<dev-branch>` PR after the Land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (CoS relays when bots are on). Pack sync PRs land first as the pre-step |
+| Merge / FF / migrate / OTA / master | The author may squash-merge a `<dev-branch>` PR after the Land gate. Promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, and spend stay the founder only (CoS relays when bots are on). Pack sync PRs land first as the pre-step |
 
 ---
 
@@ -398,7 +398,7 @@ BLOCK_STATUS_MOVES  true | false
 
 Do **not** dual-truth: when the land gate calls for a build-verifier, one implement return gets **one** verdict, from a child that did not write the ticket.
 
-**Bots off.** Declared at session start only, with no mid-session switch, and session-scoped only: never a PR label, marker, or body line (`commands.pr_ready` does not read one). With no Grok bot lanes this run, implement children may run as a local subagent on `<local-dev-host>` (Grok Build or IDE agent), never a Cursor Task or a cloud agent. Tech Lead and Build Verifier are still separate reviewer agents that post their own `GATE:` verdicts, never a subagent of the author and never an inline receipt in the writer's session. On Claude Code the memory check still picks in-process or sibling for implement children. The only direct `<dev-branch>` push is the rare local `<local-dev-host>` exception in [umbrella-mode](../umbrella-mode/SKILL.md) **Bots off**; that path still starts those separate reviewer agents (they post on the ticket with the SHA). Do not add swarm, CoS, or Dispatch routing. Protected workflow files and Railway config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
+**Bots off.** Declared at session start only, with no mid-session switch, and session-scoped only: never a PR label, marker, or body line (`commands.pr_ready` does not read one). With no Grok bot lanes this run, implement children may run as a local subagent on `<local-dev-host>` (Grok Build or IDE agent), never a Cursor Task or a cloud agent. Tech Lead and Build Verifier are still separate reviewer agents that post their own `GATE:` verdicts, never a subagent of the author and never an inline receipt in the writer's session. On Claude Code the memory check still picks in-process or sibling for implement children. The only direct `<dev-branch>` push is the rare local `<local-dev-host>` exception in [umbrella-mode](../umbrella-mode/SKILL.md) **Bots off**; that path still starts those separate reviewer agents (they post on the ticket with the SHA). Do not add swarm, CoS, or Dispatch routing. Protected workflow files and deploy config still go branch + PR. Kanban follows [PROJECTS.md](PROJECTS.md) **Lane fit** on Grok Build, Cursor, and Claude Code alike: no **Verify** column; **Parked** is pre-launch only; **Unclaimed** may stay unassigned; **Desk device** is phone-visible only; **Field** is outdoor, GPS, or on-wrist only; non-device checks never use those two lanes; merged is not **Done** until applicable checks and QA are done. The parent still owns Status. Escalations that name CoS go to the founder.
 
 ---
 
@@ -437,4 +437,4 @@ Follow [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. Do not restate its path l
 - The author runs the Land gate pre-merge check, then may squash-merge its own PR.
 - The head moved: bring the PR in, rerun the stale gates on the new head, and push with hooks on (never `HUSKY=0` or `--no-verify`). A high-risk code change since the BV verdict needs a fresh BV before that merge. Then the next PR.
 - Mode A local `<local-dev-host>` direct `<dev-branch>` push is the narrow exception in [umbrella-mode](../umbrella-mode/SKILL.md) **Bots off**. Recheck only if that commit is later amended or rebased.
-- Never push Preview or `master`.
+- Never push a held branch (`branches.held`).

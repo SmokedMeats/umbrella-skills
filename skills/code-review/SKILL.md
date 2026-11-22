@@ -87,7 +87,7 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 | Diff touches | Command |
 | --- | --- |
-| `backend/src` | `project.yml` `commands.cycles_backend` |
+| `paths.backend_src` | `project.yml` `commands.cycles_backend` |
 | `<mobile-pkg>/src` | `project.yml` `commands.cycles_mobile` |
 
 Paste the stdout/stderr into the Standards prompt. Skip this step if neither tree is in the diff, or `commands.cycles_*` are unset in project.yml. Do not invent a cycle from the import list when the check is green. Madge already skips type-only imports.

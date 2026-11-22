@@ -446,10 +446,11 @@ function assertReportGitCallsUseGitEnv(diffTreesFn, setSpawnFn, restoreSpawnFn) 
 }
 
 function rewriteCheckUpdatesImports(src) {
-  return src.replace(
-    "from './sync-freshness.mjs'",
-    `from ${JSON.stringify(pathToFileURL(path.join(root, 'scripts/sync-freshness.mjs')).href)}`,
-  );
+  let out = src;
+  for (const dep of ['sync-freshness.mjs', 'upstreams.mjs']) {
+    out = out.replace(`from './${dep}'`, `from ${JSON.stringify(pathToFileURL(path.join(root, 'scripts', dep)).href)}`);
+  }
+  return out;
 }
 
 async function importMutatedCheckUpdates(mutatedSource) {

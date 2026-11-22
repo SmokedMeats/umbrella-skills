@@ -3,3 +3,4 @@ Thumbs.db
 *.log
 .scratch/
 updates/
+.upstream/

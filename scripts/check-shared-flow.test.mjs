@@ -246,7 +246,7 @@ test('heavy legs use the local runner only from a clean matching checkout', () =
     assert.ok(delegation.includes(line), `DELEGATION missing ${line}`);
   }
   assert.deepEqual(widenedOntoRunner(delegation), []);
-  const readme = readFileSync(path.join(root, 'README.md'), 'utf8');
+  const readme = readFileSync(path.join(root, 'docs', 'REFERENCE.md'), 'utf8');
   assert.equal(readme.split('within 15 minutes').length - 1, 2);
   assert.equal(readme.split('clean checkout whose HEAD and tree match').length - 1, 2);
   assert.equal(readme.split('local runner named by the private binding').length - 1, 2);

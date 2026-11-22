@@ -22,7 +22,7 @@ Read **`project.yml`** (`docs/agents/project.yml` in this repo, else `../project
 | `live_beta_milestone` / `go_live_milestone` | Continuous pre-prod milestones (do not Hit) |
 | `first_golive_inventory` | Issue number of that repo's first GoLive inventory card |
 
-If `project.yml` is missing, stop and ask the founder to install it: copy `project.example.yml` from the umbrella-skills repo root and fill it in, or install the private overlay (pack README **Project config**). Do **not** invent Project numbers or option ids.
+If `project.yml` is missing, stop and ask the founder to install it: copy `project.example.yml` from the umbrella-skills repo root and fill it in, or install the private overlay (pack docs/REFERENCE.md **Project config**). Do **not** invent Project numbers or option ids.
 
 Owner is always `project.yml` `org`. Commands below use **N** = this clone’s `project_number`.
 
@@ -83,7 +83,7 @@ A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **F
 
 ### Ready to merge — EXPLICIT exception (not a leftover lane)
 
-**Ready to merge** is a Mode B wait-on-land-gate lane. It is **not** a leftover lane and **not** a handoff lane. The author may squash-merge after the land gate. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend still wait for the founder.
+**Ready to merge** is a Mode B wait-on-land-gate lane. It is **not** a leftover lane and **not** a handoff lane. The author may squash-merge after the land gate. Promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, and spend still wait for the founder.
 
 | | |
 | --- | --- |
@@ -92,7 +92,7 @@ A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **F
 | Hold dependents? | **Yes** while this card is **Ready to merge**. Dependents **WAIT** until the PR merges or the card is parked. Do **not** unlock the next wave the way leftover lanes do. After the merge, a leftover lane does not keep that hold |
 | Window full? | **No** |
 | Close? | **No** while it is **Ready to merge**. After the PR merges, Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
-| Who merges | The author may squash-merge a `<dev-branch>` PR after the **Land gate**. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (`project.yml` `founder`). Pack sync PRs land first as the pre-step |
+| Who merges | The author may squash-merge a `<dev-branch>` PR after the **Land gate**. Promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, and spend stay the founder only (`project.yml` `founder`). Pack sync PRs land first as the pre-step |
 | Mode B gate | Before this status: bring in current `origin/<dev-branch>` and satisfy [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. Paste the pass line for the current head. The author runs the pre-merge check, then may squash-merge |
 | Public-repo gate | PR into a public repo: paste the `check:public-safe PASS` line for the current tip in the PR body. No line, not Ready |
 
@@ -120,10 +120,10 @@ The **Status** table is the transition policy. Do not invent a move or a column.
 | Filed, not pulled | **Unclaimed**, unassigned. The `/triage` catch is the inbox. It does not triage every Unclaimed card |
 | Phone-visible crawl not run this pass | **Desk device** only |
 | Outdoor, GPS, or on-wrist proof still required | **Field** only. A desk phone, a golden, or any other non-outdoor check is not Field |
-| Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, [CONVENTIONS.md](CONVENTIONS.md) **Land gate**, CI). Never **Desk device** or **Field** |
+| Backend, SQL, CI, deploy config, types, website-only, reports, pure math, research, or a dependency / runtime check | The non-device gate that already applies (package `verify`, [CONVENTIONS.md](CONVENTIONS.md) **Land gate**, CI). Never **Desk device** or **Field** |
 | Merged or pushed, and those checks plus any applicable QA are done, and nothing else is left | **Done** |
 
-A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: the land gate before **Ready to merge** or a leftover lane (`/build-verifier` when `risk` is high or missing), `device-qa-verifier` before leaving **Desk device** or **Field**, the founder for Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, or spend. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**.
+A fitted pipeline tick — a Project Status move, or a checklist box the board already has — is set by the gate owner that skill already names, with that gate’s evidence: the land gate before **Ready to merge** or a leftover lane (`/build-verifier` when `risk` is high or missing), `device-qa-verifier` before leaving **Desk device** or **Field**, the founder for promotes to held branches (`branches.held`), OTA app updates, migrations, data deletion, deploy config, workflow files, or spend. `device-qa-agent` proposes. Its one Status write is a Fail back to **In Progress**.
 
 Do **not** set Start / Target date unless the founder named a real window. **Houses** is the roadmap for undated packs.
 

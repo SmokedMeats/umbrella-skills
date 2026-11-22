@@ -12,12 +12,117 @@ Installer commands that say `SmokedMeats/umbrella-skills` correctly mean the **p
 
 `node scripts/check-readiness.mjs` is the source aggregate: source shared-flow, the full test file, and a source install fixture. It fails closed when the private binding is missing. A public clone does not pass that command. `node scripts/check-readiness.mjs --public` is explicit and is not inferred from a missing file. It runs check-steps, `check-shared-flow --public`, a public install fixture, and the archive omission check. The source rows are reported `NOT APPLICABLE`. That is not a pass, and it does not turn the raw public suite into a pass. An unset denylist stays `NOT RUN`. On the private clone, do not pass `--public`: the binding file is present, so that check fails closed. The public fixture does not copy project config and does not replace swarm skills.
 
+## Where skills live
+
+| Layer | What | Edit it? |
+| --- | --- | --- |
+| Source repos | This pack (umbrella-skills), [umbrella-swarm](https://github.com/SmokedMeats/umbrella-swarm), and the outside packs it depends on: [mattpocock/skills](https://github.com/mattpocock/skills) and [AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish) | Only our own two. Outside packs are never edited; a house change to a Matt skill is an overlay skill here |
+| Pinned backups | `vendor/` in the **private** clone: unedited snapshots of Matt v1.3.1, SimpleEnglish, and the two pstack skills the overlay calls (`statechart`, `no-comments`) and cursor-team-kit `deslop`, with their MIT licenses (the private clone's `vendor/README.md`). If an outside repo disappears, installs still work. The public snapshot leaves `vendor/` out | No; bump a pin per `vendor/README.md` |
+| Installed copies | What `sync-workspace.mjs` (or `npx skills add`) writes into each agent's skills folder: `~/.claude/skills`, `~/.cursor/skills`, `~/.grok/skills`, `~/.agents/skills`, `~/.copilot/skills`. VS Code (Copilot agent mode) reads `~/.copilot/skills`, `~/.claude/skills` and `~/.agents/skills` | No; re-run sync |
+| Product-repo copies | The same installed copies, written into each product repo's `workspace.skill_targets` folders (for example `.cursor/skills`, `.claude/skills`, `.grok/skills`) and **committed**, because a cloud agent only sees what its checkout has. VS Code also reads a repo's `.claude/skills`, `.agents/skills` and `.github/skills` | No. Once per promote, right before it, never mid-day, and never while a pack PR is queued. The designated sync owner is the only agent that runs that sync |
+
+Which folder each agent reads. Sync gives each agent its own full copy (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) and keeps them identical, so no agent depends on another's folder:
+
+| Agent | Repo skills | User skills |
+| --- | --- | --- |
+| Claude Code | `.claude/skills` | `~/.claude/skills` |
+| Cursor | `.cursor/skills`, `.agents/skills`, and `.claude/skills` | `~/.cursor/skills`, `~/.agents/skills`, `~/.claude/skills` |
+| VS Code (Copilot) | `.github/skills`, `.claude/skills`, `.agents/skills` | `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills` |
+| Grok Build | `.grok/skills`, then `.claude`, then `.cursor` | `~/.grok/skills` |
+| Codex | `.agents/skills` | `~/.agents/skills` |
+
+An agent *references* a skill by name and reads that installed file when it needs it; a brief never pastes a skill's body (cloud exception: umbrella `DELEGATION.md` **Sibling contract**).
+
+## Install internals
+
+`node scripts/install.mjs` (README **Install**) is the installer front door. On a public clone it fetches the newest Matt Pocock release tag, SimpleEnglish `HEAD`, and the pstack (`statechart`, `no-comments`) and cursor-team-kit (`deslop`) skills from `cursor/plugins` `HEAD` into `.upstream/` (gitignored, laid out by `scripts/upstreams.mjs`), clones `umbrella-swarm` next to the pack when it is missing, and runs `sync-workspace.mjs --public` with `UMBRELLA_VENDOR_ROOT=.upstream`. Sync installs those upstream skills first and the overlay second, so same-named overlay skills win. On the private clone it skips the fetch and syncs the pinned `vendor/` copies in source mode. Other flags pass through to sync.
+
+Run sync directly when you need its flags without the fetch:
+
+```bash
+node scripts/sync-workspace.mjs           # private clone: pinned vendor/ + overlay + private overlay
+node scripts/sync-workspace.mjs --public  # public clone: overlay only (no upstream packs)
+```
+
+`--public` is explicit for sync: a missing `skills/umbrella/private-bindings.md` does not select it, and without it the source check stops before any copy. `install.mjs` passes it only when the clone has neither `vendor/` nor the binding (the public snapshot), so a private clone that lost its binding still fails closed.
+
+That copies the overlay into `~/.grok`, `~/.cursor`, `~/.claude`, `~/.agents`, `~/.copilot` (each `<root>/skills`, created when missing), and each sibling product repo listed in `project.yml` `workspace.skill_targets` (defaults to none until you add a config). When a private overlay sibling is present, sync also layers `project.yml`, `skills-overlay/**`, and standing product rules.
+
+Every skills root sync writes ends up with the same three config files: `project.yml` and `standing-product-rules.md` at the root (from the private overlay) and `umbrella/PROJECT-CONFIG.md` (ships in this pack). Product repos also get `docs/agents/project.yml` + `docs/agents/standing-product-rules.md`; commit every `skill_targets` dir in the product repo (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) + `docs/agents` so cloud clones get them too. Those folders are installed copies; never edit them in the product repo. The product-repo sync runs once per promote, right before it, never mid-day, and never while a pack PR is queued. The designated sync owner is the only agent that runs that sync, so the product branches never get two parallel syncs.
+
+| Target | How |
+| --- | --- |
+| User skill roots `~/.grok/skills`, `~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` (VS Code reads the last three) | always (Windows: `%USERPROFILE%\.copilot\skills`) |
+| Each product repo's `skill_targets` folders (for example `.grok/skills`, `.claude/skills`, `.cursor/skills`) + `docs/agents/` | `project.yml` `workspace.skill_targets` (sibling clones only) |
+| Each product repo's own skills (an original in `own: [...]` or in any of its `skill_targets` folders, so a skill made in `.cursor/skills` counts) into that repo's other folders | automatic when the row lists `own`; copies carry `.synced-by-sync-workspace`, and a folder another installer owns is left alone |
+| A skill only some product repos have (an original in a repo's `own` or `skill_targets` folders, not from a pack) into every other repo's `skill_targets` folders | automatic; a repo that has its own version keeps it; an agent-specific original (graphify's `.claude/skills` copy) feeds that same folder in the other repos; a row's `skip: [...]` lists skills that repo never receives, shared or personal (an earlier copy is removed) |
+| Only some skills in a product repo | a row's `only: [...]` is the full list of synced skills that repo gets (pack, swarm, shared and personal; `skip` still wins). Sync removes every other synced copy in its folders (one with `.sync-workspace-baseline` or `.synced-by-sync-workspace`); the repo's own originals stay |
+| Personal skills (an original in one user root that no pack ships) into the other user roots and every repo `skill_targets` folder, so cloud sessions have them too | automatic; `--no-personal` skips; `workspace.mirror_exclude` lists names never copied; copies whose source is gone are listed, never deleted |
+| Each product repo's agent-rules generator (`rules: "<command>"`, run in that repo: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules`, Copilot instructions, …) | automatic when the row lists `rules`; `--no-rules` skips only that generator (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules`); `docs/standing-product-rules.md` is still copied; a failure makes sync exit non-zero |
+| Upstream packs (Matt, SimpleEnglish, pstack `statechart` / `no-comments`, cursor-team-kit `deslop`) into every root above, before the overlay so same-named overlay skills win | private clone: pinned `vendor/`; public clone: `install.mjs` fetches the newest releases into `.upstream/`; `--no-vendor` skips |
+| Grok Bot box skills root `/home/box/agent-data/workflows` | `--box` (skipped when that folder's parent is missing; override with `UMBRELLA_BOX_SKILLS_ROOT`) |
+| Any other skills root | `--dest <dir>` (repeatable) |
+| umbrella-swarm skills (every `skills/*` folder of the sibling that ships `skills/swarmy` + `skills/swarmy-mode`) into every root above, product repos included | automatic when that sibling clone exists (`UMBRELLA_SWARM=<folder>` picks one; `--no-swarm` skips; a name shared with an overlay skill is skipped) |
+
+`sync-workspace.mjs` (project.yml) and `check-public-safe.mjs` (denylist, allowlist, git output) normalize CRLF to LF on read, so Windows clones checked out with CRLF (`core.autocrlf=true`) sync every `skill_targets` repo, not just the first. This pack's `.gitattributes` also pins LF on checkout.
+
+### Check the original sources for updates
+
+Sync itself works offline: it copies from the clones and folders on this machine and never looks upstream. To compare with the newest releases:
+
+```bash
+node scripts/sync-workspace.mjs --check-updates   # report + one diff per source; installs nothing
+node scripts/sync-workspace.mjs --update          # same report, installs the auto sources, then syncs
+# add --print to also show every full diff
+```
+
+From a product repo the same flags pass through: `npm run sync -- --check-updates`.
+
+| Source | Kind | Compared with | On `--update` |
+| --- | --- | --- | --- |
+| Matt's pack, SimpleEnglish, pstack, cursor-team-kit `deslop` (`vendor/pins.json`, private clone) | review | newest Matt tag; SimpleEnglish and cursor/plugins `HEAD` | nothing; read the diff, then bump by hand (the private clone's `vendor/README.md` **Bump a pin**) |
+| Every skill in a product repo's `skills-lock.json` (`npx skills`: Stripe, Neon, ...) | auto | what the source publishes now | `npx skills add` for that skill, then the sync spreads it |
+| graphify (an original folder with `.graphify_version` in a product repo) | auto | newest `graphifyy` on PyPI (builds that version in a scratch venv for the diff; needs Python 3) | `graphify install` output for that agent (`.claude/skills` gets the Claude version) |
+
+The report lists, per source that moved: **new skills** with what each does, **removed skills**, and for each **changed skill** a changelog (upstream commit messages where the source has git history, plus the sections that were added, removed or changed). It marks each changed upstream skill we ship our own version of, and warns when upstream removes a skill ours still call. `--update` holds (status `held`) any auto source whose new version would drop a skill, file or section we have now; after review, `--update --force` installs it. Rule: an update never removes something we added unless it replaces it with something better (MAINTAINING **Upstream pulls**). It is also saved as `updates/SUMMARY.md`. The full diff for each source (`current/` = what we have, `latest/` = upstream now) is saved as `updates/<source>.diff` (gitignored). Behind a proxy, run with `NODE_USE_ENV_PROXY=1`. The umbrella-skills, umbrella-swarm and overlay clones update with `git pull`.
+
+When the private overlay is present, sync also turns on the local `check:public-safe` pre-push gate in every sibling clone that ships `.githooks/pre-push` + `scripts/check-public-safe.mjs` (`git config core.hooksPath .githooks`, and `publicsafe.denylist` pointing at the overlay's `public-safe/denylist.txt`). The gate needs [gitleaks](https://github.com/gitleaks/gitleaks) on PATH: `brew install gitleaks` (macOS), `winget install gitleaks` or `scoop install gitleaks` (Windows), or a [release binary](https://github.com/gitleaks/gitleaks/releases) (Linux). Without gitleaks or the denylist, pushes from those clones fail closed. See **Before pushing** below.
+
+
+
+
+
+## Before pushing
+
+Every push runs a local `check:public-safe` gate (no CI minutes) so private-shaped content cannot land in a public snapshot: [gitleaks](https://github.com/gitleaks/gitleaks) over the commits being pushed, then a private denylist over every added line, new file path, and commit message in those commits.
+
+One-time setup per clone:
+
+```bash
+git config core.hooksPath .githooks
+# gitleaks: brew install gitleaks | winget install gitleaks | scoop install gitleaks | release binary on Linux
+# The private denylist is found via $PUBLIC_SAFE_DENYLIST, `git config publicsafe.denylist`,
+# or a sibling clone carrying public-safe/denylist.txt. Missing denylist = push blocked.
+```
+
+Run it by hand (needs Node 18+; works in bash, Git Bash, and PowerShell):
+
+```bash
+node scripts/check-public-safe.mjs              # origin default branch..HEAD
+node scripts/check-public-safe.mjs --base <ref> # <ref>..HEAD, e.g. a stacked PR
+node scripts/check-public-safe.mjs --tree       # whole tracked tree at HEAD (audit)
+```
+
+A clean run prints one line, e.g. `check:public-safe PASS <repo>@<sha> (gitleaks 0, denylist 0)`. Paste that line in the PR body.
+
+This repo has no root `package.json`. The pack gate is `node scripts/check-pr-ready.mjs`. On the public snapshot the command is `node scripts/check-pr-ready.mjs --public`. Public mode runs only when that flag is set, `skills/umbrella/private-bindings.md` is export-ignored and absent, and `origin/main` does not track it. Without the flag, a missing binding fails closed. Set `PUBLIC_SAFE_DENYLIST` first. The gate also runs `skill-lint`: frontmatter and relative-link errors fail, and a SKILL.md over 500 lines warns without failing. The private last line is `pr-ready: PASS <HEAD sha>`. The public last line is `pr-ready: PASS (public) <HEAD sha>`. A failure is `pr-ready: FAIL <reasons>`. A dirty working tree or index fails, and so does a HEAD that does not contain origin/main. Paste a pass line in the body. A docs-only pull request merges on that line. The exact-head build-verifier plus `## Evidence` stand-in is retired. No workflow file runs this command.
+
 ## When an overlay rule changes
 
 Update both in the same change:
 
 1. The skill file under `skills/`
-2. The "What this pack changes" index + skill headings in `README.md`
+2. The "What this pack changes" index + skill headings in `docs/REFERENCE.md` (and `docs/GLOSSARY.md` when a term changes). The README stays one screen: touch it only when install or first run changes
 
 Then sync this private clone into every IDE. The product-repo sync, into the repos listed in `project.yml` `workspace.skill_targets`, runs once per promote, right before it, never mid-day, and never while a pack PR is queued. Pack pull requests still land in the pack repos as they are ready. The designated sync owner is the only agent that runs that sync, so the product branches never get two parallel syncs. One command does skills and each repo's agent rules; in a product repo it is `npm run sync`. Do not pass `--public` here:
 
@@ -69,11 +174,15 @@ This pack is the SSOT. Never auto-merge Matt or pstack.
 
 ### Matt ([mattpocock/skills](https://github.com/mattpocock/skills))
 
-Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited snapshot + MIT license; [vendor/README.md](vendor/README.md) **Bump a pin**). `sync-workspace.mjs` installs the pinned copy, so an upstream delete or rewrite never breaks an install. Public-clone users reinstall with `npx skills@latest add mattpocock/skills`. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
+Target Matt version: **v1.3.1**, pinned in `vendor/mattpocock-skills/` (unedited snapshot + MIT license; the private clone's `vendor/README.md` **Bump a pin**). `sync-workspace.mjs` installs the pinned copy, so an upstream delete or rewrite never breaks an install. On a public clone `node scripts/install.mjs` fetches Matt's newest release tag instead of the pin; the overlay is written against v1.3.1, so a newer Matt release can differ until the pin is bumped here. Expected Matt installs next to this overlay include `retro`, `implement-spec`, `pr`, `ask-matt`, `diagnosing-bugs`, `setup-matt-pocock-skills`, `domain-modeling`, `tdd`, and the rest of Matt's unedited set. Do **not** keep `resolving-merge-conflicts` (removed in Matt 1.3). Domain docs are `GLOSSARY.md` / `GLOSSARY-MAP.md` (renamed from `CONTEXT.md` / `CONTEXT-MAP.md`).
 
 Overlay copies we own never get a blind overwrite: `umbrella`, `umbrella-mode`, `grill-me`, `grilling`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`, `triage`, `build-verifier`, `device-qa-agent`, `device-qa-verifier`, plus `how`, `why`, `teach`, `teach-me`, `principles`, `blast-radius`, `pit-of-success`, and `zero-tech-debt`.
 
 Diff the upstream skill. Cherry-pick only lines that help. Keep house rules: Ship mode, Desk device, Effect-TS, Projects, and the grill-lock-only Founder gate. Keep each phase skill's `## Steps` list too, and update it when a merge changes that skill's order: `node scripts/check-steps.mjs` and `node scripts/check-shared-flow.mjs` (sync runs both first and stops on a problem). `/implement-spec` stays Matt standalone (not routed inside umbrella `/implement`). Then run `node scripts/sync-workspace.mjs`.
+
+### cursor-team-kit `deslop` ([cursor/plugins](https://github.com/cursor/plugins/tree/main/cursor-team-kit))
+
+`/implement` **Comment cleanup** runs `/deslop` on the ticket's diff. It ships in Cursor's `cursor-team-kit` plugin (MIT), so only that one skill is pinned in `vendor/cursor-team-kit-skills/` and installed by sync; a public clone's `install.mjs` fetches it from `cursor/plugins` `HEAD`. Never edited here.
 
 ### pstack ([cursor/plugins](https://github.com/cursor/plugins))
 
@@ -95,11 +204,11 @@ pstack ideas folded inline (no folder; diff these too when upstream changes):
 | poteto-mode `shipping.md`, `orchestrate.md` | DELEGATION **Child shape by runtime**, **Recheck at merge**; CONVENTIONS **Land gate**; build-verifier **When** |
 | poteto-mode **Playbooks** (steps copied into the todo, `skip: <reason>`) | CONVENTIONS **Steps**: a `## Steps` list per phase skill, `STEPS` / `STEPS_DONE` in DELEGATION packets, `scripts/check-steps.mjs`. The spine stays fixed: no free playbook matcher |
 
-When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, [vendor/README.md](vendor/README.md)). Ports are integrated through **0.15.17** (the snapshot); the next pull starts from there. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
+When cursor/plugins ships pstack changes, diff only those skill folders we ported and the rows above. The upstream copy to diff against is pinned in `vendor/pstack-reference/source/` (refresh it first, the private clone's `vendor/README.md`). Ports are integrated through **0.15.17** (the snapshot); the next pull starts from there. Adopt, adapt, or skip each change in a PR to this repo. Never let a plugin update wipe house overlays.
 
 ### SimpleEnglish ([AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish))
 
-`/simple-english` is a third-party pack (MIT), installed next to Matt's. Pinned unedited in `vendor/simple-english/` and installed by sync; public-clone users run `npx skills@latest add https://github.com/AminBlg/SimpleEnglish --skill simple-english`. Not Matt's, and never edited here. `/umbrella` routes user-facing prose to it. Update it by bumping the pin ([vendor/README.md](vendor/README.md)).
+`/simple-english` is a third-party pack (MIT), installed next to Matt's. Pinned unedited in `vendor/simple-english/` and installed by sync; on a public clone `node scripts/install.mjs` fetches its newest `HEAD`. Not Matt's, and never edited here. `/umbrella` routes user-facing prose to it. Update it by bumping the pin (the private clone's `vendor/README.md`).
 
 ### pit-of-success and zero-tech-debt
 
@@ -125,8 +234,10 @@ When an issue here has a swarm companion, land this side first, then point the s
 
 ## What belongs where
 
-- **README** — for people who install the overlay.
-- **This file** — how maintainers edit the pack.
+- **README** — one screen for people who install the overlay: what it is, who it is for, install, first run.
+- **docs/REFERENCE.md** — every skill, the order of use, the house rules.
+- **docs/GLOSSARY.md** — the words skills use (house, lane, Ship mode, land gate, ...).
+- **This file** — how maintainers edit, check, and publish the pack.
 
 ## Leave these out
 

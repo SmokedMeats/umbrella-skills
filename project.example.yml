@@ -1,6 +1,7 @@
 # Copy to project.yml (or docs/agents/project.yml in each app repo) and fill in.
 # Public packs read this for board ids, branch names, commands, and ship-mode hosts.
-# Keep the real file in a private overlay (see README "Project config").
+# Copy it to docs/agents/project.yml in your repo, or keep the real file in a private overlay
+# repo cloned next to this pack (see umbrella-skills docs/REFERENCE.md "Project config").
 
 version: 1
 org: <github-org>
@@ -29,11 +30,11 @@ device_qa:
   # desk_emulator: emulator-5554  # optional; a Desk crawl may run on this emulator serial (Field / iPhone stay manual). Unset → USB phone only
 
 branches:
-  dev: Development               # or main
-  held: [master, Preview]        # promote only on founder say-so
+  dev: main                      # your daily integration branch (<dev-branch>)
+  held: [production]             # branches promoted only on founder say-so
 
 commands:
-  pr_ready: "pnpm run check:pr-ready"       # Mode B gate; paste PASS line in PR body
+  pr_ready: "<your pr-ready command>"       # Mode B gate; prints risk: and a PASS line to paste in the PR body
   pr_ready_pass: "check:pr-ready PASS"      # literal PASS line Dispatch looks for (names the dev tip)
   db_migrate: "cd backend && npm run db:migrate:all"  # when a new migration file is added; carries its own cd
   preflight_master: "npm run preflight:master"        # master bar (runs cycles; verify does not)
@@ -63,7 +64,7 @@ paths:
 
 ship_mode:
   local_hosts: [<local-dev-host>]   # USB / desk machine name(s)
-  local_mode: Development           # Ship mode pin on those hosts
+  local_mode: main                  # Ship mode pin on those hosts (your <dev-branch>)
   cloud_mode: PR                    # Grok Bot / Cursor cloud
 
 product:

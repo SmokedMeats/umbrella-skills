@@ -8,7 +8,7 @@ The probe is part of that crawl. Nobody arms a separate Device QA pass. Do **not
 
 ## When this runs
 
-Strict IN/OUT (Jacob 5:17 AM CT 2026-11-05): see device-qa-agent `## Device QA IN / OUT`. If a Preview phone crawl couldn't catch a product lie in the AC, it doesn't run.
+Strict IN/OUT: see device-qa-agent `## Device QA IN / OUT`. If a Preview phone crawl couldn't catch a product lie in the AC, it doesn't run.
 
 Phone-visible ship, checklist exists (`project.yml` `paths.device_qa_checklist`), and product ACs are PASS.
 
@@ -77,7 +77,7 @@ Living docs must already be on the ticket (including the **P\*** leaf). No Livin
 
 If Device QA is **not** the last leftover (product ACs still open): stay **In Progress**, note that this pass cannot run the phone crawl, keep building. Do not move the ticket.
 
-Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS.md) as usual. Backend, SQL, CI, Railway, types, website-only, reports, pure math, research, and deps/runtime are not **Desk device** and not **Field** ([PROJECTS.md](PROJECTS.md) **Lane fit**). **Field** is outdoor, GPS, or on-wrist proof only.
+Not phone-visible → skip this file. Close via [CLOSE-PARENTS.md](CLOSE-PARENTS.md) as usual. Backend, SQL, CI, deploy config, types, website-only, reports, pure math, research, and deps/runtime are not **Desk device** and not **Field** ([PROJECTS.md](PROJECTS.md) **Lane fit**). **Field** is outdoor, GPS, or on-wrist proof only.
 
 ## Who runs this
 

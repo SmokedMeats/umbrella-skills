@@ -14,7 +14,7 @@ description: >-
 
 Bindings: `project.yml` keys in backticks, `<dev-branch>`-style placeholders, and `standing-product-rules.md` resolve per [PROJECT-CONFIG.md](../umbrella/PROJECT-CONFIG.md).
 
-**Product notes.** When the private overlay installs `PRODUCT.md` next to this file, read it before Probe. It names the app package, the account env keys and PIN rules, the on-phone screenshot folder, the archive command, the Maestro how-to, device quirks, and seed recipes. This file is the flow; `PRODUCT.md` is the facts.
+**Product notes.** When the private overlay installs `PRODUCT.md` next to this file, read it before Probe. This skill needs it: with no `PRODUCT.md` (a public install with no product overlay), stop before Probe and tell the founder that Device QA needs the product's `PRODUCT.md` and scripts. It names the app package, the account env keys and PIN rules, the on-phone screenshot folder, the archive command, the Maestro how-to, device quirks, and seed recipes. This file is the flow; `PRODUCT.md` is the facts.
 
 **Leaves** first (desk). Then walk **Owner: manual agent** leaves on a connected Preview phone. Do not write product code. Do not fix fails in this session. Keep going until every asked agent leaf is Pass / Fail / N/A / Skip, or they say **stop**. Do not pause for permission to continue.
 
@@ -41,7 +41,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 - **Borrow** the phone before the first tap. **Return** it on complete, on "stop", or if the session dies. Restore is mandatory.
 - Screenshots go only in the dedicated on-phone folder. Never `screencap` into DCIM / Pictures / Screenshots. **adb pull** fail evidence into the dated run folder **before** Return.
 - Never `pm clear`. Never `git checkout`, `git add`, `git commit`, `git restore`, or `git clean`.
-- Never edit `src/`, `backend/src/`, or auth-critical files. **Leaves** may append **P\*** rows to the checklist (desk, before borrow). After borrow: ticks and the dated run folder only.
+- Never edit `paths.mobile_src`, `paths.backend_src`, or auth-critical files. **Leaves** may append **P\*** rows to the checklist (desk, before borrow). After borrow: ticks and the dated run folder only.
 - A Fail stays `[ ]`. If it fits the ticket that leaf already names, comment that ticket and set it **In Progress**. File a new issue only when the fail does not fit that ticket ([FILE-ISSUES.md](FILE-ISSUES.md)). Then **Skip** later agent leaves that need that leaf's result. Continue at the next **independent** leaf. Record only; no fix PR here.
 - **Schedules revert.** Any cron or schedule turned on or sped up for this run is returned to its normal state when the run ends. This skill owns the revert. `standing-product-rules.md` may name them.
 
@@ -138,7 +138,7 @@ Every existing issue this pass walked gets **one GitHub comment**: date, device,
 
 For each ticket whose Desk-device wait this session resolved, pick **one** proposed next Status:
 
-- Outdoor, GPS, or on-wrist proof still needed → **Field** (issue stays OPEN; add the calendar-wait label (`PRODUCT.md`) when a calendar or season still blocks and cannot pass with injected time). A golden or other desk-phone check stays **Desk device**. Non-device checks (backend, SQL, CI, Railway, types, website-only, reports, pure math, research, deps/runtime) are not **Field** and not **Desk device**
+- Outdoor, GPS, or on-wrist proof still needed → **Field** (issue stays OPEN; add the calendar-wait label (`PRODUCT.md`) when a calendar or season still blocks and cannot pass with injected time). A golden or other desk-phone check stays **Desk device**. Non-device checks (backend, SQL, CI, deploy config, types, website-only, reports, pure math, research, deps/runtime) are not **Field** and not **Desk device**
 - Store console / signing / auth-provider dashboard leftover → **Operator** (OPEN)
 - Must finish before public live beta → **Live Beta** (OPEN)
 - Must finish before production store ship → **GoLive** (OPEN)
@@ -165,7 +165,7 @@ Mark the block `STATUS_MOVES — UNAPPLIED` and hand it to the parent. If the fo
 
 ### Standalone (no conductor)
 
-Invoked with no parent packet and the founder said "you own Status": you may apply the moves yourself, but only with RUN_FOLDER + REPORT.md written. Prefer proposing. Apply [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**. No **Verify** status. **Desk device** only when the leftover is phone-visible. **Field** only for outdoor, GPS, or on-wrist proof. Do not force device or Field QA onto backend, SQL, CI, Railway, types, website-only, reports, pure math, research, or deps/runtime. Merged is not **Done** until the applicable check or QA is done. This path does not add swarm or CoS routing.
+Invoked with no parent packet and the founder said "you own Status": you may apply the moves yourself, but only with RUN_FOLDER + REPORT.md written. Prefer proposing. Apply [PROJECTS.md](../umbrella/PROJECTS.md) **Lane fit**. No **Verify** status. **Desk device** only when the leftover is phone-visible. **Field** only for outdoor, GPS, or on-wrist proof. Do not force device or Field QA onto backend, SQL, CI, deploy config, types, website-only, reports, pure math, research, or deps/runtime. Merged is not **Done** until the applicable check or QA is done. This path does not add swarm or CoS routing.
 
 ## 9. Field outdoor crawl (same lane)
 
@@ -194,11 +194,11 @@ The phone is exclusive. The worktree is shared: you dirty the checklist (**Leave
 
 Android-first. **iPhone:** leaves → **N/A** on an Android kit. After a declared-done full pass or an OTA smoke, archive per `PRODUCT.md`.
 
-## Device QA IN / OUT (Jacob 5:17 AM CT 2026-11-05)
+## Device QA IN / OUT
 
 Test: could a Preview phone crawl catch a product lie in this ticket's AC? If no, no Device QA.
 - **Desk IN:** phone-visible UI, auth/sign-in, boot/splash/theme, maps/HUD/record chrome, push on phone, phone↔watch sync, an explicit phone AC, or a Device QA Fail / P* leaf.
 - **Field IN:** only real GPS, outdoor or on-wrist proof.
-- **OUT:** backend/SQL/Drizzle, CI/Railway/IaC, types/hardening, pure math with unit proof, website-only, cron/admin reports, research/decision, dep/runtime bumps (unless Jacob asks for an OTA smoke).
+- **OUT:** backend/SQL/migrations, CI/deploy config/IaC, types/hardening, pure math with unit proof, website-only, cron/admin reports, research/decision, dep/runtime bumps (unless the founder asks for an OTA smoke).
 - No phone-visible/outdoor tag → default desk-only. No phone-visible AC → Done after merge gates (or Operator/GoLive), never Desk device or Field.
 - Tick only the phone/Field boxes you actually ran.
