@@ -22,7 +22,7 @@ Copy these into your todo list first ([CONVENTIONS.md](../umbrella/CONVENTIONS.m
 3. Run the **gates at the verdict SHA**: package `verify`, then `commands.pr_ready`. A WAIT that only lacks this skill's `GATE:` line (static gates clean) is enough. Do not require a final PASS before posting. proof: the output lines.
 4. Run **Heavy legs** for this SHA. When the private binding installed with the umbrella skill is present, send them to the local runner it names, for this run only. The switch goes off when the run ends, when it fails, and when this verifier aborts. A refusal, a busy runner, an unreachable runner, or no result within 15 minutes runs those same legs on cloud agents in this turn. proof: where each heavy leg ran, the result, and how to rerun.
 5. Run one red-on-old-code test in a temp worktree at `BASE_SHA`. proof: the test path and its red and green runs.
-6. Run checks 1 to 8, each PASS or N/A with a reason. proof: the per-check lines.
+6. Run checks 1 to 8, plus check 9 when it applies, each PASS or N/A with a reason. proof: the per-check lines.
 7. Emit the receipt. The first line must be exactly `GATE: BV PASS <40-sha> agent: <your-agent-name>` or `GATE: BV FAIL <40-sha> agent: <your-agent-name>` for the verdict SHA, then model, BASE SHA, PATCH_ID, `STEPS_DONE`, then an `## Evidence` block in the same comment: the commands or checks run and their results (pass/fail counts), where each heavy leg ran, the result and how to rerun it, the files or areas reviewed, and that same 40-char SHA. A FAIL also lists its findings. A PASS with no shaped Evidence block does not count. A FAIL still wins with no evidence. `check:pr-ready` only checks that the block exists and is shaped right; it cannot verify the evidence is true. proof: the receipt.
 
 ## When
@@ -66,6 +66,7 @@ All must **PASS** or **N/A with reason**:
 6. **No type workarounds** — no new `as any` / `@ts-expect-error` / `as unknown as` covering the change without ticket-named exception.
 7. **Carry light (optional)** — if packet includes GRILL_LOCK / SPEC pointers, flag **FAIL** or **FINDING** when the ticket AC set ignores an obvious locked decision named on the ticket’s grill page (cite the decision text). Mechanical only — do **not** invent a second full carry pass. N/A if grill/spec pointers absent.
 8. **Database test lanes** — when the diff or ticket touches PostgreSQL tests, `openTestPostgres`, `TEST_PG`, or R2 integration, the section below holds. A skipped database test is not a real-database or R2 pass. Else N/A.
+9. **Android bundle baseline** — when the diff updates `scripts/governance-baselines/android-baseline.json`, or Android JS bundle growth is in play: re-run the official `expo export --platform android` on `HEAD_SHA` and confirm the committed baseline (or the growth against the stored baseline) matches that measurement. A `--rationale` line without a matching measurement is FAIL. Never change `maxGrowthPerRelease` or `scripts/check-mobile-bundle-budget.mjs`. Else N/A.
 
 Run each check to the end. Exit 137 or 143 is a kill (out of memory, or stopped), not FAIL: re-run it through the heavy gate ([BUILD-STANDING.md](../umbrella/BUILD-STANDING.md) **Heavy checks through the gate**). A second kill in a row → STATUS `blocked`, the killed command in ESCALATE, no VERDICT. The parent re-runs the verifier when the container has room.
 
@@ -102,7 +103,7 @@ NEXT_HINT            (ignored by parent)
 
 Send heavy BV runs only to the local runner.
 
-Heavy legs are (A) the full backend Jest and coverage run and (B) the full mobile Jest run, on a high-risk head or a head with no `risk:` field. `risk: low` still gets no BV run. Light checks stay on this agent: package `verify`, `commands.pr_ready`, checks 1 to 8, the red-on-old-code test, and any run that is not those two full suites.
+Heavy legs are (A) the full backend Jest and coverage run and (B) the full mobile Jest run, on a high-risk head or a head with no `risk:` field. `risk: low` still gets no BV run. Light checks stay on this agent: package `verify`, `commands.pr_ready`, checks 1 to 8, plus check 9 when it applies, the red-on-old-code test, and any run that is not those two full suites.
 
 When the private binding installed with the umbrella skill is present, send A and B to the local heavy runner it names. Pass the repo, the exact SHA, the PR number, and those heavy legs only. The binding owns the request, the per-run switch, and the result file. The switch is on for that run and off when the run ends, when the run fails, and when this verifier aborts. There is no persistent on-state. A runtime that cannot send the request treats the runner as unreachable.
 
@@ -123,7 +124,7 @@ The full heavy gate (high-risk path only) runs as three legs on the same head.
 (A) full backend Jest and coverage.
 (B) full mobile Jest.
 (C) integration/postgresOnly with its own throwaway DB, plus `check:pr-ready` scenarios, bundle budget, fingerprint, and TLC when a model is touched.
-Keep pr-ready and the bundle together in C; they share the Android export.
+Keep pr-ready and the bundle together in C; they share the Android export. When the diff updates `scripts/governance-baselines/android-baseline.json`, or Android JS bundle growth is in play, check 9 must match BV's own measurement on this exact head.
 A and B may already have a local-runner result. C still runs here. Each leg's SHAs still have to match.
 Every leg prints HEAD and the tree SHA (`git rev-parse HEAD` and `git rev-parse 'HEAD^{tree}'`) at start and end.
 BV passes only if all three legs pass and both SHAs match the PR's current head and tree. A mismatch or a missing leg means no PASS.

@@ -107,6 +107,12 @@ Completion: no in-scope remainder on the wave tickets, or Window full with that 
 
 Pilot area only: do not spawn `/verify-own-work` as a default extra verifier when `/build-verifier` will rerun the same checks. Receipts go on the PR (a ticket comment before a PR exists). When a scan or ratchet gate changes, add fixtures for the spellings it should catch and prove the gate fails on a real past violation. When a gate has a waiver, reason line, or exemption list, test it against junk input (empty, TBD variants, bracketed placeholders, the gate's own hint text, zero-width and fullwidth characters) and show that a real violation still is not excused. Prove the wiring by running the real command end to end, with no skip flags and no regex over source text. Repeated misses for this product are on the private binding.
 
+## Android bundle baseline
+
+When the product repo has `scripts/check-mobile-bundle-budget.mjs` and `scripts/governance-baselines/android-baseline.json`, the cap is `budgets.bundleGrowth.maxGrowthPerRelease` in the product's mobile performance policy file (50 KB). Growth is cumulative from that stored baseline (strict `>`: +51,200 B passes, +51,201 B fails). Trim avoidable growth first. Never change the cap or the checker.
+
+Intended growth moves the baseline in the same reviewed PR: two official `expo export --platform android` runs on the PR head that agree, then `node scripts/check-mobile-bundle-budget.mjs --update android --rationale "..."`. Put before/after raw and gzip numbers and a per-package KB table in the PR body. A `--rationale` line alone never stands in for those measurements. Re-measure on the exact head after any resync. Precedent: #2832 and #2908 (reviewed baseline updates); #2835 (measure even when the change is not app code and the bundle stays inside the cap).
+
 ## Close gate
 
 Before GitHub **close** or a **leftover-lane** move on a ticket, rewrite that ticket’s **Close gate** line into `project.yml` `paths.umbrella_cursor` (and optionally the conductor comment). Shape:

@@ -92,7 +92,7 @@ A **leftover lane** is the handoff subset **Operator**, **Desk device**, and **F
 | Hold dependents? | **Yes** while this card is **Ready to merge**. Dependents **WAIT** until the PR merges or the card is parked. Do **not** unlock the next wave the way leftover lanes do. After the merge, a leftover lane does not keep that hold |
 | Window full? | **No** |
 | Close? | **No** while it is **Ready to merge**. After the PR merges, Status is the lane that is actually left (**Operator** / **Desk device** / **Field** / **Live Beta** / **GoLive** / **Done**). **Done** only when nothing is left, including applicable QA. Phone-visible proof still open is **Desk device**, not Done |
-| Who merges | The author may squash-merge a `<dev-branch>` PR after the **Land gate**. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (`project.yml` `founder`) |
+| Who merges | The author may squash-merge a `<dev-branch>` PR after the **Land gate**. Preview/master promotes, OTA, migrations, data deletion, Railway, workflow files, and spend stay the founder only (`project.yml` `founder`). Pack sync PRs land first as the pre-step |
 | Mode B gate | Before this status: bring in current `origin/<dev-branch>` and satisfy [CONVENTIONS.md](CONVENTIONS.md) **Land gate**. Paste the pass line for the current head. The author runs the pre-merge check, then may squash-merge |
 | Public-repo gate | PR into a public repo: paste the `check:public-safe PASS` line for the current tip in the PR body. No line, not Ready |
 

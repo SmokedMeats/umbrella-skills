@@ -8,6 +8,20 @@
 #   - push access to SmokedMeats/umbrella-skills (public)
 set -euo pipefail
 
+TOPIC="${PUBLISH_TOPIC:-${1:-}}"
+if [[ -z "$TOPIC" ]]; then
+  echo "usage: scripts/publish-public.sh <topic>" >&2
+  echo "   or: PUBLISH_TOPIC=<topic> scripts/publish-public.sh" >&2
+  exit 1
+fi
+case "$TOPIC" in
+  *$'\n'*)
+    echo "usage: topic must be a single line" >&2
+    exit 1
+    ;;
+esac
+SNAPSHOT_MSG="Public snapshot refresh: ${TOPIC}"
+
 AUTHOR_NAME="${PUBLISH_AUTHOR_NAME:-SmokedMeats}"
 AUTHOR_EMAIL="${PUBLISH_AUTHOR_EMAIL:-78776686+SmokedMeats@users.noreply.github.com}"
 PUBLIC_REPO="${PUBLISH_PUBLIC_REPO:-SmokedMeats/umbrella-skills}"
@@ -17,7 +31,7 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/umbrella-publish.XXXXXX")"
 cleanup() { rm -rf "$WORK"; }
 trap cleanup EXIT
 
-echo "Source (private): $PRIVATE_TOP @$SRC_SHA"
+echo "Source checkout: $PRIVATE_TOP @$SRC_SHA"
 echo "Target (public):  $PUBLIC_REPO"
 
 # 1. Export tracked tree only
@@ -40,9 +54,7 @@ fi
 git add -A
 GIT_AUTHOR_NAME="$AUTHOR_NAME" GIT_AUTHOR_EMAIL="$AUTHOR_EMAIL" \
 GIT_COMMITTER_NAME="$AUTHOR_NAME" GIT_COMMITTER_EMAIL="$AUTHOR_EMAIL" \
-  git commit -m "Public snapshot from private ${SRC_SHA:0:7}
-
-Rebuilt as a fresh tree. No private history."
+  git commit -m "${SNAPSHOT_MSG}"
 NEW_SHA="$(git rev-parse HEAD)"
 echo "New orphan commit: $NEW_SHA"
 
@@ -63,9 +75,7 @@ PUBLIC_TIP="$(git rev-parse public/main)"
 TREE="$(git rev-parse HEAD^{tree})"
 PUBLISH_SHA="$(GIT_AUTHOR_NAME="$AUTHOR_NAME" GIT_AUTHOR_EMAIL="$AUTHOR_EMAIL" \
   GIT_COMMITTER_NAME="$AUTHOR_NAME" GIT_COMMITTER_EMAIL="$AUTHOR_EMAIL" \
-  git commit-tree "$TREE" -p "$PUBLIC_TIP" -m "Public snapshot from private ${SRC_SHA:0:7}
-
-Rebuilt as a fresh tree. No private history.")"
+  git commit-tree "$TREE" -p "$PUBLIC_TIP" -m "${SNAPSHOT_MSG}")"
 git checkout -B publish "$PUBLISH_SHA" >/dev/null
 echo "Publish commit (on top of public main): $PUBLISH_SHA"
 echo "$PASS_LINE"

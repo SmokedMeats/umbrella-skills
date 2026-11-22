@@ -1,6 +1,11 @@
 /**
  * Copy this overlay into user-global skill dirs and every workspace
- * product repo that sits next to this clone. Optionally layer a private
+ * product repo that sits next to this clone. Product-repo copies run once
+ * per promote, right before it, never mid-day, and never while a pack PR
+ * is queued. Pack pull requests still land in the pack repos as they are
+ * ready. Pack sync PRs land first as the pre-step. The designated sync
+ * owner is the only agent that runs that sync, so the product branches
+ * never get two parallel syncs. Optionally layer a private
  * project overlay (a sibling clone; see findOverlaySibling) for bindings.
  *
  *   node scripts/sync-workspace.mjs                 # source pack: user roots + workspace.skill_targets
